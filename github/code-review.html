@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Review — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">👀 Code Review Best Practice <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Review is where quality is enforced and knowledge spreads. Here's how to do it well on both sides.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What review is for</h3>
+      <p>Code review has three jobs, in order of importance: <strong>catch defects</strong> before they ship, <strong>share knowledge</strong> so no part of the system has only one person who understands it, and <strong>keep the codebase consistent</strong>. It is not a gate to prove the author wrong — the goal is to get good code merged quickly.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Writing a reviewable PR (author side)</h3>
+      <ul>
+        <li><strong>Keep it small.</strong> A 50-line PR gets a careful review; a 2,000-line PR gets a rubber stamp. Split large work into stacked PRs.</li>
+        <li><strong>Explain the why.</strong> The diff shows what changed; the description must say why, and how to test it.</li>
+        <li><strong>Self-review first.</strong> Read your own diff on GitHub before requesting review — you will catch debug prints and stray files.</li>
+        <li><strong>Make CI green</strong> before asking humans to spend time.</li>
+      </ul>
+      <div class="callout tip">💡 One PR = one logical change. Mixing a refactor and a feature in one PR makes both harder to review and harder to revert.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Giving good feedback (reviewer side)</h3>
+      <ul>
+        <li><strong>Be specific and kind.</strong> "This loop is O(n²) on the request path — can we index by id?" beats "this is slow".</li>
+        <li><strong>Distinguish must-fix from nits.</strong> Prefix optional comments with "nit:" so the author knows what blocks merge.</li>
+        <li><strong>Use suggestions</strong> for small fixes so the author applies them in one click.</li>
+        <li><strong>Approve when it's good enough</strong>, not perfect. Don't hold a PR hostage over style preferences.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> The review conversation flow</h3>
+      <div class="svgpanel"><svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="cra" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b794f6"/></marker></defs>
+        <rect x="12" y="55" width="110" height="48" rx="9" fill="#1c142c" stroke="#8957e5" stroke-width="2"/><text x="67" y="84" text-anchor="middle" fill="#eeeaf8" font-size="11" font-weight="700">Open PR</text>
+        <line x1="124" y1="79" x2="156" y2="79" stroke="#b794f6" stroke-width="2" marker-end="url(#cra)"/>
+        <rect x="158" y="55" width="110" height="48" rx="9" fill="#1c142c" stroke="#f0b429" stroke-width="2"/><text x="213" y="84" text-anchor="middle" fill="#eeeaf8" font-size="11" font-weight="700">Review</text>
+        <line x1="270" y1="79" x2="302" y2="79" stroke="#b794f6" stroke-width="2" marker-end="url(#cra)"/>
+        <rect x="304" y="55" width="120" height="48" rx="9" fill="#1c142c" stroke="#6dc1ff" stroke-width="2"/><text x="364" y="78" text-anchor="middle" fill="#eeeaf8" font-size="11" font-weight="700">Address &amp; push</text><text x="364" y="93" text-anchor="middle" fill="#9b8fb0" font-size="9">re-request review</text>
+        <line x1="426" y1="79" x2="458" y2="79" stroke="#b794f6" stroke-width="2" marker-end="url(#cra)"/>
+        <rect x="460" y="55" width="110" height="48" rx="9" fill="#1c142c" stroke="#3fdd94" stroke-width="2"/><text x="515" y="84" text-anchor="middle" fill="#eeeaf8" font-size="11" font-weight="700">Approve + Merge</text>
+        <path d="M364 103 q 0 30 -150 30 q -147 0 -147 -28" fill="none" stroke="#716487" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#cra)"/><text x="210" y="146" text-anchor="middle" fill="#9b8fb0" font-size="9.5">loop until approved</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Tools that help</h3>
+      <ul>
+        <li><strong>Files changed</strong> tab — review per-file, mark files "Viewed" to track progress on big PRs.</li>
+        <li><strong>Required reviewers</strong> via branch protection + CODEOWNERS — see the next page.</li>
+        <li><strong>Auto-merge</strong> — queue a PR to merge automatically once all required checks and approvals land.</li>
+        <li><strong>CODEOWNERS</strong> ensures the right domain expert is always asked.</li>
+      </ul>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

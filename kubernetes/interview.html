@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Questions — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">💼 Interview Questions <span class="badge intermediate">Practice</span></h2>
+    <p class="page-sub">50+ real Kubernetes interview questions — concept, coding (YAML/kubectl), and scenario/troubleshooting.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> How to use this section</h3>
+      <ul>
+        <li>Filter by <strong>difficulty</strong>, <strong>source</strong>, or <strong>topic</strong>; search the text; or hit <strong>🎲 Random</strong> for a surprise.</li>
+        <li>Try each question yourself first, then expand the answer. Scenario questions have a <strong>▶ Try it in the playground</strong> link that loads the scenario into the simulated cluster so you can run <code class="inline">kubectl</code> against it.</li>
+        <li><strong>Mark as practiced</strong> to track progress — it's saved in your browser.</li>
+      </ul>
+      <div class="callout tip">💡 Sources are cited honestly. HackerRank questions map to the competencies listed on its Kubernetes <a href="https://www.hackerrank.com/skills-directory/kubernetes_basic" target="_blank" rel="noopener">Basic</a> / <a href="https://www.hackerrank.com/skills-directory/kubernetes_intermediate" target="_blank" rel="noopener">Intermediate</a> skills pages; everything else cites the specific kubernetes.io page it's grounded in. (LeetCode and HackerEarth have no Kubernetes problem sets, so they aren't cited for this topic.)</div>
+    </div>
+
+    <div id="ivRoot"></div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="js/interview-data.js"></script>
+<script src="../js/interview.js"></script>
+</body>
+</html>

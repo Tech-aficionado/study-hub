@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logging & Debugging — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🔎 Logging & Debugging Containers <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">When a container misbehaves, these are the commands and the mental model that find the cause fast.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The golden rule: log to stdout, not to files</h3>
+      <p>Docker captures whatever a container's <strong>main process writes to stdout and stderr</strong>. That's the one stream it knows about, and <code class="inline">docker logs</code> replays it. If your app writes to a log file <em>inside</em> the container instead, Docker can't see it, <code class="inline">docker logs</code> shows nothing, and the file dies with the container.</p>
+      <p>So the container convention — unlike a traditional server — is: send logs to stdout/stderr and let the platform collect them. Most official images already do this.</p>
+      <div class="callout tip">💡 "Empty <code class="inline">docker logs</code>" almost always means the app is logging to a file, not that nothing happened. Point its logging at stdout.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Reading logs</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker logs web                 <span class="cmt"># everything collected so far</span>
+docker logs -f web              <span class="cmt"># follow — stream new lines live (like tail -f)</span>
+docker logs --tail 100 web      <span class="cmt"># just the last 100 lines</span>
+docker logs --since 10m web     <span class="cmt"># only the last 10 minutes</span>
+docker logs -t web              <span class="cmt"># prepend timestamps</span></pre>
+      <p>Combine them: <code class="inline">docker logs -f --tail 50 web</code> is the everyday "show me recent output and keep streaming" command.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Logging drivers — where the logs actually go</h3>
+      <p>How Docker stores or forwards those streams is set by the <strong>logging driver</strong>. The default keeps JSON files on the host; others ship logs straight to a central system.</p>
+      <table>
+        <tr><th>Driver</th><th>Use for</th></tr>
+        <tr><td><code class="inline">json-file</code> (default)</td><td>Local JSON files; supports <code class="inline">docker logs</code>. <strong>Set rotation or it grows forever.</strong></td></tr>
+        <tr><td><code class="inline">local</code></td><td>Efficient on-disk format with rotation built in</td></tr>
+        <tr><td><code class="inline">journald</code> / <code class="inline">syslog</code></td><td>Hand off to the host's logging system</td></tr>
+        <tr><td><code class="inline">fluentd</code> / <code class="inline">gelf</code> / <code class="inline">awslogs</code> / <code class="inline">splunk</code></td><td>Centralised log aggregation</td></tr>
+      </table>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># cap json-file size so logs can't fill the disk</span>
+docker run -d --log-driver json-file \
+  --log-opt max-size=10m --log-opt max-file=3 nginx</pre>
+      <div class="callout warn">⚠️ The default <code class="inline">json-file</code> driver has <strong>no rotation</strong> out of the box. A chatty container can quietly eat an entire disk over days. Set <code class="inline">max-size</code>/<code class="inline">max-file</code> per container, or globally in <code class="inline">/etc/docker/daemon.json</code>.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Debugging a running container from the inside</h3>
+      <p>When logs aren't enough, step inside with <code class="inline">exec</code> — it runs a new process in an <strong>already-running</strong> container (it fails on a stopped one).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker exec -it web sh          <span class="cmt"># interactive shell (sh; use bash if present)</span>
+docker exec web env             <span class="cmt"># dump environment variables</span>
+docker exec web ps aux          <span class="cmt"># what's actually running inside</span>
+docker exec web cat /etc/hosts  <span class="cmt"># inspect config without a shell</span>
+
+docker top web                  <span class="cmt"># process table from the host side</span>
+docker stats web                <span class="cmt"># live CPU / memory / I/O</span>
+docker port web                 <span class="cmt"># which ports are published</span>
+docker diff web                 <span class="cmt"># files changed vs the image</span></pre>
+      <p>If the image is minimal (distroless/scratch) there's no shell to exec into. Modern Docker offers <code class="inline">docker debug &lt;container&gt;</code> (Desktop) which attaches a toolbox even to those; otherwise copy a static busybox in, or reproduce with a fatter base image.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Debugging a container that won't stay up</h3>
+      <p>If a container exits immediately, <code class="inline">docker logs</code> may be nearly empty. Work the exit code and events:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker ps -a                    <span class="cmt"># read the exit code in STATUS</span>
+docker inspect -f '{{.State.ExitCode}} {{.State.OOMKilled}} {{.State.Error}}' web
+docker events                   <span class="cmt"># live stream of daemon events (die, oom, kill)</span></pre>
+      <table>
+        <tr><th>Exit code</th><th>Usually means</th></tr>
+        <tr><td><code class="inline">0</code></td><td>Process finished normally — if it restarts, your CMD is a one-shot command, not a long-running server</td></tr>
+        <tr><td><code class="inline">137</code></td><td>SIGKILL — frequently an out-of-memory kill (check <code class="inline">OOMKilled: true</code>, raise <code class="inline">--memory</code>)</td></tr>
+        <tr><td><code class="inline">139</code></td><td>Segfault (SIGSEGV) inside the app</td></tr>
+        <tr><td><code class="inline">143</code></td><td>SIGTERM — stopped gracefully</td></tr>
+      </table>
+      <div class="callout danger">🚫 A classic trap: the app logs to a file, so <code class="inline">docker logs</code> is empty, and you chase a "silent crash" that is really a non-zero exit visible in <code class="inline">docker ps -a</code> all along. Read the exit code first.</div>
+      <div class="videopanel">
+        <div class="vhead">
+          <span class="vtitle"><span class="ytdot">▶</span> Docker Tutorial for Beginners [FULL COURSE]</span>
+          <span class="vcreator">TechWorld with Nana · Germany</span>
+        </div>
+        <div class="video-frame-wrap">
+          <iframe src="https://www.youtube.com/embed/3c-iBn73dDE" title="Docker Tutorial for Beginners" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

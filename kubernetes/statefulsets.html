@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StatefulSets — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🗃️ StatefulSets <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">For apps where each replica has a stable identity and its own disk — databases, queues, clustered stores.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> When a Deployment isn't enough</h3>
+      <p>Deployment Pods are interchangeable and get random names/IPs — perfect for stateless web apps. But a database replica needs: a <strong>stable network name</strong> (so peers can find it), its <strong>own persistent disk</strong> (that follows it across restarts), and <strong>ordered, predictable</strong> startup/scaling. A <strong>StatefulSet</strong> provides exactly those three guarantees.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Stable identity: ordinals and a headless Service</h3>
+      <p>StatefulSet Pods are named <code class="inline">&lt;name&gt;-0</code>, <code class="inline">&lt;name&gt;-1</code>, … — stable across reschedules. Paired with a <strong>headless Service</strong> (<code class="inline">clusterIP: None</code>), each Pod gets a stable DNS name:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>web-0.web.default.svc.cluster.local
+web-1.web.default.svc.cluster.local</pre>
+      <p>So <code class="inline">db-0</code> can always reach <code class="inline">db-1</code> by name no matter how many times either restarts — the thing clustered databases need and Deployments can't give.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Per-Pod storage with volumeClaimTemplates</h3>
+      <p>A StatefulSet declares a <code class="inline">volumeClaimTemplates</code>; Kubernetes creates a <em>separate</em> PVC per Pod (<code class="inline">data-web-0</code>, <code class="inline">data-web-1</code>…). When <code class="inline">web-0</code> is rescheduled, it reattaches to its <em>own</em> PVC — the data follows the identity.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: apps/v1
+kind: StatefulSet
+metadata: { name: web }
+spec:
+  serviceName: web          <span class="cmt"># the headless Service</span>
+  replicas: 3
+  selector: { matchLabels: { app: web } }
+  template:
+    metadata: { labels: { app: web } }
+    spec:
+      containers:
+        - name: web
+          image: nginx
+          volumeMounts:
+            - { name: data, mountPath: /usr/share/nginx/html }
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: { requests: { storage: 1Gi } }</pre>
+      <div class="callout warn">⚠️ Deleting a StatefulSet does <strong>not</strong> delete its PVCs by default — that protects your data, but means orphaned PVCs linger until you remove them. (A <code class="inline">persistentVolumeClaimRetentionPolicy</code> can automate this.)</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Ordered operations</h3>
+      <ul>
+        <li><strong>Scale up / create</strong>: Pods come up one at a time in order (0, then 1, then 2), each waiting until the previous is Running and Ready.</li>
+        <li><strong>Scale down / delete</strong>: in reverse order (highest ordinal first).</li>
+        <li><strong>Rolling update</strong>: reverse order too, one Pod at a time; <code class="inline">partition</code> in the update strategy lets you stage a canary by only updating ordinals ≥ N.</li>
+      </ul>
+      <p>Set <code class="inline">podManagementPolicy: Parallel</code> if your app doesn't need ordering and you want faster scaling.</p>
+      <div class="callout tip">💡 Running a database in Kubernetes is usually done via a purpose-built <strong>Operator</strong> (e.g. for PostgreSQL, Kafka), which uses StatefulSets under the hood but adds backups, failover and version upgrades. StatefulSet is the primitive; the Operator is the production experience.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

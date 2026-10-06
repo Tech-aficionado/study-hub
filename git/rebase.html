@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebase in Depth — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">♻️ Rebase in Depth <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Replay commits onto a new base, squash messy history interactively, and never break the golden rule.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What rebase does</h3>
+      <p>Rebase takes the commits unique to your branch, sets them aside, moves your branch to the tip of another branch, and <strong>replays</strong> your commits one by one on top. The result is a straight line — as if you'd started your work from the latest <code class="inline">main</code> all along.</p>
+      <div class="svgpanel"><svg viewBox="0 0 620 210" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="rb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8c93b0"/></marker></defs>
+        <text x="90" y="20" fill="#b0938c" font-size="10" font-weight="700">BEFORE</text>
+        <circle cx="55" cy="60" r="16" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="55" y="64" text-anchor="middle" fill="#f3ece9" font-size="8">A</text>
+        <circle cx="130" cy="60" r="16" fill="#271714" stroke="#f05032" stroke-width="2"/><text x="130" y="64" text-anchor="middle" fill="#f3ece9" font-size="8">B</text>
+        <circle cx="130" cy="120" r="16" fill="#271714" stroke="#3fdd94" stroke-width="2"/><text x="130" y="124" text-anchor="middle" fill="#f3ece9" font-size="8">X</text>
+        <circle cx="205" cy="120" r="16" fill="#271714" stroke="#3fdd94" stroke-width="2"/><text x="205" y="124" text-anchor="middle" fill="#f3ece9" font-size="8">Y</text>
+        <line x1="71" y1="60" x2="114" y2="60" stroke="#8c93b0" stroke-width="2" marker-end="url(#rb)"/>
+        <line x1="71" y1="68" x2="116" y2="112" stroke="#8c93b0" stroke-width="2" marker-end="url(#rb)"/>
+        <line x1="146" y1="120" x2="189" y2="120" stroke="#8c93b0" stroke-width="2" marker-end="url(#rb)"/>
+        <text x="130" y="40" text-anchor="middle" fill="#f05032" font-size="9" font-weight="700">main</text>
+        <text x="205" y="150" text-anchor="middle" fill="#3fdd94" font-size="9" font-weight="700">feature</text>
+        <text x="400" y="20" fill="#b0938c" font-size="10" font-weight="700">AFTER git rebase main</text>
+        <circle cx="360" cy="90" r="16" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="360" y="94" text-anchor="middle" fill="#f3ece9" font-size="8">A</text>
+        <circle cx="435" cy="90" r="16" fill="#271714" stroke="#f05032" stroke-width="2"/><text x="435" y="94" text-anchor="middle" fill="#f3ece9" font-size="8">B</text>
+        <circle cx="510" cy="90" r="16" fill="#271714" stroke="#3fdd94" stroke-width="2"/><text x="510" y="94" text-anchor="middle" fill="#f3ece9" font-size="8">X'</text>
+        <circle cx="585" cy="90" r="16" fill="#271714" stroke="#3fdd94" stroke-width="2"/><text x="585" y="94" text-anchor="middle" fill="#f3ece9" font-size="8">Y'</text>
+        <line x1="376" y1="90" x2="419" y2="90" stroke="#8c93b0" stroke-width="2" marker-end="url(#rb)"/>
+        <line x1="451" y1="90" x2="494" y2="90" stroke="#8c93b0" stroke-width="2" marker-end="url(#rb)"/>
+        <line x1="526" y1="90" x2="569" y2="90" stroke="#8c93b0" stroke-width="2" marker-end="url(#rb)"/>
+        <text x="470" y="135" text-anchor="middle" fill="#8c93b0" font-size="9.5">X and Y become NEW commits X' Y' (new hashes) — linear history</text>
+      </svg></div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git switch feature
+git rebase main
+<span class="cmt"># Replays feature's commits on top of main's latest commit</span>
+
+git switch main
+git merge feature          <span class="cmt"># now a clean fast-forward</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The golden rule of rebasing</h3>
+      <div class="callout danger">🛑 <strong>Never rebase commits that exist outside your own machine</strong> — anything you've pushed and others may have pulled. Rebase creates brand-new commits with new hashes; everyone holding the old commits now has a diverged, conflicting history.</div>
+      <p>Safe to rebase: your local feature branch before you've pushed it, or a branch only you work on. Unsafe: <code class="inline">main</code>, <code class="inline">develop</code>, or any shared branch teammates have based work on.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Interactive rebase — rewrite your own history</h3>
+      <p><code class="inline">git rebase -i</code> opens an editor listing your recent commits, each prefixed with an action word you can change. This is how you turn 12 messy "wip" commits into one clean, reviewable commit before opening a pull request.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git rebase -i HEAD~4
+<span class="cmt"># Opens an editor with your last 4 commits:</span>
+
+pick   a1b2c3  Add login form
+squash d4e5f6  wip
+squash g7h8i9  fix typo
+reword j0k1l2  Add validation
+
+<span class="cmt"># Change the FIRST word of each line to choose an action:</span></pre>
+      <table>
+        <tr><th>Action</th><th>Effect</th></tr>
+        <tr><td><code class="inline">pick</code></td><td>Keep the commit as-is</td></tr>
+        <tr><td><code class="inline">reword</code></td><td>Keep changes, edit the message</td></tr>
+        <tr><td><code class="inline">edit</code></td><td>Pause here so you can amend the commit's contents</td></tr>
+        <tr><td><code class="inline">squash</code></td><td>Fold into the commit above, combine both messages</td></tr>
+        <tr><td><code class="inline">fixup</code></td><td>Fold into the commit above, discard this message</td></tr>
+        <tr><td><code class="inline">drop</code></td><td>Delete the commit entirely</td></tr>
+        <tr><td><code class="inline">reorder</code></td><td>Move a line up/down to reorder commits</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> When a rebase hits a conflict</h3>
+      <p>Because rebase replays commits one at a time, a conflict can appear at <em>each</em> replayed commit. Resolve it, stage, then <code class="inline">--continue</code> — don't commit manually during a rebase.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># After editing the conflicted file(s):</span>
+git add resolved-file.js
+git rebase --continue       <span class="cmt"># proceed to the next commit</span>
+
+git rebase --skip           <span class="cmt"># drop the commit currently being applied</span>
+git rebase --abort          <span class="cmt"># bail out entirely, back to the pre-rebase state</span></pre>
+      <div class="callout tip">💡 <code class="inline">git pull --rebase</code> fetches the remote's new commits and replays <em>your</em> local commits on top, instead of making a merge commit — keeping a shared branch's history linear. Set it as the default with <code class="inline">git config --global pull.rebase true</code>.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Rebase vs merge — choosing deliberately</h3>
+      <table>
+        <tr><th></th><th>git merge</th><th>git rebase</th></tr>
+        <tr><td>History</td><td>Preserved exactly, with a merge commit</td><td>Rewritten into a straight line</td></tr>
+        <tr><td>Commit hashes</td><td>Unchanged</td><td>New (replayed commits)</td></tr>
+        <tr><td>Safe on shared branches?</td><td>Yes</td><td>No — only your own un-pushed work</td></tr>
+        <tr><td>Best for</td><td>Integrating a finished feature; audit trail</td><td>Cleaning up local commits before review</td></tr>
+      </table>
+      <div class="callout">A common team policy: rebase your feature branch onto the latest <code class="inline">main</code> to stay current and squash WIP commits, then merge into <code class="inline">main</code> with <code class="inline">--no-ff</code> so the merge is recorded. You get both a clean feature history and a clear integration point.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

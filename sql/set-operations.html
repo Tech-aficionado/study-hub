@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNION, INTERSECT, EXCEPT — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">➕ Set Operations <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Combining the results of two queries vertically — UNION, INTERSECT, EXCEPT — treating result sets like mathematical sets.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The three set operators</h3>
+      <div class="svgpanel"><svg viewBox="0 0 540 150" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <text x="90" y="20" text-anchor="middle" fill="#8aa3b3" font-size="11">UNION (A ∪ B)</text>
+          <circle cx="70" cy="75" r="38" fill="#3fdd94" opacity="0.45"/><circle cx="110" cy="75" r="38" fill="#3fdd94" opacity="0.45"/>
+          <circle cx="70" cy="75" r="38" fill="none" stroke="#5ba3d0"/><circle cx="110" cy="75" r="38" fill="none" stroke="#336791"/>
+        </g>
+        <g>
+          <text x="270" y="20" text-anchor="middle" fill="#8aa3b3" font-size="11">INTERSECT (A ∩ B)</text>
+          <clipPath id="ix"><circle cx="290" cy="75" r="38"/></clipPath>
+          <circle cx="250" cy="75" r="38" fill="none" stroke="#5ba3d0"/><circle cx="290" cy="75" r="38" fill="none" stroke="#336791"/>
+          <g clip-path="url(#ix)"><circle cx="250" cy="75" r="38" fill="#f0b429" opacity="0.5"/></g>
+        </g>
+        <g>
+          <text x="450" y="20" text-anchor="middle" fill="#8aa3b3" font-size="11">EXCEPT (A − B)</text>
+          <clipPath id="ex"><circle cx="470" cy="75" r="38"/></clipPath>
+          <circle cx="430" cy="75" r="38" fill="#ff6b6b" opacity="0.45"/>
+          <g clip-path="url(#ex)"><circle cx="430" cy="75" r="38" fill="#071118"/></g>
+          <circle cx="430" cy="75" r="38" fill="none" stroke="#5ba3d0"/><circle cx="470" cy="75" r="38" fill="none" stroke="#336791"/>
+        </g>
+      </svg></div>
+      <table>
+        <tr><th>Operator</th><th>Returns</th></tr>
+        <tr><td><code class="inline">UNION</code></td><td>All rows from both, duplicates removed</td></tr>
+        <tr><td><code class="inline">UNION ALL</code></td><td>All rows from both, duplicates kept (faster — no de-dup pass)</td></tr>
+        <tr><td><code class="inline">INTERSECT</code></td><td>Only rows appearing in BOTH queries</td></tr>
+        <tr><td><code class="inline">EXCEPT</code></td><td>Rows in the first query but NOT the second (MINUS in Oracle)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> UNION vs UNION ALL</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT city FROM customers WHERE country = 'Germany'
+UNION
+SELECT city FROM customers WHERE country = 'France';
+<span class="cmt">-- de-duplicated list of cities across both countries</span>
+
+SELECT 'active' AS kind, COUNT(*) FROM users WHERE deleted_at IS NULL
+UNION ALL
+SELECT 'deleted', COUNT(*) FROM users WHERE deleted_at IS NOT NULL;
+<span class="cmt">-- UNION ALL keeps both rows (they're different anyway) and skips the de-dup pass</span></pre>
+      <div class="callout tip">💡 Default to <code class="inline">UNION ALL</code> unless you specifically need duplicates removed. Plain <code class="inline">UNION</code> does an extra sort/hash to de-duplicate, which costs time on large results.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The column-matching rules</h3>
+      <p>Set operators stack results vertically, so both queries must agree on shape:</p>
+      <ul>
+        <li>Same <strong>number</strong> of columns.</li>
+        <li><strong>Compatible types</strong>, position by position (column 1 with column 1, etc.).</li>
+        <li>Column <strong>names</strong> come from the <em>first</em> query; the second query's names are ignored.</li>
+      </ul>
+      <div class="callout warn">⚠️ The match is by <em>position</em>, not by name. <code class="inline">SELECT name, city …</code> UNION <code class="inline">SELECT city, name …</code> compiles but silently mixes the columns up. Line them up carefully.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> INTERSECT and EXCEPT in practice</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- Customers who ordered in BOTH 2023 and 2024</span>
+SELECT customer_id FROM orders WHERE order_date &lt; '2024-01-01'
+INTERSECT
+SELECT customer_id FROM orders WHERE order_date &gt;= '2024-01-01';
+
+<span class="cmt">-- Products that have NEVER been ordered</span>
+SELECT id FROM products
+EXCEPT
+SELECT product_id FROM order_items;</pre>
+      <div class="callout danger">🛑 MySQL added <code class="inline">INTERSECT</code> and <code class="inline">EXCEPT</code> only in version 8.0.31 (2022). On older MySQL, emulate <code class="inline">INTERSECT</code> with an <code class="inline">INNER JOIN</code>/<code class="inline">IN</code> and <code class="inline">EXCEPT</code> with <code class="inline">NOT IN</code>/<code class="inline">NOT EXISTS</code>. PostgreSQL and SQLite have supported all three for years.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> ORDER BY applies to the whole result</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT name, price FROM products WHERE category_id = 1
+UNION ALL
+SELECT name, price FROM products WHERE category_id = 2
+ORDER BY price DESC;   <span class="cmt">-- a single ORDER BY at the very end sorts the combined result</span></pre>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

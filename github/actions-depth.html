@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actions In Depth — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">⚙️ Actions In Depth <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Matrix builds, caching, artifacts, secrets &amp; variables, approval environments, concurrency, reusable workflows, OIDC and least-privilege permissions.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Matrix builds — run the same job many ways</h3>
+      <p>A <code class="inline">strategy.matrix</code> expands one job definition into many parallel jobs, one per combination. Perfect for testing across versions and operating systems.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm test</pre>
+      <p>This single job becomes 3 × 3 = 9 runs. <code class="inline">fail-fast: false</code> lets the others finish even if one fails; <code class="inline">include</code>/<code class="inline">exclude</code> tune specific combinations.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Caching dependencies</h3>
+      <p>Each job starts on a clean runner, so dependencies re-download every time. <code class="inline">actions/cache</code> stores a folder keyed by a hash of your lockfile and restores it on the next run — turning a 90-second install into a few seconds.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>- uses: actions/cache@v4
+  with:
+    path: ~/.npm
+    key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+    restore-keys: npm-${{ runner.os }}-</pre>
+      <div class="callout tip">💡 Many <code class="inline">setup-*</code> actions have built-in caching (<code class="inline">cache: 'npm'</code> on setup-node) — simpler than a manual cache step.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Artifacts — passing files between jobs</h3>
+      <p>Caches speed up re-runs; <strong>artifacts</strong> move <em>outputs</em> (a built binary, a test report, coverage) out of one job so another job — or a human — can download them.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>- uses: actions/upload-artifact@v4
+  with:
+    name: dist
+    path: dist/
+
+<span class="cmt"># in a later job that "needs" the first:</span>
+- uses: actions/download-artifact@v4
+  with:
+    name: dist</pre>
+      <div class="callout warn">⚠️ Artifacts count against your account's storage quota. A "storage quota exceeded" error fails the upload step and can skip the steps that depend on it — delete old artifacts or set a short retention.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Secrets vs variables</h3>
+      <table>
+        <tr><th></th><th>Secrets</th><th>Variables</th></tr>
+        <tr><td>Reference</td><td><code class="inline">${{ secrets.NAME }}</code></td><td><code class="inline">${{ vars.NAME }}</code></td></tr>
+        <tr><td>Value in logs</td><td>Masked automatically</td><td>Shown in plain text</td></tr>
+        <tr><td>Use for</td><td>Tokens, keys, passwords</td><td>Non-sensitive config (region, flags)</td></tr>
+      </table>
+      <p>Both can be scoped at <strong>repository</strong>, <strong>environment</strong>, or <strong>organisation</strong> level. Never <code class="inline">echo</code> a secret — even masked, it is a leak risk.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Environments with approvals</h3>
+      <p>An <strong>environment</strong> (e.g. <code class="inline">production</code>) groups deployment config and can enforce <strong>protection rules</strong>: required reviewers who must click Approve before the job runs, a wait timer, and environment-scoped secrets.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://myapp.com
+    steps:
+      - run: ./deploy.sh</pre>
+      <p>When this job is reached, it <em>pauses</em> and waits for a named reviewer's approval — human control over automated deploys.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Concurrency — stop overlapping runs</h3>
+      <p>Without a limit, pushing twice quickly starts two deploys that race. A <code class="inline">concurrency</code> group serialises or cancels runs in the same group.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true   <span class="cmt"># newest push wins; cancel the older run</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">7</span> Reusable workflows &amp; permissions</h3>
+      <p>A <strong>reusable workflow</strong> (triggered by <code class="inline">workflow_call</code>) is a workflow other workflows invoke like a function — define your deploy once, call it from many repos. Pair it with <strong>least-privilege permissions</strong>: the automatic <code class="inline">GITHUB_TOKEN</code> should only get the scopes a job needs.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># caller</span>
+jobs:
+  call:
+    uses: my-org/.github/.github/workflows/deploy.yml@main
+    with:
+      target: prod
+    secrets: inherit
+
+<span class="cmt"># set default-deny then grant only what's needed</span>
+permissions:
+  contents: read
+  id-token: write   <span class="cmt"># required for OIDC</span></pre>
+      <div class="callout danger">🛑 If any job writes with <code class="inline">GITHUB_TOKEN</code> (creating a release, pushing) but you never set <code class="inline">permissions:</code>, the token may be broader than needed. Declare an explicit minimal <code class="inline">permissions</code> block — our playground's YAML checker flags exactly this.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">8</span> OIDC — deploy with no stored cloud secret</h3>
+      <p><strong>OpenID Connect</strong> lets a workflow prove its identity to a cloud provider and receive a short-lived credential at run time — so you never store a long-lived AWS/Azure/GCP key as a secret. The job requests a token (<code class="inline">id-token: write</code>) and exchanges it for cloud access via a trust policy you configure on the cloud side.</p>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> GitHub Actions Tutorial — CI/CD Pipeline with Docker</span><span class="vcreator">TechWorld with Nana · Germany</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/R8_veQiYBjI" title="GitHub Actions CI/CD with Docker" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Issues, Labels & Templates — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🐛 Issues, Labels & Templates <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Tracking bugs and tasks the GitHub way — labels, milestones, assignees and the templates that keep reports consistent.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What an issue is</h3>
+      <p>An <strong>issue</strong> is a single trackable unit of work living alongside the code: a bug report, a feature request, a question, or a task. Each issue has a number (<code class="inline">#42</code>), a title, a Markdown body, a thread of comments, and metadata — labels, assignees, a milestone, and a linked project. Because issues live in the repo, they can reference commits and PRs directly, and vice-versa.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Labels — colour-coded categories</h3>
+      <p>Labels classify issues so you can filter them. GitHub ships a default set and you can add your own:</p>
+      <table>
+        <tr><th>Label</th><th>Meaning</th></tr>
+        <tr><td><code class="inline">bug</code></td><td>Something is broken</td></tr>
+        <tr><td><code class="inline">enhancement</code></td><td>A new feature or improvement</td></tr>
+        <tr><td><code class="inline">good first issue</code></td><td>Easy, well-scoped — welcoming to newcomers</td></tr>
+        <tr><td><code class="inline">help wanted</code></td><td>Maintainers would welcome outside help</td></tr>
+        <tr><td><code class="inline">duplicate</code> / <code class="inline">wontfix</code></td><td>Triage outcomes</td></tr>
+      </table>
+      <div class="callout tip">💡 <code class="inline">good first issue</code> is special — GitHub surfaces repos with these labels to new contributors, so tagging a few genuinely easy tasks is the best way to attract first-time contributors.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Milestones — grouping toward a goal</h3>
+      <p>A <strong>milestone</strong> is a named target (e.g. "v2.0", "Beta launch") with an optional due date. You assign issues and PRs to it, and GitHub shows a progress bar of how many are closed. Milestones answer "what is left before we can ship X?" at a glance.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Issue templates</h3>
+      <p>Templates make everyone file reports with the information you actually need. They live in <code class="inline">.github/ISSUE_TEMPLATE/</code>. Modern templates use YAML "issue forms" with structured fields:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .github/ISSUE_TEMPLATE/bug_report.yml</span>
+name: Bug report
+description: Report something broken
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      placeholder: Describe the bug
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+    validations:
+      required: true</pre>
+      <p>You can also add a <code class="inline">config.yml</code> to point people to Discussions or security reporting instead of filing certain issues.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Linking issues to code</h3>
+      <ul>
+        <li>Mention <code class="inline">#42</code> anywhere to cross-link an issue.</li>
+        <li>Closing keywords in a PR body — <code class="inline">Fixes #42</code>, <code class="inline">Closes #42</code>, <code class="inline">Resolves #42</code> — auto-close the issue when the PR merges.</li>
+        <li>Assign an issue to yourself before working on it so others don't duplicate the effort.</li>
+      </ul>
+      <div class="callout warn">⚠️ The closing keyword only triggers on merge into the <em>default</em> branch, and only when written in the PR description or a commit message — a plain comment saying "fixes #42" does not auto-close.</div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

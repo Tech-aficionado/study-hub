@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labels &amp; selectors — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🏷️ Labels &amp; selectors <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Labels are how everything in Kubernetes finds everything else — Services, Deployments, and your own queries all run on them.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Labels vs annotations — different jobs</h3>
+      <p>Both are key/value metadata on an object, but they serve opposite purposes:</p>
+      <ul>
+        <li><strong>Labels</strong> are <em>identifying</em> and <strong>selectable</strong> — Kubernetes queries and groups objects by them. Keep them short and meaningful (<code class="inline">app</code>, <code class="inline">tier</code>, <code class="inline">env</code>).</li>
+        <li><strong>Annotations</strong> are <em>non-identifying</em> and <strong>not selectable</strong> — arbitrary extra data for humans and tools (build info, change-cause, ingress controller settings). They can be large.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>metadata:
+  labels:
+    app: payments
+    tier: backend
+    environment: prod
+  annotations:
+    kubernetes.io/change-cause: "rollout v2.3.1"
+    prometheus.io/scrape: "true"</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Why selectors are load-bearing</h3>
+      <p>A Service doesn't know about Pods by name — it has a <strong>label selector</strong> and routes to whatever Pods currently match. A Deployment's <code class="inline">spec.selector</code> is how it finds the Pods it owns. Get a label wrong and the Service has zero endpoints or the Deployment adopts the wrong Pods.</p>
+      <div class="svgpanel"><svg viewBox="0 0 620 170" xmlns="http://www.w3.org/2000/svg">
+        <rect x="220" y="18" width="180" height="42" rx="8" fill="#0e1830" stroke="#326ce5" stroke-width="2"/><text x="310" y="36" text-anchor="middle" fill="#eaeef8" font-size="11" font-weight="700">Service</text><text x="310" y="51" text-anchor="middle" fill="#8793b8" font-size="9">selector: app=web</text>
+        <line x1="270" y1="60" x2="140" y2="100" stroke="#3fdd94" stroke-width="1.6"/>
+        <line x1="310" y1="60" x2="310" y2="100" stroke="#3fdd94" stroke-width="1.6"/>
+        <line x1="350" y1="60" x2="430" y2="100" stroke="#ff6b6b" stroke-width="1.6" stroke-dasharray="4 3"/>
+        <rect x="70" y="102" width="140" height="48" rx="7" fill="#0e1830" stroke="#3fdd94"/><text x="140" y="123" text-anchor="middle" fill="#eaeef8" font-size="10">Pod app=web ✓</text><text x="140" y="139" text-anchor="middle" fill="#8793b8" font-size="9">matched</text>
+        <rect x="240" y="102" width="140" height="48" rx="7" fill="#0e1830" stroke="#3fdd94"/><text x="310" y="123" text-anchor="middle" fill="#eaeef8" font-size="10">Pod app=web ✓</text><text x="310" y="139" text-anchor="middle" fill="#8793b8" font-size="9">matched</text>
+        <rect x="410" y="102" width="150" height="48" rx="7" fill="#0e1830" stroke="#ff6b6b"/><text x="485" y="123" text-anchor="middle" fill="#eaeef8" font-size="10">Pod app=api ✗</text><text x="485" y="139" text-anchor="middle" fill="#8793b8" font-size="9">not matched</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Equality vs set-based selectors</h3>
+      <p>Services and ReplicationControllers use simple <strong>equality</strong> selectors. Deployments, ReplicaSets, and <code class="inline">kubectl -l</code> also support richer <strong>set-based</strong> selectors.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># equality-based (CLI)</span>
+kubectl get pods -l app=web
+kubectl get pods -l 'app=web,tier=front'   <span class="cmt"># AND</span>
+
+<span class="cmt"># set-based (CLI)</span>
+kubectl get pods -l 'env in (prod,staging)'
+kubectl get pods -l 'tier notin (cache)'
+kubectl get pods -l 'app'                   <span class="cmt"># key exists</span>
+kubectl get pods -l '!canary'               <span class="cmt"># key does NOT exist</span></pre>
+      <p>In YAML, a Deployment selector uses <code class="inline">matchLabels</code> and/or <code class="inline">matchExpressions</code>:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>selector:
+  matchLabels:
+    app: web
+  matchExpressions:
+    - { key: tier, operator: In, values: [front, edge] }
+    - { key: track, operator: NotIn, values: [canary] }</pre>
+      <div class="callout warn">⚠️ A Deployment's <code class="inline">spec.selector</code> is <strong>immutable</strong> after creation, and it must match the Pod template's labels. A selector/template mismatch is rejected at apply time — a very common first-YAML error.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> The recommended common labels</h3>
+      <p>Kubernetes defines a standard set under the <code class="inline">app.kubernetes.io/</code> prefix so tools (Helm, dashboards, Argo) can understand any app the same way:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>metadata:
+  labels:
+    app.kubernetes.io/name: payments
+    app.kubernetes.io/instance: payments-prod
+    app.kubernetes.io/version: "2.3.1"
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: shop
+    app.kubernetes.io/managed-by: helm</pre>
+      <div class="callout tip">💡 Prefix labels/annotations with a DNS domain you control (<code class="inline">example.com/team</code>) for your own keys. The bare <code class="inline">kubernetes.io/</code> and <code class="inline">k8s.io/</code> prefixes are reserved for Kubernetes itself.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Editing labels live</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl label pod my-pod track=canary          <span class="cmt"># add</span>
+kubectl label pod my-pod track=stable --overwrite
+kubectl label pod my-pod track-                 <span class="cmt"># remove (trailing dash)</span>
+kubectl get pods --show-labels</pre>
+      <div class="callout tip">💡 Relabelling is a real debugging trick: change a broken Pod's <code class="inline">app</code> label so the Service stops routing to it, and the Deployment immediately spins up a healthy replacement — the broken Pod stays alive for you to inspect.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forks & Syncing — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🍴 Forks & Syncing <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">How to copy a project you don't own, keep your copy up to date, and the "fork → PR" model that powers open source.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What a fork is (and is not)</h3>
+      <p>A <strong>fork</strong> is a server-side copy of someone else's repository placed under your own account. You get full write access to <em>your</em> fork while the original ("upstream") is untouched. Forking is GitHub's answer to a simple problem: how do you propose changes to a project you cannot push to? You fork it, change your copy, and open a pull request back.</p>
+      <div class="callout tip">💡 A fork is different from a <strong>clone</strong>. Fork = a copy on GitHub under your account. Clone = a copy on your local disk. The usual flow is: fork on GitHub, then clone <em>your fork</em> to your machine.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The three repositories in a fork workflow</h3>
+      <div class="svgpanel"><svg viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="fa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b794f6"/></marker></defs>
+        <rect x="20" y="20" width="150" height="54" rx="9" fill="#1c142c" stroke="#8957e5" stroke-width="2"/><text x="95" y="43" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">upstream</text><text x="95" y="60" text-anchor="middle" fill="#9b8fb0" font-size="10">original project</text>
+        <rect x="20" y="110" width="150" height="54" rx="9" fill="#1c142c" stroke="#f0b429" stroke-width="2"/><text x="95" y="133" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">origin (fork)</text><text x="95" y="150" text-anchor="middle" fill="#9b8fb0" font-size="10">your copy on GitHub</text>
+        <rect x="440" y="65" width="180" height="54" rx="9" fill="#1c142c" stroke="#3fdd94" stroke-width="2"/><text x="530" y="88" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">local clone</text><text x="530" y="105" text-anchor="middle" fill="#9b8fb0" font-size="10">on your machine</text>
+        <line x1="95" y1="74" x2="95" y2="108" stroke="#b794f6" stroke-width="2" marker-end="url(#fa)"/><text x="135" y="95" fill="#9b8fb0" font-size="9.5">fork</text>
+        <line x1="172" y1="135" x2="438" y2="98" stroke="#b794f6" stroke-width="2" marker-end="url(#fa)"/><text x="300" y="110" fill="#9b8fb0" font-size="9.5">git clone (origin)</text>
+        <line x1="440" y1="86" x2="174" y2="46" stroke="#6dc1ff" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#fa)"/><text x="300" y="55" fill="#9b8fb0" font-size="9.5">git fetch upstream (sync)</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Setting up upstream</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Clone YOUR fork</span>
+git clone https://github.com/your-name/project.git
+cd project
+
+<span class="cmt"># Add the original project as a remote called "upstream"</span>
+git remote add upstream https://github.com/original-owner/project.git
+
+<span class="cmt"># Verify both remotes</span>
+git remote -v</pre>
+      <p>Now <code class="inline">origin</code> points at your fork (you can push) and <code class="inline">upstream</code> points at the original (read-only to you).</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Syncing your fork with upstream</h3>
+      <p>Over time the original project moves ahead and your fork falls behind. Pull in their new commits so your work is based on the latest code:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git fetch upstream
+git switch main
+git merge upstream/main      <span class="cmt"># or: git rebase upstream/main</span>
+git push origin main         <span class="cmt"># update your fork on GitHub too</span></pre>
+      <p>The GitHub web UI also has a one-click <strong>"Sync fork"</strong> button on your fork's main page that does the same thing without the command line.</p>
+      <div class="callout warn">⚠️ Always sync <em>before</em> starting new work and before opening a PR, so your branch merges cleanly and does not re-introduce old conflicts.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> The full contribution loop</h3>
+      <ol>
+        <li>Fork the project on GitHub.</li>
+        <li>Clone your fork and add <code class="inline">upstream</code>.</li>
+        <li>Create a feature branch: <code class="inline">git switch -c fix-typo</code>.</li>
+        <li>Commit, then <code class="inline">git push -u origin fix-typo</code>.</li>
+        <li>Open a pull request <em>from your fork's branch</em> into the upstream repo.</li>
+        <li>Respond to review, push more commits; the PR updates automatically.</li>
+      </ol>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup: SQLite, PostgreSQL, MySQL — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🧰 Setup & Tools <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Get a database running on your machine — and know when to reach for which one.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Which database should you learn on?</h3>
+      <table>
+        <tr><th>Engine</th><th>What it is</th><th>Reach for it when</th></tr>
+        <tr><td><strong>SQLite</strong></td><td>A whole database in a single file, no server process</td><td>Learning, mobile apps, small sites, tests, local tooling. This course's playground uses it.</td></tr>
+        <tr><td><strong>PostgreSQL</strong></td><td>Powerful open-source server, strict standards compliance</td><td>Serious production apps, complex queries, JSON, extensions (PostGIS)</td></tr>
+        <tr><td><strong>MySQL</strong> / MariaDB</td><td>Open-source server, huge web ecosystem</td><td>Classic LAMP/web stacks, WordPress, read-heavy workloads</td></tr>
+      </table>
+      <div class="callout tip">💡 Start with SQLite to learn the language with zero setup. The core SQL (SELECT, JOIN, GROUP BY, window functions) is nearly identical across all three — only edge syntax differs, and this course flags every difference.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> SQLite — nothing to install, really</h3>
+      <p>SQLite ships with macOS, most Linux distros, Python, and many languages. A database is just a file you create.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Open (or create) a database file and get an interactive prompt</span>
+sqlite3 shop.db
+
+<span class="cmt"># Inside the sqlite3 prompt:</span>
+sqlite&gt; CREATE TABLE items (id INTEGER PRIMARY KEY, name TEXT);
+sqlite&gt; INSERT INTO items (name) VALUES ('Widget');
+sqlite&gt; SELECT * FROM items;
+sqlite&gt; .tables        <span class="cmt">-- list tables (dot-commands are SQLite-specific)</span>
+sqlite&gt; .schema items  <span class="cmt">-- show a table's CREATE statement</span>
+sqlite&gt; .quit</pre>
+      <div class="callout warn">⚠️ Dot-commands (<code class="inline">.tables</code>, <code class="inline">.schema</code>, <code class="inline">.mode</code>) are features of the <code class="inline">sqlite3</code> command-line shell, NOT SQL. They won't work from application code — there you query <code class="inline">sqlite_master</code> instead.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> PostgreSQL — install and connect</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># macOS (Homebrew)</span>
+brew install postgresql@16 &amp;&amp; brew services start postgresql@16
+
+<span class="cmt"># Ubuntu/Debian</span>
+sudo apt install postgresql
+
+<span class="cmt"># Connect with the psql client</span>
+psql -U postgres -d postgres
+postgres=# CREATE DATABASE shop;
+postgres=# \c shop        <span class="cmt">-- connect to the shop database</span>
+shop=# \dt                <span class="cmt">-- list tables</span>
+shop=# \d items           <span class="cmt">-- describe a table</span>
+shop=# \q                 <span class="cmt">-- quit</span></pre>
+      <div class="callout">Docker is often the fastest path: <code class="inline">docker run --name pg -e POSTGRES_PASSWORD=secret -p 5432:5432 -d postgres:16</code> gives you a throwaway server in seconds.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> MySQL — install and connect</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># macOS (Homebrew)</span>
+brew install mysql &amp;&amp; brew services start mysql
+
+<span class="cmt"># Connect with the mysql client</span>
+mysql -u root -p
+mysql&gt; CREATE DATABASE shop;
+mysql&gt; USE shop;
+mysql&gt; SHOW TABLES;
+mysql&gt; DESCRIBE items;
+mysql&gt; EXIT;</pre>
+      <div class="callout warn">⚠️ MySQL's meta-commands (<code class="inline">SHOW TABLES</code>, <code class="inline">DESCRIBE</code>, <code class="inline">USE</code>) are real SQL extensions, unlike SQLite's dot-commands or Postgres's backslash commands. Each engine's "list my tables" verb is different — a classic source of confusion when switching.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> GUI clients and the standard way to list tables</h3>
+      <p>GUI tools make exploration easier: <strong>DBeaver</strong> (works with every engine), <strong>pgAdmin</strong> (Postgres), <strong>TablePlus</strong>, <strong>DataGrip</strong>, and the <strong>SQLite</strong> VS Code extensions.</p>
+      <p>The portable, SQL-standard way to inspect a schema is the <code class="inline">information_schema</code> views (PostgreSQL &amp; MySQL):</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT table_name FROM information_schema.tables
+WHERE table_schema = 'public';   <span class="cmt">-- 'public' in Postgres; your db name in MySQL</span></pre>
+      <p>SQLite has no <code class="inline">information_schema</code>; it uses a built-in table instead:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT name FROM sqlite_master WHERE type = 'table';   <span class="cmt">-- SQLite</span></pre>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

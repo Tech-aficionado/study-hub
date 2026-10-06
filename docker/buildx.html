@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>buildx, Multi-platform & docker init — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🏗️ buildx, Multi-platform & docker init <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">The modern build engine — one image that runs on your Mac's ARM chip and the cloud's x86 servers, and a one-command way to scaffold Docker files.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> BuildKit: the engine behind modern builds</h3>
+      <p>Every recent Docker build is powered by <strong>BuildKit</strong> — the rebuilt build backend that replaced the old sequential builder. You usually don't call it directly; <code class="inline">docker build</code> uses it. What it buys you:</p>
+      <ul>
+        <li><strong>Parallelism</strong> — independent build stages run at the same time, not one after another.</li>
+        <li><strong>Smarter caching</strong> — fine-grained, and shareable to a registry so CI runners reuse each other's cache.</li>
+        <li><strong>Mounts in RUN</strong> — <code class="inline">RUN --mount=type=cache</code> keeps a package cache between builds; <code class="inline">RUN --mount=type=secret</code> exposes a secret for one step without baking it into a layer.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># cache the npm download dir across builds — much faster re-installs</span>
+RUN --mount=type=cache,target=/root/.npm npm ci</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> buildx — the extended CLI</h3>
+      <p><code class="inline">docker buildx</code> is the front-end that exposes BuildKit's full power, most importantly building for CPU architectures other than your own. You work through a <strong>builder</strong> instance:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker buildx create --name mybuilder --use   <span class="cmt"># create &amp; select a builder</span>
+docker buildx inspect --bootstrap             <span class="cmt"># start it, show capabilities</span>
+docker buildx ls                              <span class="cmt"># list builders and their platforms</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Why multi-platform matters — the Apple Silicon problem</h3>
+      <p>Here's the pain it solves. You develop on an Apple Silicon Mac — an <code class="inline">arm64</code> chip. You build an image, it works locally, you push it, and it <strong>crashes on your cloud servers</strong> because they're <code class="inline">amd64</code> (x86). The image only contained ARM binaries. Before multi-platform builds, you had to maintain two pipelines.</p>
+      <p>A <strong>multi-platform image</strong> fixes this: one tag that bundles variants for several architectures behind a <em>manifest list</em>. Whoever pulls it automatically gets the one matching their machine.</p>
+      <div class="svgpanel">
+        <svg viewBox="0 0 600 170" xmlns="http://www.w3.org/2000/svg">
+          <rect x="220" y="18" width="160" height="40" rx="9" fill="#1c2129" stroke="#2496ED"/><text x="300" y="43" text-anchor="middle" fill="#58b9ff" font-size="12" font-weight="700">myapp:1.0 (manifest)</text>
+          <rect x="60" y="110" width="150" height="42" rx="9" fill="#121728" stroke="#3fdd94"/><text x="135" y="136" text-anchor="middle" fill="#3fdd94" font-size="11" font-weight="700">linux/amd64</text>
+          <rect x="390" y="110" width="150" height="42" rx="9" fill="#121728" stroke="#9f7aea"/><text x="465" y="136" text-anchor="middle" fill="#bc8cff" font-size="11" font-weight="700">linux/arm64</text>
+          <line x1="270" y1="58" x2="150" y2="108" stroke="#58b9ff" stroke-width="2"/>
+          <line x1="330" y1="58" x2="450" y2="108" stroke="#58b9ff" stroke-width="2"/>
+          <text x="300" y="90" text-anchor="middle" fill="#8c93b0" font-size="10">one tag → the right binary per machine</text>
+        </svg>
+      </div>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># build BOTH architectures and push the manifest list in one go</span>
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t username/myapp:1.0 --push .</pre>
+      <div class="callout warn">⚠️ Multi-platform builds can't just load into the local image store (which holds one architecture). Use <code class="inline">--push</code> to send straight to a registry, or <code class="inline">--load</code> for a single platform. Building a foreign arch uses QEMU emulation and is slower than native.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> docker init — scaffold Docker files in one command</h3>
+      <p>Starting from an un-containerised project? <code class="inline">docker init</code> is an interactive wizard that detects your language/framework and writes sensible starter files so you don't hand-craft boilerplate.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>cd my-project
+docker init
+<span class="cmt"># answers a few prompts, then generates:
+#   Dockerfile          (multi-stage, non-root user, slim base)
+#   .dockerignore
+#   compose.yaml
+#   README.Docker.md</span></pre>
+      <p>Treat the output as a well-reasoned <em>starting point</em>: it already applies good defaults (a multi-stage build, a non-root <code class="inline">USER</code>, a pinned slim base image), which you then tune for your app. It's the fastest honest way to go from "my code" to "a container that builds".</p>
+      <div class="callout tip">💡 Great for learning too — run it on a small app and read the generated Dockerfile to see how Docker itself recommends structuring one for your stack.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> When you reach for each</h3>
+      <table>
+        <tr><th>Need</th><th>Tool</th></tr>
+        <tr><td>Just build an image locally</td><td><code class="inline">docker build</code> (BuildKit already under the hood)</td></tr>
+        <tr><td>Build for another CPU architecture / a release matrix</td><td><code class="inline">docker buildx build --platform …</code></td></tr>
+        <tr><td>Faster CI with a shared cache, build secrets</td><td>buildx + <code class="inline">RUN --mount=type=cache/secret</code></td></tr>
+        <tr><td>Add Docker to a project that has none</td><td><code class="inline">docker init</code></td></tr>
+      </table>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

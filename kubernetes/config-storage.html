@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Config & Storage — Kubernetes Study</title>
+<title>ConfigMaps &amp; Secrets — Kubernetes Study</title>
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="../css/shared.css">
 </head>
@@ -13,49 +13,80 @@
 <div class="layout">
   <nav class="sidebar" id="sidebar"></nav>
   <main class="main">
-    <h2 class="page-title">🔐 Config & Storage <span class="badge intermediate">Intermediate</span></h2>
-    <p class="page-sub">Keeping config and secrets OUT of your container image, and persisting data beyond a Pod's lifetime.</p>
+    <h2 class="page-title">🔐 ConfigMaps &amp; Secrets <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Keep configuration and credentials OUT of your image, so one image runs everywhere with different settings injected at runtime.</p>
 
     <div class="card">
       <h3><span class="num">1</span> ConfigMaps — non-secret configuration</h3>
-      <p>A ConfigMap stores config values (URLs, feature flags, settings) separately from your image, so the SAME image can run in dev/staging/prod with different config, injected at runtime instead of baked in at build time.</p>
-      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create configmap app-config --from-literal=LOG_LEVEL=debug
+      <p>A <strong>ConfigMap</strong> stores plain config (URLs, flags, whole config files) separate from the image. The same image then runs in dev/staging/prod with different config injected at runtime rather than baked at build time.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create configmap app-config \
+  --from-literal=LOG_LEVEL=debug \
+  --from-literal=FEATURE_X=on
 
-<span class="cmt"># Reference it in a Pod spec:</span>
+<span class="cmt"># or from a file — the filename becomes the key</span>
+kubectl create configmap nginx-conf --from-file=nginx.conf</pre>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: v1
+kind: ConfigMap
+metadata: { name: app-config }
+data:
+  LOG_LEVEL: "debug"
+  app.properties: |
+    retries=3
+    timeout=30s</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Two ways to consume config: env vars vs volumes</h3>
+      <p>This is the key decision, and it comes up in interviews.</p>
+      <table>
+        <tr><th></th><th>As environment variables</th><th>As a mounted volume</th></tr>
+        <tr><td>How</td><td><code class="inline">envFrom</code> / <code class="inline">valueFrom.configMapKeyRef</code></td><td><code class="inline">volumes</code> + <code class="inline">volumeMounts</code> — each key becomes a file</td></tr>
+        <tr><td>Live updates?</td><td><strong>No</strong> — env is set once at start</td><td><strong>Yes</strong> — mounted files update (with a short delay)</td></tr>
+        <tr><td>Good for</td><td>Simple scalar settings</td><td>Config files, certs, values the app re-reads</td></tr>
+      </table>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># env — all keys as variables</span>
 envFrom:
-  - configMapRef:
-      name: app-config</pre>
+  - configMapRef: { name: app-config }
+
+<span class="cmt"># env — one specific key</span>
+env:
+  - name: LOG_LEVEL
+    valueFrom:
+      configMapKeyRef: { name: app-config, key: LOG_LEVEL }
+
+<span class="cmt"># volume — each key becomes a file under /etc/config</span>
+volumes:
+  - name: cfg
+    configMap: { name: app-config }
+containers:
+  - name: app
+    volumeMounts:
+      - { name: cfg, mountPath: /etc/config, readOnly: true }</pre>
+      <div class="callout warn">⚠️ Env-var config does NOT update when the ConfigMap changes — the Pod keeps its original values until it restarts. Mounted-volume config DOES refresh in place. If you change a ConfigMap used as env, you must roll the Deployment (e.g. <code class="inline">kubectl rollout restart deployment/app</code>).</div>
     </div>
 
     <div class="card">
-      <h3><span class="num">2</span> Secrets — the same idea, for sensitive data</h3>
-      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create secret generic db-creds --from-literal=password=supersecret
+      <h3><span class="num">3</span> Secrets — same shape, for sensitive data</h3>
+      <p>A <strong>Secret</strong> is consumed exactly like a ConfigMap but is meant for passwords, tokens, keys, and TLS certs. Values are stored <strong>base64-encoded</strong> — which is encoding, <em>not</em> encryption.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create secret generic db-creds --from-literal=password='s3cr3t'
+kubectl create secret tls shop-tls --cert=tls.crt --key=tls.key
 
-<span class="cmt"># Referenced the same way as a ConfigMap. Values are only base64-ENCODED, not encrypted.</span>
+<span class="cmt"># consume as env or volume, same as a ConfigMap</span>
 envFrom:
-  - secretRef:
-      name: db-creds</pre>
-      <div class="callout warn">⚠️ Base64 is encoding, not encryption — a Secret is NOT secure by default against anyone with cluster read access. Production clusters need encryption-at-rest for etcd and tight RBAC on who can read Secrets.</div>
+  - secretRef: { name: db-creds }</pre>
+      <p>Common Secret types: <code class="inline">Opaque</code> (default), <code class="inline">kubernetes.io/tls</code> (Ingress certs), <code class="inline">kubernetes.io/dockerconfigjson</code> (private-registry pull creds, referenced via <code class="inline">imagePullSecrets</code>).</p>
     </div>
 
     <div class="card">
-      <h3><span class="num">3</span> Volumes — storage inside a Pod's lifetime</h3>
-      <p>By default, anything a container writes to its own filesystem is lost as soon as that container restarts — containers are meant to be disposable. A basic Volume (such as <code class="inline">emptyDir</code>) lives as long as the POD does, so data survives a container crash-and-restart inside that Pod and can be shared between containers in it. Delete the Pod, though, and an <code class="inline">emptyDir</code> is deleted with it.</p>
-    </div>
-
-    <div class="card">
-      <h3><span class="num">4</span> PersistentVolumes — storage that outlives the Pod entirely</h3>
-      <p>A <strong>PersistentVolume (PV)</strong> is cluster storage (a disk, a cloud volume) that exists independently of any Pod. A <strong>PersistentVolumeClaim (PVC)</strong> is how a Pod requests some of that storage. When the Pod dies and a replacement starts, it can reclaim the SAME PVC and pick up right where the data left off — essential for databases running in Kubernetes.</p>
-      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># pvc.yaml</span>
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: db-storage
-spec:
-  accessModes: [ReadWriteOnce]
-  resources:
-    requests:
-      storage: 10Gi</pre>
+      <h3><span class="num">4</span> Making Secrets actually secret</h3>
+      <p>By default a Secret is only base64 in etcd — anyone with API read access or raw etcd access can read it. Hardening steps you should know:</p>
+      <ul>
+        <li><strong>Encryption at rest</strong> — configure the API server's <code class="inline">EncryptionConfiguration</code> so Secrets are encrypted before being written to etcd (AES-GCM, or a cloud KMS provider). This is the single most important fix.</li>
+        <li><strong>RBAC</strong> — tightly limit who/what can <code class="inline">get</code>/<code class="inline">list</code> Secrets; a service account that can list Secrets cluster-wide is a serious exposure.</li>
+        <li><strong>External secret stores</strong> — Vault, cloud secret managers, or the External Secrets Operator keep the source of truth outside the cluster and sync in just-in-time.</li>
+        <li><strong>Prefer volume mounts over env</strong> for secrets — env vars leak more easily (child processes, crash dumps, <code class="inline">kubectl describe</code> on some objects).</li>
+      </ul>
+      <div class="callout danger">🚨 Never commit a Secret's raw YAML (with its base64 values) to Git — base64 is trivially reversible. Use sealed-secrets, SOPS, or an external store for anything in version control.</div>
     </div>
 
     <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>

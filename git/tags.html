@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tags &amp; Releases — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🏷️ Tags &amp; Releases <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Permanent, named markers for the commits that matter — your v1.0.0, v2.3.1 and release points.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What a tag is</h3>
+      <p>A tag is a <strong>fixed label on a specific commit</strong> that never moves. Branches advance as you commit; tags stay put. They mark release points — <code class="inline">v1.0.0</code>, <code class="inline">v2.3.1</code> — so you can always check out exactly what shipped.</p>
+      <div class="svgpanel"><svg viewBox="0 0 600 130" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="tg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8c93b0"/></marker></defs>
+        <circle cx="70" cy="75" r="20" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="70" y="79" text-anchor="middle" fill="#f3ece9" font-size="9">A</text>
+        <circle cx="200" cy="75" r="20" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="200" y="79" text-anchor="middle" fill="#f3ece9" font-size="9">B</text>
+        <circle cx="330" cy="75" r="20" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="330" y="79" text-anchor="middle" fill="#f3ece9" font-size="9">C</text>
+        <circle cx="460" cy="75" r="20" fill="#271714" stroke="#f05032" stroke-width="2"/><text x="460" y="79" text-anchor="middle" fill="#f3ece9" font-size="9">D</text>
+        <line x1="90" y1="75" x2="180" y2="75" stroke="#8c93b0" stroke-width="2" marker-end="url(#tg)"/>
+        <line x1="220" y1="75" x2="310" y2="75" stroke="#8c93b0" stroke-width="2" marker-end="url(#tg)"/>
+        <line x1="350" y1="75" x2="440" y2="75" stroke="#8c93b0" stroke-width="2" marker-end="url(#tg)"/>
+        <text x="200" y="35" text-anchor="middle" fill="#f0b429" font-size="10" font-weight="700">v1.0.0</text><line x1="200" y1="40" x2="200" y2="55" stroke="#f0b429" stroke-width="2"/>
+        <text x="330" y="35" text-anchor="middle" fill="#f0b429" font-size="10" font-weight="700">v1.1.0</text><line x1="330" y1="40" x2="330" y2="55" stroke="#f0b429" stroke-width="2"/>
+        <text x="460" y="115" text-anchor="middle" fill="#f05032" font-size="10" font-weight="700">main (moves on)</text>
+        <text x="540" y="79" fill="#8c93b0" font-size="9">tags stay</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Lightweight vs annotated tags</h3>
+      <p>Two kinds. A <strong>lightweight</strong> tag is just a name pointing at a commit — like a branch that never moves. An <strong>annotated</strong> tag is a full object storing a tagger, date, message, and can be GPG-signed. <strong>Use annotated tags for releases.</strong></p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Lightweight — just a pointer, no metadata</span>
+git tag v1.0.0-rc1
+
+<span class="cmt"># Annotated — stores tagger, date, message (the right choice for releases)</span>
+git tag -a v1.0.0 -m "First stable release"
+
+<span class="cmt"># Signed annotated tag (cryptographically verifies who created it)</span>
+git tag -s v1.0.0 -m "First stable release"
+
+<span class="cmt"># Tag an OLD commit after the fact</span>
+git tag -a v0.9.0 9fceb02 -m "Beta release"</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Listing, inspecting and pushing tags</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git tag                     <span class="cmt"># list all tags</span>
+git tag -l "v1.*"           <span class="cmt"># filter with a pattern</span>
+git show v1.0.0             <span class="cmt"># tag metadata + the commit it points to</span>
+
+<span class="cmt"># Tags are NOT pushed by default — you must push them explicitly</span>
+git push origin v1.0.0       <span class="cmt"># push one tag</span>
+git push origin --tags       <span class="cmt"># push all tags</span>
+
+git push origin --delete v1.0.0   <span class="cmt"># delete a tag on the remote</span>
+git tag -d v1.0.0                 <span class="cmt"># delete a tag locally</span></pre>
+      <div class="callout warn">⚠️ The classic gotcha: you <code class="inline">git tag</code> a release, run <code class="inline">git push</code>, and the tag doesn't appear on the remote. Plain <code class="inline">push</code> never sends tags — you need <code class="inline">git push origin &lt;tag&gt;</code> or <code class="inline">--tags</code>.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Semantic Versioning (SemVer)</h3>
+      <p>The near-universal convention for release tags is <strong>MAJOR.MINOR.PATCH</strong>, e.g. <code class="inline">2.4.1</code>. Each number signals the <em>kind</em> of change so consumers know whether an upgrade is safe.</p>
+      <table>
+        <tr><th>Part</th><th>Bump when…</th><th>Example</th></tr>
+        <tr><td><strong>MAJOR</strong></td><td>You make a breaking change</td><td>1.9.0 → 2.0.0</td></tr>
+        <tr><td><strong>MINOR</strong></td><td>You add functionality, backward-compatible</td><td>2.0.0 → 2.1.0</td></tr>
+        <tr><td><strong>PATCH</strong></td><td>You fix a bug, backward-compatible</td><td>2.1.0 → 2.1.1</td></tr>
+      </table>
+      <div class="callout tip">💡 Pre-release suffixes communicate stability: <code class="inline">2.0.0-alpha.1</code>, <code class="inline">2.0.0-beta.3</code>, <code class="inline">2.0.0-rc.1</code> (release candidate). A leading <code class="inline">0.x.y</code> signals "still unstable, anything may change."</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Checking out and describing by tag</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git checkout v1.0.0
+<span class="cmt"># Puts you at exactly what shipped as v1.0.0 (detached HEAD — read-only look)</span>
+git switch -c hotfix-1.0.1 v1.0.0
+<span class="cmt"># ...or branch off the tag to make a patch release</span>
+
+git describe --tags
+<span class="cmt"># Human-readable version of your current commit, e.g. v1.1.0-14-g2414721</span>
+<span class="cmt"># = 14 commits after v1.1.0, at commit 2414721 — great for build version strings</span></pre>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

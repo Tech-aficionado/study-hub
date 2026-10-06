@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RBAC &amp; ServiceAccounts — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔑 RBAC &amp; ServiceAccounts <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Who can do what, to which resources — the cluster's whole authorization story, built from four object types.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The four pieces</h3>
+      <p>RBAC (Role-Based Access Control) answers "is this identity allowed to perform this verb on this resource?" It's assembled from a <em>what</em> (Role) bound to a <em>who</em> (via a Binding):</p>
+      <table>
+        <tr><th>Object</th><th>Scope</th><th>Says</th></tr>
+        <tr><td><strong>Role</strong></td><td>One namespace</td><td>Allowed verbs on resources <em>in that namespace</em></td></tr>
+        <tr><td><strong>ClusterRole</strong></td><td>Whole cluster</td><td>Allowed verbs, cluster-wide or on cluster-scoped resources (nodes, PVs)</td></tr>
+        <tr><td><strong>RoleBinding</strong></td><td>One namespace</td><td>Grants a Role (or ClusterRole) to subjects in that namespace</td></tr>
+        <tr><td><strong>ClusterRoleBinding</strong></td><td>Whole cluster</td><td>Grants a ClusterRole to subjects cluster-wide</td></tr>
+      </table>
+      <div class="callout tip">💡 A <strong>ClusterRole</strong> bound by a <strong>RoleBinding</strong> is the useful combo for reusable permission sets: define "pod-reader" once as a ClusterRole, then RoleBind it per namespace. RBAC is purely additive — there are no deny rules; access defaults to denied.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> A Role and a binding</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: { namespace: staging, name: pod-reader }
+rules:
+  - apiGroups: [""]                 <span class="cmt"># "" = the core API group</span>
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: { namespace: staging, name: read-pods }
+subjects:
+  - kind: User
+    name: alice
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io</pre>
+      <p>Verbs are the API operations: <code class="inline">get list watch create update patch delete deletecollection</code>. Resources can go finer-grained (<code class="inline">pods/exec</code>, <code class="inline">pods/log</code>) and even to named objects with <code class="inline">resourceNames</code>.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> ServiceAccounts — identity for Pods</h3>
+      <p>Users (humans) authenticate externally; <strong>ServiceAccounts</strong> are the in-cluster identity that <em>Pods</em> run as, so a Pod can call the Kubernetes API with scoped permissions. Every Pod gets the namespace's <code class="inline">default</code> ServiceAccount unless you set one.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create serviceaccount deployer -n ci
+<span class="cmt"># use it in a Pod/Deployment:</span>
+spec:
+  serviceAccountName: deployer</pre>
+      <p>Modern clusters mount a short-lived, audience-bound <strong>projected token</strong> (TokenRequest API) rather than a never-expiring Secret, and you can turn the automount off for Pods that don't call the API:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>spec:
+  automountServiceAccountToken: false   <span class="cmt"># Pod doesn't need API access</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Testing &amp; least privilege</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl auth can-i list pods -n staging                      <span class="cmt"># as yourself</span>
+kubectl auth can-i create deployments --as=alice -n staging  <span class="cmt"># impersonate</span>
+kubectl auth can-i --list -n staging                         <span class="cmt"># everything you can do</span></pre>
+      <div class="callout danger">🚨 The two cardinal RBAC sins: binding <code class="inline">cluster-admin</code> to a ServiceAccount "to make it work", and granting <code class="inline">get</code>/<code class="inline">list</code> on Secrets cluster-wide. Both turn a single compromised Pod into cluster takeover. Scope every grant to the exact verbs, resources, and namespace actually needed, and prefer per-app ServiceAccounts over the shared <code class="inline">default</code>.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

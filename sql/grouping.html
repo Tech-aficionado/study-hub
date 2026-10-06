@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GROUP BY & HAVING — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📈 GROUP BY & HAVING <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Collapsing many rows into per-group summaries, and the order the clauses actually run in.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The logical order of a SELECT</h3>
+      <p>SQL is written <code class="inline">SELECT … FROM … WHERE … GROUP BY … HAVING … ORDER BY … LIMIT</code>, but it <em>executes</em> in a different order. Knowing this explains almost every "why can't I use that alias / aggregate here" error.</p>
+      <div class="svgpanel"><svg viewBox="0 0 600 90" xmlns="http://www.w3.org/2000/svg">
+        <g font-size="10.5" font-weight="700">
+        <rect x="8"  y="30" width="70" height="30" rx="6" fill="#122334" stroke="#336791"/><text x="43"  y="49" text-anchor="middle" fill="#5ba3d0">1 FROM</text>
+        <rect x="86" y="30" width="70" height="30" rx="6" fill="#122334" stroke="#336791"/><text x="121" y="49" text-anchor="middle" fill="#5ba3d0">2 WHERE</text>
+        <rect x="164" y="30" width="82" height="30" rx="6" fill="#122334" stroke="#336791"/><text x="205" y="49" text-anchor="middle" fill="#5ba3d0">3 GROUP BY</text>
+        <rect x="254" y="30" width="74" height="30" rx="6" fill="#122334" stroke="#336791"/><text x="291" y="49" text-anchor="middle" fill="#5ba3d0">4 HAVING</text>
+        <rect x="336" y="30" width="70" height="30" rx="6" fill="#1d2b16" stroke="#3fdd94"/><text x="371" y="49" text-anchor="middle" fill="#3fdd94">5 SELECT</text>
+        <rect x="414" y="30" width="84" height="30" rx="6" fill="#122334" stroke="#336791"/><text x="456" y="49" text-anchor="middle" fill="#5ba3d0">6 ORDER BY</text>
+        <rect x="506" y="30" width="66" height="30" rx="6" fill="#122334" stroke="#336791"/><text x="539" y="49" text-anchor="middle" fill="#5ba3d0">7 LIMIT</text>
+        </g>
+      </svg></div>
+      <div class="callout tip">💡 Because <code class="inline">SELECT</code> runs at step 5, a column alias you create there doesn't exist yet at <code class="inline">WHERE</code> (step 2) — but <code class="inline">ORDER BY</code> (step 6) can use it. And because <code class="inline">HAVING</code> runs after grouping, it can filter on aggregates while <code class="inline">WHERE</code> cannot.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> GROUP BY basics</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT category_id, COUNT(*) AS n, ROUND(AVG(price), 2) AS avg_price
+FROM products
+GROUP BY category_id
+ORDER BY n DESC;</pre>
+      <div class="callout danger">🛑 The single-value rule: every column in the SELECT must either be in the <code class="inline">GROUP BY</code> or be inside an aggregate. PostgreSQL rejects a bare non-grouped column outright. MySQL historically allowed it (returning an arbitrary value) — modern MySQL blocks it under <code class="inline">ONLY_FULL_GROUP_BY</code>, which is on by default in 5.7+.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Grouping by multiple columns</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT country, status, COUNT(*) AS orders
+FROM orders o
+JOIN customers c ON c.id = o.customer_id
+GROUP BY country, status
+ORDER BY country, orders DESC;
+<span class="cmt">-- One row per (country, status) combination that actually occurs</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> WHERE vs HAVING — before vs after</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT customer_id, COUNT(*) AS orders, SUM(1) AS n
+FROM orders
+WHERE status &lt;&gt; 'cancelled'      <span class="cmt">-- filter ROWS first (before grouping)</span>
+GROUP BY customer_id
+HAVING COUNT(*) &gt;= 4;             <span class="cmt">-- filter GROUPS after aggregation</span></pre>
+      <table>
+        <tr><th></th><th>WHERE</th><th>HAVING</th></tr>
+        <tr><td>Runs</td><td>Before grouping</td><td>After grouping</td></tr>
+        <tr><td>Operates on</td><td>Individual rows</td><td>Aggregated groups</td></tr>
+        <tr><td>Can use aggregates?</td><td>No</td><td>Yes</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> DISTINCT vs GROUP BY</h3>
+      <p><code class="inline">SELECT DISTINCT country FROM customers</code> and <code class="inline">SELECT country FROM customers GROUP BY country</code> return the same rows. Reach for <code class="inline">DISTINCT</code> when you only want unique values; reach for <code class="inline">GROUP BY</code> when you also need an aggregate per group. <code class="inline">COUNT(DISTINCT col)</code> counts unique values within an aggregate.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT COUNT(DISTINCT country) AS countries FROM customers;</pre>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

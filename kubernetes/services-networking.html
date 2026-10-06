@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Services & Networking — Kubernetes Study</title>
+<title>Services &amp; DNS — Kubernetes Study</title>
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="../css/shared.css">
 </head>
@@ -13,53 +13,83 @@
 <div class="layout">
   <nav class="sidebar" id="sidebar"></nav>
   <main class="main">
-    <h2 class="page-title">🌐 Services & Networking <span class="badge intermediate">Intermediate</span></h2>
-    <p class="page-sub">Pods come and go, with new random IPs each time — Services give them a stable address.</p>
+    <h2 class="page-title">🌐 Services &amp; DNS <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Pods come and go with new IPs each time — Services give them a stable address, and DNS gives that address a name.</p>
 
     <div class="card">
       <h3><span class="num">1</span> Why you need a Service</h3>
-      <p>Pods are disposable — every time one restarts or a Deployment scales, it gets a brand new internal IP. If other Pods tried to talk to a Pod directly by IP, that connection breaks constantly. A <strong>Service</strong> gives a STABLE address (a name + virtual IP) that automatically routes to whichever healthy Pods currently match a label selector.</p>
+      <p>Pods are disposable — every restart or scale gives a Pod a new internal IP. If callers used Pod IPs directly, every reschedule would break them. A <strong>Service</strong> is a stable virtual IP + DNS name that load-balances across whatever healthy Pods currently match its <strong>label selector</strong>.</p>
       <div class="svgpanel"><svg viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg">
-        <rect x="250" y="20" width="140" height="50" rx="8" fill="#0e1830" stroke="#326ce5" stroke-width="2"/><text x="320" y="50" text-anchor="middle" fill="#eaeef8" font-size="12" font-weight="700">Service (stable)</text>
+        <rect x="250" y="20" width="140" height="50" rx="8" fill="#0e1830" stroke="#326ce5" stroke-width="2"/><text x="320" y="42" text-anchor="middle" fill="#eaeef8" font-size="12" font-weight="700">Service</text><text x="320" y="58" text-anchor="middle" fill="#8793b8" font-size="9">stable IP + DNS</text>
         <line x1="285" y1="70" x2="150" y2="110" stroke="#6a9bf0" stroke-width="1.5"/>
         <line x1="320" y1="70" x2="320" y2="110" stroke="#6a9bf0" stroke-width="1.5"/>
         <line x1="355" y1="70" x2="490" y2="110" stroke="#6a9bf0" stroke-width="1.5"/>
-        <rect x="90" y="110" width="120" height="40" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="150" y="134" text-anchor="middle" fill="#eaeef8" font-size="10.5">Pod (changing IP)</text>
-        <rect x="260" y="110" width="120" height="40" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="320" y="134" text-anchor="middle" fill="#eaeef8" font-size="10.5">Pod (changing IP)</text>
-        <rect x="430" y="110" width="120" height="40" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="490" y="134" text-anchor="middle" fill="#eaeef8" font-size="10.5">Pod (changing IP)</text>
+        <rect x="90" y="110" width="120" height="40" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="150" y="134" text-anchor="middle" fill="#eaeef8" font-size="10">Pod (changing IP)</text>
+        <rect x="260" y="110" width="120" height="40" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="320" y="134" text-anchor="middle" fill="#eaeef8" font-size="10">Pod (changing IP)</text>
+        <rect x="430" y="110" width="120" height="40" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="490" y="134" text-anchor="middle" fill="#eaeef8" font-size="10">Pod (changing IP)</text>
       </svg></div>
     </div>
 
     <div class="card">
-      <h3><span class="num">2</span> The three Service types</h3>
+      <h3><span class="num">2</span> The Service types</h3>
       <table>
-        <tr><th>Type</th><th>Reachable from</th><th>Typical use</th></tr>
-        <tr><td><strong>ClusterIP</strong> (default)</td><td>Only inside the cluster</td><td>Internal service-to-service communication</td></tr>
-        <tr><td><strong>NodePort</strong></td><td>Any node's IP, on a fixed port</td><td>Simple external access, mostly dev/testing</td></tr>
-        <tr><td><strong>LoadBalancer</strong></td><td>A real external IP (via cloud provider)</td><td>Production internet-facing traffic</td></tr>
+        <tr><th>Type</th><th>Reachable from</th><th>Use</th></tr>
+        <tr><td><strong>ClusterIP</strong> (default)</td><td>Inside the cluster only</td><td>Internal service-to-service</td></tr>
+        <tr><td><strong>NodePort</strong></td><td>Any node's IP on a fixed port (30000–32767)</td><td>Simple external access, dev/testing</td></tr>
+        <tr><td><strong>LoadBalancer</strong></td><td>A real external IP from the cloud</td><td>Production internet-facing</td></tr>
+        <tr><td><strong>ExternalName</strong></td><td>DNS CNAME to an external host</td><td>Alias an outside service by in-cluster name</td></tr>
+        <tr><td><strong>Headless</strong> (<code class="inline">clusterIP: None</code>)</td><td>DNS returns Pod IPs directly</td><td>StatefulSets, client-side load balancing</td></tr>
       </table>
-      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># service.yaml</span>
-apiVersion: v1
+      <p>They nest: a NodePort is a ClusterIP plus a node port; a LoadBalancer is a NodePort plus a cloud LB in front.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: v1
 kind: Service
-metadata:
-  name: my-app-service
+metadata: { name: my-app }
 spec:
   type: ClusterIP
-  selector:
-    app: my-app
+  selector: { app: my-app }
   ports:
-    - port: 80
-      targetPort: 8080</pre>
+    - port: 80            <span class="cmt"># the Service's port</span>
+      targetPort: 8080     <span class="cmt"># the container's port</span></pre>
     </div>
 
     <div class="card">
-      <h3><span class="num">3</span> DNS — calling a Service by name</h3>
-      <p>Kubernetes runs an internal DNS server. Any Pod can reach a Service just by its name (<code class="inline">my-app-service</code>, or fully qualified <code class="inline">my-app-service.default.svc.cluster.local</code>) — no need to hunt down IP addresses manually.</p>
+      <h3><span class="num">3</span> Headless &amp; ExternalName — the two special cases</h3>
+      <p><strong>Headless</strong> (<code class="inline">clusterIP: None</code>): no virtual IP, no proxying. DNS returns the <em>individual Pod IPs</em>, so the caller sees every backend and can do its own balancing or address a specific one. This is what gives StatefulSet Pods their <code class="inline">pod-0.svc...</code> names.</p>
+      <p><strong>ExternalName</strong>: no selector, no Pods — it maps the Service name to an external DNS name via a CNAME. Lets in-cluster code call <code class="inline">payments</code> while it actually resolves to <code class="inline">payments.vendor.com</code>, so you can swap the target without touching the app.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: v1
+kind: Service
+metadata: { name: payments }
+spec:
+  type: ExternalName
+  externalName: payments.vendor.com</pre>
     </div>
 
     <div class="card">
-      <h3><span class="num">4</span> Ingress — routing HTTP(S) traffic by hostname/path</h3>
-      <p>A LoadBalancer Service gives ONE Service a public IP. If you have many services behind one domain (<code class="inline">api.example.com</code>, <code class="inline">app.example.com/admin</code>), an <strong>Ingress</strong> sits in front and routes by hostname/path to the right internal Service — like a single smart reverse-proxy for the whole cluster.</p>
+      <h3><span class="num">4</span> Cluster DNS — calling a Service by name</h3>
+      <p>CoreDNS runs in the cluster and gives every Service a name. From a Pod:</p>
+      <ul>
+        <li><code class="inline">my-app</code> — same namespace (short name)</li>
+        <li><code class="inline">my-app.staging</code> — Service in another namespace</li>
+        <li><code class="inline">my-app.staging.svc.cluster.local</code> — fully-qualified</li>
+      </ul>
+      <p>The pattern is <code class="inline">&lt;service&gt;.&lt;namespace&gt;.svc.cluster.local</code>. Never hardcode IPs — names are stable, IPs are not.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl run tmp --rm -it --image=busybox:1.36 -- sh
+<span class="cmt"># inside:</span>
+nslookup my-app
+wget -qO- http://my-app.staging/</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Endpoints &amp; EndpointSlices — the wiring behind a Service</h3>
+      <p>A Service's selector doesn't route traffic by itself. The EndpointSlice controller watches for matching, <em>Ready</em> Pods and records their IP:port into <strong>EndpointSlice</strong> objects; <code class="inline">kube-proxy</code> (or a CNI dataplane) programs the node so Service traffic is spread across those endpoints.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl get endpointslices -l kubernetes.io/service-name=my-app
+kubectl describe svc my-app     <span class="cmt"># "Endpoints:" line lists backing Pod IPs</span></pre>
+      <p>EndpointSlices replaced the single monolithic <code class="inline">Endpoints</code> object (which didn't scale past thousands of Pods) by sharding endpoints across many small objects.</p>
+      <div class="callout warn">⚠️ "Service exists but nothing responds" is almost always <strong>empty endpoints</strong>: the selector matches no Pods, the Pods aren't passing their readiness probe, or <code class="inline">targetPort</code> doesn't match the real container port. <code class="inline">kubectl get endpointslices</code> tells you instantly — see the <a href="troubleshooting.html">runbook</a>.</p>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Docker vs Kubernetes vs Docker Swarm | Comparison in 5 mins</span><span class="vcreator">TechWorld with Nana · Austria</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/9_s3h_GVzZc" title="Docker vs Kubernetes vs Docker Swarm" allowfullscreen loading="lazy"></iframe></div>
+      </div>
     </div>
 
     <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>

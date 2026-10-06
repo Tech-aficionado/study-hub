@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subqueries — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📦 Subqueries <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">A query inside a query — scalar, IN, EXISTS, and the correlated subquery that runs once per outer row.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Scalar subquery — returns a single value</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT name, price
+FROM products
+WHERE price &gt; (SELECT AVG(price) FROM products);
+<span class="cmt">-- The inner query returns ONE number; the outer compares each row to it</span>
+
+<span class="cmt">-- A scalar subquery can also appear in the SELECT list:</span>
+SELECT name, (SELECT COUNT(*) FROM orders) AS total_orders FROM customers;</pre>
+      <div class="callout warn">⚠️ A scalar subquery must return at most one row and one column. If it returns multiple rows where one value is expected, the engine raises an error ("more than one row returned by a subquery used as an expression").</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> IN subquery — membership in a list</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT name FROM customers
+WHERE id IN (SELECT customer_id FROM orders WHERE status = 'cancelled');
+<span class="cmt">-- "customers who have at least one cancelled order"</span></pre>
+      <div class="callout danger">🛑 <code class="inline">NOT IN</code> + a subquery that can yield NULL is dangerous: a single NULL in the inner result makes <code class="inline">NOT IN</code> return nothing. Use <code class="inline">NOT EXISTS</code> (below) whenever NULLs are possible.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> EXISTS — "is there at least one match?"</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT c.name
+FROM customers c
+WHERE EXISTS (
+  SELECT 1 FROM orders o WHERE o.customer_id = c.id
+);
+<span class="cmt">-- EXISTS stops at the first match — it only cares IF a row exists, not what's in it</span>
+
+<span class="cmt">-- The NULL-safe anti-join:</span>
+SELECT c.name FROM customers c
+WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);  <span class="cmt">-- never ordered</span></pre>
+      <div class="callout tip">💡 Inside <code class="inline">EXISTS</code> the SELECT list is irrelevant — <code class="inline">SELECT 1</code>, <code class="inline">SELECT *</code>, anything works, because EXISTS only checks row presence. <code class="inline">SELECT 1</code> is the conventional, clear choice.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Correlated subquery — runs once per outer row</h3>
+      <p>A <strong>correlated</strong> subquery references a column from the outer query, so it can't be run once up front — it re-evaluates for every outer row.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT c.name,
+  (SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.id) AS order_count
+FROM customers c;
+<span class="cmt">-- c.id in the inner query ties it to the current outer row</span></pre>
+      <div class="svgpanel"><svg viewBox="0 0 520 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="30" width="150" height="70" rx="8" fill="#122334" stroke="#336791"/><text x="95" y="55" text-anchor="middle" fill="#d6e5ec" font-size="11">outer row: Ana</text><text x="95" y="78" text-anchor="middle" fill="#5c7686" font-size="10">c.id = 1</text>
+        <line x1="170" y1="65" x2="300" y2="65" stroke="#f0b429" stroke-width="2" marker-end="url(#ar)"/>
+        <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+        <rect x="300" y="30" width="200" height="70" rx="8" fill="#1d2b16" stroke="#f0b429"/><text x="400" y="55" text-anchor="middle" fill="#f0b429" font-size="11">inner runs for id=1</text><text x="400" y="78" text-anchor="middle" fill="#8aa3b3" font-size="10">COUNT orders WHERE customer_id=1</text>
+      </svg></div>
+      <div class="callout warn">⚠️ Correlated subqueries can be slow — they re-run per row (O(n) executions). A <code class="inline">JOIN … GROUP BY</code> or a window function often computes the same thing in one pass. Compare both when performance matters, but modern optimisers sometimes rewrite correlated subqueries into joins automatically.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Subquery in FROM (derived table)</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT tier, COUNT(*) AS n
+FROM (
+  SELECT CASE WHEN price &gt;= 100 THEN 'premium' ELSE 'standard' END AS tier
+  FROM products
+) AS classified
+GROUP BY tier;
+<span class="cmt">-- Treat a subquery's result as a temporary table to query further</span></pre>
+      <div class="callout tip">💡 A derived table in FROM must be aliased (here, <code class="inline">AS classified</code>) in most dialects. When a derived table gets reused or deeply nested, a CTE (next page) is usually clearer.</div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

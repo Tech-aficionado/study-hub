@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Internals — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔬 Git Internals <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Open the hood: blobs, trees, commits, refs and HEAD. Once you see the object graph, Git stops being magic.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Git is a content-addressable key-value store</h3>
+      <p>At its core, Git is a simple database: you hand it content, it hashes that content with <strong>SHA-1</strong>, stores it under that hash, and hands the hash back as the key. Same content always produces the same key — that's what "content-addressable" means. Everything else (branches, history, staging) is built on top of this.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Store raw content, get its key back (the plumbing command add/commit use)</span>
+$ echo 'test content' | git hash-object -w --stdin
+d670460b4b4aece5915caf5c68d12f560a9fe3e4
+
+<span class="cmt"># Read any object back out by its key</span>
+$ git cat-file -p d670460b4b4aece5915caf5c68d12f560a9fe3e4
+test content
+
+$ git cat-file -t d670460b4b4aece5915caf5c68d12f560a9fe3e4
+blob</pre>
+      <div class="callout">Objects live in <code class="inline">.git/objects/</code>, named by hash: the first 2 characters are the subdirectory, the remaining 38 the filename. Each object is zlib-compressed, with a small <code class="inline">&lt;type&gt; &lt;size&gt;\0</code> header prepended before hashing.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The four object types</h3>
+      <ul>
+        <li><strong>Blob</strong> — the raw contents of one file. Stores <em>only</em> the bytes; no filename, no path, no date.</li>
+        <li><strong>Tree</strong> — a directory. Lists entries, each being a mode + type + name pointing to a blob (file) or another tree (subdirectory). This is where filenames actually live.</li>
+        <li><strong>Commit</strong> — points to one top-level tree (the whole project snapshot), plus parent commit(s), author/committer, and the message.</li>
+        <li><strong>Tag</strong> — an annotated tag object: a named, signed pointer to a commit with its own message.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>$ git cat-file -p main^{tree}
+100644 blob a906cb2a...   README
+100644 blob 8f941393...   Rakefile
+040000 tree 99f1a6d1...   lib
+<span class="cmt"># A tree lists blobs (files) and sub-trees (folders) by hash</span></pre>
+      <div class="callout tip">💡 Note what's missing from a blob: Git stores file <em>contents</em> separately from file <em>names</em>. If two files have identical content, Git stores one blob and both tree entries point at it. That's a big part of why Git is so storage-efficient.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The object graph</h3>
+      <p>Follow all the internal pointers and you get a <strong>directed acyclic graph</strong>: a commit points to a tree, the tree points to blobs and sub-trees, and each commit points back to its parent. Nothing is ever stored as a diff — every commit references a complete tree of the project at that moment.</p>
+      <div class="svgpanel"><svg viewBox="0 0 640 320" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="ig" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8c93b0"/></marker></defs>
+        <!-- HEAD + branch refs -->
+        <rect x="20" y="20" width="90" height="34" rx="7" fill="#271714" stroke="#f0b429" stroke-width="2"/><text x="65" y="41" text-anchor="middle" fill="#f0b429" font-size="11" font-weight="700">HEAD</text>
+        <rect x="20" y="78" width="90" height="34" rx="7" fill="#271714" stroke="#f05032" stroke-width="2"/><text x="65" y="99" text-anchor="middle" fill="#f05032" font-size="11" font-weight="700">refs/heads/main</text>
+        <line x1="65" y1="54" x2="65" y2="76" stroke="#8c93b0" stroke-width="2" marker-end="url(#ig)"/>
+        <!-- commits -->
+        <circle cx="230" cy="95" r="28" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="230" y="92" text-anchor="middle" fill="#f3ece9" font-size="10">commit</text><text x="230" y="107" text-anchor="middle" fill="#b0938c" font-size="8.5">g7h8i9</text>
+        <circle cx="230" cy="230" r="28" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="230" y="227" text-anchor="middle" fill="#f3ece9" font-size="10">commit</text><text x="230" y="242" text-anchor="middle" fill="#b0938c" font-size="8.5">a1b2c3</text>
+        <line x1="110" y1="95" x2="200" y2="95" stroke="#8c93b0" stroke-width="2" marker-end="url(#ig)"/>
+        <line x1="230" y1="123" x2="230" y2="200" stroke="#8c93b0" stroke-width="2" marker-end="url(#ig)"/><text x="258" y="165" fill="#8c93b0" font-size="9">parent</text>
+        <!-- trees -->
+        <rect x="340" y="72" width="80" height="46" rx="8" fill="#271714" stroke="#3fdd94" stroke-width="2"/><text x="380" y="92" text-anchor="middle" fill="#3fdd94" font-size="11" font-weight="700">tree</text><text x="380" y="107" text-anchor="middle" fill="#b0938c" font-size="8.5">root dir</text>
+        <line x1="258" y1="95" x2="338" y2="95" stroke="#8c93b0" stroke-width="2" marker-end="url(#ig)"/>
+        <!-- blobs -->
+        <rect x="480" y="30" width="90" height="40" rx="8" fill="#271714" stroke="#6dc1ff" stroke-width="2"/><text x="525" y="48" text-anchor="middle" fill="#6dc1ff" font-size="10">blob</text><text x="525" y="62" text-anchor="middle" fill="#b0938c" font-size="8.5">README</text>
+        <rect x="480" y="90" width="90" height="40" rx="8" fill="#271714" stroke="#6dc1ff" stroke-width="2"/><text x="525" y="108" text-anchor="middle" fill="#6dc1ff" font-size="10">blob</text><text x="525" y="122" text-anchor="middle" fill="#b0938c" font-size="8.5">app.js</text>
+        <rect x="480" y="150" width="90" height="40" rx="8" fill="#271714" stroke="#3fdd94" stroke-width="2"/><text x="525" y="168" text-anchor="middle" fill="#3fdd94" font-size="10">tree</text><text x="525" y="182" text-anchor="middle" fill="#b0938c" font-size="8.5">lib/</text>
+        <line x1="420" y1="90" x2="478" y2="54" stroke="#8c93b0" stroke-width="2" marker-end="url(#ig)"/>
+        <line x1="420" y1="97" x2="478" y2="106" stroke="#8c93b0" stroke-width="2" marker-end="url(#ig)"/>
+        <line x1="420" y1="104" x2="478" y2="166" stroke="#8c93b0" stroke-width="2" marker-end="url(#ig)"/>
+        <text x="320" y="300" text-anchor="middle" fill="#8c93b0" font-size="11">A ref points to a commit → the commit points to a tree → the tree points to blobs &amp; sub-trees.</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Refs and HEAD — how branches really work</h3>
+      <p>A <strong>branch is just a 41-byte text file</strong> under <code class="inline">.git/refs/heads/</code> containing the hash of one commit. Committing simply rewrites that file to point at the new commit. That's the entire secret to why branching is instant.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>$ cat .git/refs/heads/main
+g7h8i9a0b1c2d3e4f5...        <span class="cmt"># a branch IS a pointer to one commit</span>
+
+$ cat .git/HEAD
+ref: refs/heads/main         <span class="cmt"># HEAD usually points at a branch...</span>
+<span class="cmt"># ...and in "detached HEAD" state it holds a raw commit hash instead</span>
+
+$ git symbolic-ref HEAD       <span class="cmt"># what HEAD currently points to</span>
+refs/heads/main</pre>
+      <div class="callout"><strong>HEAD</strong> is "where you are right now." Normally it points at a branch, and that branch points at a commit. Checking out a specific commit (not a branch) detaches HEAD — it points straight at a commit with no branch in between.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> A tour of the <code class="inline">.git</code> folder</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>.git/
+├── HEAD            <span class="cmt"># current branch pointer</span>
+├── config          <span class="cmt"># this repo's configuration</span>
+├── index           <span class="cmt"># the staging area (binary)</span>
+├── objects/        <span class="cmt"># every blob, tree, commit, tag — the database</span>
+│   ├── 1f/7a7a...   <span class="cmt"># loose object (first 2 hash chars = folder)</span>
+│   └── pack/        <span class="cmt"># many objects compressed together</span>
+├── refs/
+│   ├── heads/       <span class="cmt"># local branches (one file each)</span>
+│   └── tags/        <span class="cmt"># tags</span>
+└── logs/            <span class="cmt"># the reflog lives here — HEAD's movement history</span></pre>
+      <div class="callout warn">⚠️ Delete the <code class="inline">.git</code> folder and you delete the <em>entire</em> history — your working files remain, but it's no longer a repository. Everything Git knows lives in this one hidden folder.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Packing &amp; garbage collection</h3>
+      <p>Storing every version as a loose file would balloon in size, so Git periodically <strong>packs</strong> many objects into a single compressed packfile, storing similar objects as deltas against each other. <code class="inline">git gc</code> ("garbage collect") does this and prunes unreachable objects.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git gc
+<span class="cmt"># Compress loose objects into packfiles, tidy refs, prune the unreachable</span>
+
+git count-objects -v
+<span class="cmt"># See how many loose vs packed objects you have, and their sizes</span>
+
+git fsck
+<span class="cmt"># Verify the integrity of the object database</span></pre>
+      <div class="callout tip">💡 Grounded in the official <strong>Pro Git — Git Internals</strong> chapter: a commit really is just <code class="inline">tree + parent(s) + author + message</code>, and <code class="inline">git add</code>/<code class="inline">git commit</code> are convenience wrappers over <code class="inline">hash-object</code>, <code class="inline">update-index</code>, <code class="inline">write-tree</code> and <code class="inline">commit-tree</code>.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

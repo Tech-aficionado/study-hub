@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorting & Pagination — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">↕️ Sorting & Pagination <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Ordering results and serving them one page at a time — including the trap that makes "page 500" slow.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> ORDER BY</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT name, price FROM products ORDER BY price DESC;      <span class="cmt">-- high to low</span>
+SELECT * FROM customers ORDER BY country ASC, name ASC;   <span class="cmt">-- tie-break by name</span>
+SELECT * FROM products ORDER BY 2 DESC;                   <span class="cmt">-- by 2nd selected column (fragile — avoid)</span></pre>
+      <div class="callout warn">⚠️ Without <code class="inline">ORDER BY</code>, row order is <strong>undefined</strong> — the engine may return rows in any order, and it can change between runs. Never rely on "natural" order; if you want an order, state it.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> NULLs in sort order differ by dialect</h3>
+      <table>
+        <tr><th>Dialect</th><th>Default NULL placement</th><th>Control</th></tr>
+        <tr><td>PostgreSQL</td><td>NULLs sort <em>last</em> in ASC</td><td><code class="inline">ORDER BY col NULLS FIRST / NULLS LAST</code></td></tr>
+        <tr><td>SQLite</td><td>NULLs sort <em>first</em> in ASC</td><td><code class="inline">NULLS FIRST / LAST</code> (3.30+)</td></tr>
+        <tr><td>MySQL</td><td>NULLs sort <em>first</em> in ASC</td><td>No <code class="inline">NULLS</code> clause — use <code class="inline">ORDER BY col IS NULL, col</code></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> LIMIT / OFFSET pagination</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- PostgreSQL / SQLite / MySQL</span>
+SELECT * FROM products ORDER BY id LIMIT 10;             <span class="cmt">-- page 1 (first 10)</span>
+SELECT * FROM products ORDER BY id LIMIT 10 OFFSET 20;   <span class="cmt">-- page 3 (skip 20, take 10)</span>
+
+<span class="cmt">-- SQL-standard spelling (PostgreSQL, SQL Server):</span>
+SELECT * FROM products ORDER BY id OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY;</pre>
+      <div class="callout warn">⚠️ Always pair pagination with a <strong>stable ORDER BY</strong> (e.g. a unique id). Without it, two different pages can return overlapping or missing rows because the underlying order isn't guaranteed.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Why OFFSET gets slow — and keyset pagination</h3>
+      <p><code class="inline">OFFSET 100000</code> makes the database generate and then <em>throw away</em> 100,000 rows before returning the next page. Deep pages get progressively slower. <strong>Keyset (cursor) pagination</strong> fixes this by remembering the last row you saw and filtering past it.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- First page</span>
+SELECT * FROM products ORDER BY id LIMIT 10;
+
+<span class="cmt">-- Next page: pass the last id you saw (e.g. 10) — no OFFSET to skip past</span>
+SELECT * FROM products WHERE id &gt; 10 ORDER BY id LIMIT 10;</pre>
+      <div class="svgpanel"><svg viewBox="0 0 560 110" xmlns="http://www.w3.org/2000/svg">
+        <text x="140" y="20" text-anchor="middle" fill="#8aa3b3" font-size="11">OFFSET 20: read &amp; discard 20, then take 10</text>
+        <rect x="20" y="34" width="110" height="22" fill="#2a1414" stroke="#ff6b6b"/><text x="75" y="49" text-anchor="middle" fill="#ff6b6b" font-size="10">discarded ×20</text>
+        <rect x="135" y="34" width="60" height="22" fill="#102a1a" stroke="#3fdd94"/><text x="165" y="49" text-anchor="middle" fill="#3fdd94" font-size="10">kept ×10</text>
+        <text x="420" y="20" text-anchor="middle" fill="#8aa3b3" font-size="11">Keyset: jump straight to id &gt; 20</text>
+        <rect x="365" y="34" width="60" height="22" fill="#102a1a" stroke="#3fdd94"/><text x="395" y="49" text-anchor="middle" fill="#3fdd94" font-size="10">kept ×10</text>
+        <text x="300" y="90" text-anchor="middle" fill="#5c7686" font-size="10">Keyset uses the index to seek; OFFSET re-walks every skipped row.</text>
+      </svg></div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gh CLI In Depth — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">⌨️ gh CLI In Depth <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">The official GitHub command-line tool — do almost everything from the terminal, scriptably.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Install and authenticate</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>gh auth login            <span class="cmt"># interactive: pick HTTPS/SSH, browser or token</span>
+gh auth status           <span class="cmt"># who am I, which scopes</span>
+gh auth setup-git        <span class="cmt"># use gh as the Git credential helper</span></pre>
+      <p><code class="inline">gh</code> stores a token in your OS keychain and can act as the Git credential helper, so HTTPS pushes just work after login.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Repos, PRs and issues</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>gh repo create my-app --public --source=. --push
+gh repo clone owner/repo
+gh repo view --web            <span class="cmt"># open the repo in the browser</span>
+
+gh pr create --fill           <span class="cmt"># title/body from commits</span>
+gh pr status                  <span class="cmt"># PRs relevant to you</span>
+gh pr checkout 42             <span class="cmt"># fetch & switch to PR #42's branch</span>
+gh pr diff 42
+gh pr review 42 --approve
+gh pr merge 42 --squash --delete-branch
+
+gh issue create --title "Bug" --label bug
+gh issue list --assignee @me</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Actions from the terminal</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>gh run list                   <span class="cmt"># recent workflow runs</span>
+gh run watch                  <span class="cmt"># live-tail the latest run</span>
+gh run view &lt;id&gt; --log         <span class="cmt"># full log</span>
+gh run rerun &lt;id&gt; --failed     <span class="cmt"># re-run only failed jobs</span>
+gh workflow run deploy.yml -f env=prod   <span class="cmt"># trigger workflow_dispatch with inputs</span>
+gh secret set API_KEY         <span class="cmt"># reads value from stdin, never shown</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> The raw API and jq-style output</h3>
+      <p><code class="inline">gh api</code> calls any REST or GraphQL endpoint with your auth already attached — the escape hatch for anything the porcelain commands don't cover. <code class="inline">--jq</code> filters JSON inline.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>gh api repos/{owner}/{repo}/releases/latest --jq '.tag_name'
+gh api --paginate /user/repos --jq '.[].full_name'
+gh api graphql -f query='{ viewer { login } }'</pre>
+      <div class="callout tip">💡 <code class="inline">{owner}/{repo}</code> placeholders are filled in automatically from the repo you're standing in — no need to retype them.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Aliases, extensions and scripting</h3>
+      <ul>
+        <li><strong>Aliases</strong> — <code class="inline">gh alias set prc 'pr create --fill'</code> makes your own shortcuts.</li>
+        <li><strong>Extensions</strong> — <code class="inline">gh extension install owner/gh-foo</code> adds community commands; <code class="inline">gh extension list</code> shows them.</li>
+        <li><strong>Scriptable</strong> — most commands take <code class="inline">--json fields</code> for machine-readable output, perfect in CI and shell scripts.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>gh pr list --json number,title,author --jq '.[] | "\(.number) \(.title)"'</pre>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

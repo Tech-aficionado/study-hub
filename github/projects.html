@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projects, Discussions & Wikis — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📊 Projects, Discussions & Wikis <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">The planning, conversation and documentation surfaces that wrap around your code.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Projects — planning on top of issues</h3>
+      <p><strong>Projects</strong> (the current "Projects" experience, formerly "Projects beta") is a flexible planning tool that pulls in Issues and PRs and lets you view them as a <strong>board</strong>, <strong>table</strong>, or <strong>roadmap</strong>. Unlike a static Kanban board, items stay live-linked to the underlying issue, so closing the issue moves the card.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Custom fields and views</h3>
+      <ul>
+        <li><strong>Custom fields</strong> — add Status, Priority, Iteration (sprint), Estimate, or any single-select/number/date field to items.</li>
+        <li><strong>Views</strong> — save multiple layouts: a board grouped by Status, a table filtered to this sprint, a roadmap by date.</li>
+        <li><strong>Built-in automation</strong> — rules like "when an issue is closed, set Status = Done" without writing code.</li>
+      </ul>
+      <div class="callout tip">💡 A single project can span many repos across an organisation — ideal for a team that ships from several codebases but plans in one place.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Discussions — the project forum</h3>
+      <p><strong>Discussions</strong> is a forum attached to the repo for conversation that isn't a bug or task: Q&amp;A, announcements, show-and-tell, RFC-style proposals. Q&amp;A discussions let the author mark an <strong>answer</strong>, so good replies rise to the top.</p>
+      <p>Use Discussions (not Issues) for "how do I…?" and open-ended ideas; keep Issues for actionable, closeable work. You can convert a discussion into an issue once it becomes concrete.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Wikis — long-form docs</h3>
+      <p>Each repo can have a <strong>Wiki</strong>: a separate, Markdown-based space for documentation that doesn't belong in the code tree — design notes, FAQs, onboarding guides. The wiki is itself a Git repo (<code class="inline">repo.wiki.git</code>) so you can edit it locally.</p>
+      <div class="callout warn">⚠️ Wiki content is <em>not</em> versioned alongside your code and isn't easily reviewed in PRs. For docs that must track the code (API references, READMEs), keep them in the repo under <code class="inline">/docs</code> instead.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Choosing the right surface</h3>
+      <table>
+        <tr><th>Need</th><th>Use</th></tr>
+        <tr><td>Track a bug or task</td><td>Issue</td></tr>
+        <tr><td>Plan a sprint / roadmap</td><td>Project</td></tr>
+        <tr><td>Ask a question / announce</td><td>Discussion</td></tr>
+        <tr><td>Docs tied to code</td><td><code class="inline">/docs</code> + Pages</td></tr>
+        <tr><td>Standalone reference / FAQ</td><td>Wiki</td></tr>
+      </table>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

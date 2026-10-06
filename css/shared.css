@@ -187,3 +187,61 @@ code.inline{overflow-wrap:anywhere;}
   h2.page-title{font-size:20px;}
   pre.code-block{font-size:11.6px;}
 }
+
+/* =====================================================================
+   INTERVIEW QUESTION SECTION (js/interview.js)
+   ===================================================================== */
+.iv-toolbar{display:flex; flex-direction:column; gap:12px; margin-bottom:10px;}
+.iv-search{margin-bottom:0;}
+.iv-filters{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(170px,100%),1fr)); gap:10px;}
+.iv-select{display:flex; flex-direction:column; gap:4px; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700;}
+.iv-select select{
+  text-transform:none; letter-spacing:0; font:inherit; font-size:13.5px; font-weight:500; color:var(--text);
+  background:var(--bg2); border:1px solid var(--border); border-radius:9px; padding:9px 10px; min-height:40px;
+}
+.iv-select select:focus{outline:none; border-color:var(--accent);}
+.iv-actions{display:flex; gap:8px; flex-wrap:wrap;}
+.iv-reset{border-color:var(--border); color:var(--muted);}
+.iv-progress{display:flex; flex-direction:column; gap:6px;}
+.iv-progress .progress-bar{height:7px; background:var(--border); border-radius:6px; overflow:hidden;}
+.iv-progress .progress-fill{height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--green,#3fdd94)); transition:width .3s;}
+.iv-progress-text{font-size:12.5px; color:var(--muted); font-weight:600;}
+.iv-count{font-size:12.5px; color:var(--muted); margin:4px 0 12px;}
+.iv-list{display:flex; flex-direction:column; gap:10px;}
+.iv-item.card{padding:0; margin:0; scroll-margin-top:64px;}
+.iv-item summary{
+  list-style:none; cursor:pointer; display:grid; grid-template-columns:auto 1fr auto; gap:6px 12px; align-items:start;
+  padding:15px 18px;
+}
+.iv-item summary::-webkit-details-marker{display:none;}
+.iv-item summary:focus-visible{outline:2px solid var(--accent); outline-offset:-2px; border-radius:var(--radius,12px);}
+.iv-num{
+  background:linear-gradient(135deg,var(--accent),var(--accent2,var(--accent))); color:#fff; width:26px; height:26px; border-radius:50%;
+  display:inline-flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; margin-top:1px;
+}
+.iv-q{font-weight:650; font-size:14.5px; line-height:1.5;}
+.iv-tick::after{content:'\25BE'; color:var(--muted); font-size:14px; display:inline-block; transition:transform .2s;}
+.iv-item[open] .iv-tick::after{transform:rotate(180deg);}
+.iv-done .iv-tick::before{content:'\2714'; color:var(--green,#3fdd94); margin-right:6px; font-weight:700;}
+.iv-tags{grid-column:2 / 3; display:flex; flex-wrap:wrap; gap:6px; align-items:center;}
+.iv-tags .badge{margin:0;}
+.iv-type, .iv-cat{font-size:10.8px; font-weight:700; padding:3px 9px; border-radius:20px; border:1px solid var(--border); color:var(--muted); text-transform:capitalize;}
+.iv-body{padding:0 18px 16px; border-top:1px solid var(--border);}
+.iv-answer{padding-top:14px; font-size:14px;}
+.iv-answer p{margin:0 0 10px;}
+.iv-answer pre{background:#05070b; border:1px solid var(--border); border-radius:9px; padding:14px; overflow-x:auto; font-size:13px; color:#d8dee9; margin:8px 0 12px;}
+.iv-answer code{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;}
+.iv-answer :not(pre) > code{background:rgba(127,127,127,.16); padding:2px 6px; border-radius:5px; font-size:12.8px;}
+.iv-answer table{display:block; overflow-x:auto; margin:8px 0 12px;}
+.iv-foot{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:6px;}
+.iv-source{font-size:12px; color:var(--accent2,var(--accent)); margin-right:auto; overflow-wrap:anywhere;}
+.iv-try{font-size:12.5px; font-weight:700; padding:6px 12px; border-radius:20px; border:1px solid var(--accent); color:var(--text);}
+.iv-try:hover{background:var(--accent); text-decoration:none;}
+.iv-mark{font:inherit; font-size:12.5px; font-weight:600; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--bg2); color:var(--text); cursor:pointer; min-height:34px;}
+.iv-mark[aria-pressed="true"]{border-color:var(--green,#3fdd94); color:var(--green,#3fdd94);}
+@media(max-width:720px){
+  .iv-item summary{padding:13px 13px; gap:6px 10px;}
+  .iv-q{font-size:14px;}
+  .iv-body{padding:0 13px 14px;}
+  .iv-select select{font-size:16px;}
+}

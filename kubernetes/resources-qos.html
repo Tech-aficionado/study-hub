@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resources &amp; QoS — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📊 Resources &amp; QoS <span class="badge intermediate">Intermediate → Advanced</span></h2>
+    <p class="page-sub">requests vs limits decide where Pods land, who gets throttled, and who gets killed first under pressure.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> requests vs limits</h3>
+      <ul>
+        <li><strong>requests</strong> — the amount the container is <em>guaranteed</em>. The <strong>scheduler</strong> uses requests to decide which node has room; a node is "full" when the sum of requests meets its capacity, regardless of actual usage.</li>
+        <li><strong>limits</strong> — the <em>hard ceiling</em> the container may use. The kubelet/runtime enforces it at runtime.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>resources:
+  requests:
+    cpu: "250m"       <span class="cmt"># 0.25 of a core</span>
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"</pre>
+      <p>CPU is measured in <strong>millicores</strong> (<code class="inline">1000m</code> = 1 core); memory in bytes with <code class="inline">Ki/Mi/Gi</code> (power-of-two) suffixes.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> CPU is throttled, memory is killed</h3>
+      <p>The two resources behave completely differently at their limit — this is the single most important thing to internalise:</p>
+      <ul>
+        <li><strong>CPU over limit → throttled.</strong> CPU is compressible: the container is slowed down (CFS throttling), never killed. Symptom = latency, not a crash.</li>
+        <li><strong>Memory over limit → OOMKilled.</strong> Memory is incompressible: exceed the limit and the kernel OOM-kills the container (exit code 137). The kubelet restarts it (per restartPolicy), so repeated OOM shows as restarts and often <code class="inline">CrashLoopBackOff</code>.</li>
+      </ul>
+      <div class="callout warn">⚠️ Setting a memory <code class="inline">limit</code> too low for real traffic is the most common self-inflicted OOMKill. Watch actual usage (<code class="inline">kubectl top pod</code>) before pinning limits, and leave headroom above the real peak.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> QoS classes — who gets evicted first</h3>
+      <p>Kubernetes derives a <strong>Quality of Service class</strong> from how you set requests/limits. Under node memory pressure, the kubelet evicts in QoS order (BestEffort first, Guaranteed last).</p>
+      <table>
+        <tr><th>Class</th><th>Condition</th><th>Eviction priority</th></tr>
+        <tr><td><strong>Guaranteed</strong></td><td>Every container has requests == limits for both CPU &amp; memory</td><td>Last (most protected)</td></tr>
+        <tr><td><strong>Burstable</strong></td><td>At least one request set, but not Guaranteed</td><td>Middle</td></tr>
+        <tr><td><strong>BestEffort</strong></td><td>No requests or limits at all</td><td>First (evicted soonest)</td></tr>
+      </table>
+      <div class="callout tip">💡 For critical workloads, set requests == limits (Guaranteed). For bursty web apps, Burstable (request the floor, allow bursting to a higher limit) is usually the right trade-off. Never leave production Pods BestEffort.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Diagnosing OOMKilled</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl get pod my-pod -o jsonpath='{.status.containerStatuses[0].lastState}'
+<span class="cmt"># → terminated reason: OOMKilled, exitCode: 137</span>
+kubectl describe pod my-pod        <span class="cmt"># Last State: Terminated, Reason: OOMKilled</span>
+kubectl top pod my-pod             <span class="cmt"># live usage vs your limit</span></pre>
+      <p>Fixes: raise the memory limit if the app legitimately needs it; fix a leak if usage climbs forever; or lower concurrency/caches inside the app. Exit code <strong>137</strong> = 128 + 9 (SIGKILL) — the fingerprint of an OOM kill.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> LimitRange &amp; defaults</h3>
+      <p>A <strong>LimitRange</strong> (per namespace) can inject default requests/limits into Pods that omit them, and enforce min/max — so a forgetful developer doesn't ship a BestEffort Pod into a shared namespace. It pairs with ResourceQuota (see <a href="namespaces-quotas.html">Namespaces &amp; quotas</a>).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: v1
+kind: LimitRange
+metadata: { name: defaults }
+spec:
+  limits:
+    - type: Container
+      default: { cpu: 500m, memory: 512Mi }       <span class="cmt"># applied if limits omitted</span>
+      defaultRequest: { cpu: 250m, memory: 256Mi } <span class="cmt"># applied if requests omitted</span></pre>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

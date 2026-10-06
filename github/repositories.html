@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repositories & Visibility — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🗂️ Repositories & Visibility <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">What lives inside a repository, the three visibility levels, and the anatomy of the repo page.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What a repository actually contains</h3>
+      <p>A <strong>repository</strong> ("repo") is a project folder that GitHub hosts — but it is more than files. It bundles the full Git history (every commit, branch and tag), plus GitHub-only metadata: issues, pull requests, releases, settings, collaborators and Actions runs. When you clone a repo you get the files <em>and</em> the whole history; the issues and PRs stay on GitHub.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The three visibility levels</h3>
+      <div class="svgpanel"><svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="30" width="180" height="90" rx="10" fill="#1c142c" stroke="#3fdd94" stroke-width="2"/><text x="110" y="60" text-anchor="middle" fill="#eeeaf8" font-size="13" font-weight="700">Public</text><text x="110" y="82" text-anchor="middle" fill="#9b8fb0" font-size="10.5">Anyone on the internet</text><text x="110" y="98" text-anchor="middle" fill="#9b8fb0" font-size="10.5">can read &amp; clone</text>
+        <rect x="230" y="30" width="180" height="90" rx="10" fill="#1c142c" stroke="#f0b429" stroke-width="2"/><text x="320" y="60" text-anchor="middle" fill="#eeeaf8" font-size="13" font-weight="700">Private</text><text x="320" y="82" text-anchor="middle" fill="#9b8fb0" font-size="10.5">Only you &amp; invited</text><text x="320" y="98" text-anchor="middle" fill="#9b8fb0" font-size="10.5">collaborators</text>
+        <rect x="440" y="30" width="180" height="90" rx="10" fill="#1c142c" stroke="#6dc1ff" stroke-width="2"/><text x="530" y="60" text-anchor="middle" fill="#eeeaf8" font-size="13" font-weight="700">Internal</text><text x="530" y="82" text-anchor="middle" fill="#9b8fb0" font-size="10.5">All members of your</text><text x="530" y="98" text-anchor="middle" fill="#9b8fb0" font-size="10.5">organisation (Enterprise)</text>
+      </svg></div>
+      <ul>
+        <li><strong>Public</strong> — visible and clonable by anyone; the basis of open source. People still cannot push without being granted write access.</li>
+        <li><strong>Private</strong> — hidden from everyone except you and the collaborators/teams you invite.</li>
+        <li><strong>Internal</strong> — an Enterprise option: visible to every member of your organisation but not the public. Good for shared internal tooling.</li>
+      </ul>
+      <div class="callout warn">⚠️ Changing a repo from private to public exposes its <em>entire history</em>. A secret committed long ago and "deleted" later is still in the history — rotate it before going public.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Creating a repo and connecting a local project</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Option A: start on GitHub (New repository), then connect your local folder</span>
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/user/repo.git
+git push -u origin main
+
+<span class="cmt"># Option B: one command with the CLI (creates + pushes)</span>
+gh repo create my-project --public --source=. --push</pre>
+      <p>The <code class="inline">-u</code> on the first push sets the upstream so later you can just type <code class="inline">git push</code> / <code class="inline">git pull</code>.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Description, topics and the About panel</h3>
+      <p>The right-hand <strong>About</strong> panel sets a one-line description, a website link and <strong>topics</strong> — tags like <code class="inline">machine-learning</code> or <code class="inline">cli-tool</code> that make the repo discoverable in GitHub search and topic pages. A clear description plus 3–5 relevant topics dramatically improves how people find your project.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Archiving, transferring and deleting</h3>
+      <ul>
+        <li><strong>Archive</strong> — makes a repo read-only to signal it is no longer maintained, without losing it. Reversible.</li>
+        <li><strong>Transfer</strong> — hand ownership to another user or org; redirects keep old links working.</li>
+        <li><strong>Delete</strong> — permanent. GitHub makes you type the full repo name to confirm, because there is no undo.</li>
+      </ul>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

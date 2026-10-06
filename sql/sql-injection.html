@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Injection & Parameterised Queries — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🛡️ SQL Injection & Safe Queries <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">The most common database vulnerability — and the one-line habit that eliminates it.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What SQL injection is</h3>
+      <p>SQL injection happens when user input is <strong>concatenated</strong> into a query string, letting an attacker's text become executable SQL instead of data. It's consistently near the top of the OWASP Top 10.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># VULNERABLE — never build SQL by string formatting</span>
+query = "SELECT * FROM users WHERE email = '" + user_input + "'"
+
+<span class="cmt"># If user_input is:   ' OR '1'='1</span>
+<span class="cmt"># the query becomes:  SELECT * FROM users WHERE email = '' OR '1'='1'</span>
+<span class="cmt"># → '1'='1' is always true → returns EVERY user</span></pre>
+      <div class="svgpanel"><svg viewBox="0 0 560 110" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="30" width="150" height="50" rx="8" fill="#2a1414" stroke="#ff6b6b"/><text x="95" y="52" text-anchor="middle" fill="#ff6b6b" font-size="11" font-weight="700">user input</text><text x="95" y="70" text-anchor="middle" fill="#8aa3b3" font-size="9">' OR '1'='1</text>
+        <line x1="170" y1="55" x2="230" y2="55" stroke="#ff6b6b" stroke-width="2"/>
+        <rect x="230" y="30" width="170" height="50" rx="8" fill="#2a1414" stroke="#ff6b6b"/><text x="315" y="52" text-anchor="middle" fill="#ff6b6b" font-size="11" font-weight="700">string concatenation</text><text x="315" y="70" text-anchor="middle" fill="#8aa3b3" font-size="9">input becomes code</text>
+        <line x1="400" y1="55" x2="460" y2="55" stroke="#ff6b6b" stroke-width="2"/>
+        <rect x="460" y="30" width="90" height="50" rx="8" fill="#2a1414" stroke="#ff6b6b"/><text x="505" y="58" text-anchor="middle" fill="#ff6b6b" font-size="11" font-weight="700">breach</text>
+      </svg></div>
+      <div class="callout danger">🛑 Beyond reading all rows, injection can run <code class="inline">; DROP TABLE users; --</code>, exfiltrate data via UNION, or bypass logins. The classic xkcd "Bobby Tables" joke is exactly this: a student named <code class="inline">Robert'); DROP TABLE Students;--</code>.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The fix: parameterised queries</h3>
+      <p>Send the SQL and the values <strong>separately</strong>. The driver sends the query structure to the database first, then binds values as pure data — they can never be reinterpreted as SQL. This is the single most important security habit in all of database programming.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Python — the right way</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># SQLite (sqlite3) — ? placeholders</span>
+import sqlite3
+conn = sqlite3.connect("shop.db")
+cur = conn.cursor()
+cur.execute("SELECT * FROM users WHERE email = ?", (user_input,))
+rows = cur.fetchall()
+
+<span class="cmt"># PostgreSQL (psycopg) — %s placeholders (NOT Python string formatting!)</span>
+import psycopg
+with psycopg.connect("dbname=shop") as conn:
+    cur = conn.execute("SELECT * FROM users WHERE email = %s", (user_input,))
+    rows = cur.fetchall()</pre>
+      <div class="callout danger">🛑 <code class="inline">%s</code> here is a <em>driver placeholder</em>, not Python's <code class="inline">%</code> operator. NEVER do <code class="inline">cur.execute("… WHERE email = '%s'" % user_input)</code> — that's string formatting, which is exactly the vulnerability. Pass values as the second argument.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Node.js — the right way</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">// node-postgres (pg) — $1, $2 placeholders</span>
+const { Pool } = require('pg');
+const pool = new Pool();
+const { rows } = await pool.query(
+  'SELECT * FROM users WHERE email = $1',
+  [userInput]            <span class="cmt">// values array — bound safely by the driver</span>
+);
+
+<span class="cmt">// mysql2 — ? placeholders</span>
+const mysql = require('mysql2/promise');
+const conn = await mysql.createConnection({ /* ... */ });
+const [rows] = await conn.execute(
+  'SELECT * FROM users WHERE email = ?',
+  [userInput]
+);
+
+<span class="cmt">// better-sqlite3 — ? placeholders, prepared statement</span>
+const db = require('better-sqlite3')('shop.db');
+const row = db.prepare('SELECT * FROM users WHERE email = ?').get(userInput);</pre>
+      <div class="callout warn">⚠️ Template literals are a trap in JS: <code class="inline">pool.query(`… WHERE email = '${userInput}'`)</code> is string interpolation — just as vulnerable as concatenation. Use <code class="inline">$1</code>/<code class="inline">?</code> placeholders with a values array.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> What placeholders can't parameterise, and defence in depth</h3>
+      <p>Placeholders bind <em>values</em>, not identifiers. You cannot parameterise a table name, column name, or <code class="inline">ORDER BY</code> direction. For those, <strong>allow-list</strong> against known-safe values:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># sort column must be one you explicitly permit — never raw user input</span>
+ALLOWED = {"name", "price", "created_at"}
+col = user_sort if user_sort in ALLOWED else "name"
+cur.execute(f"SELECT * FROM products ORDER BY {col}")   <span class="cmt"># safe: col is from the allow-list</span></pre>
+      <ul>
+        <li><strong>Use an ORM/query builder</strong> (SQLAlchemy, Prisma, Knex) — they parameterise by default.</li>
+        <li><strong>Least privilege</strong> — the app's DB user shouldn't have <code class="inline">DROP</code>/<code class="inline">GRANT</code> rights.</li>
+        <li><strong>Validate &amp; constrain</strong> input types/lengths as a second layer, but parameterisation is the real fix — not input "sanitising" by escaping quotes yourself.</li>
+      </ul>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

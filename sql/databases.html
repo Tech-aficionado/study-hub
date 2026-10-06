@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Databases & DBMS — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">💾 Databases & DBMS <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">What a database actually is, what the software around it does, and where relational SQL sits among the alternatives.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Database vs DBMS vs SQL — three different things</h3>
+      <p>People use "database" loosely, but three distinct ideas hide inside the word:</p>
+      <ul>
+        <li>A <strong>database</strong> is the actual collection of data — your tables, rows, and the file(s) on disk that hold them.</li>
+        <li>A <strong>DBMS</strong> (Database Management System) is the <em>software</em> that stores, protects, and serves that data — PostgreSQL, MySQL, SQLite, SQL Server, Oracle. It handles concurrency, crash recovery, access control, and query optimisation so you don't have to.</li>
+        <li><strong>SQL</strong> is the <em>language</em> you use to talk to a relational DBMS. The DBMS is the engine; SQL is how you give it instructions.</li>
+      </ul>
+      <div class="callout tip">💡 Analogy: the database is the warehouse of goods, the DBMS is the warehouse staff and systems (security, forklifts, inventory logs), and SQL is the order form you fill out to say "send me 10 of item X."</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> What a DBMS does for you (so you don't rebuild it)</h3>
+      <table>
+        <tr><th>Job</th><th>Why it matters</th></tr>
+        <tr><td>Durability &amp; crash recovery</td><td>Committed data survives a power cut — the DBMS uses a write-ahead log to replay or roll back on restart.</td></tr>
+        <tr><td>Concurrency control</td><td>Thousands of users read/write at once without corrupting each other's data (locks, MVCC).</td></tr>
+        <tr><td>Query optimisation</td><td>You say <em>what</em> you want; the planner decides the fastest <em>how</em> (which index, join order).</td></tr>
+        <tr><td>Integrity enforcement</td><td>Constraints (keys, CHECK, NOT NULL) stop invalid data at the door.</td></tr>
+        <tr><td>Access control</td><td>GRANT/REVOKE decide who can read or change what.</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The relational model — tables, rows, columns, keys</h3>
+      <p>A relational database organises data into <strong>relations</strong> (tables). Each table has a fixed set of <strong>columns</strong> (attributes, each with a type) and any number of <strong>rows</strong> (records). Tables connect through <strong>keys</strong>: a primary key uniquely names each row, a foreign key in one table points at a primary key in another.</p>
+      <div class="svgpanel"><svg viewBox="0 0 620 190" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="30" width="250" height="140" rx="8" fill="#122334" stroke="#336791" stroke-width="2"/>
+        <text x="145" y="52" text-anchor="middle" fill="#e9f1f5" font-size="13" font-weight="700">customers (relation)</text>
+        <line x1="20" y1="62" x2="270" y2="62" stroke="#1e3a4f"/>
+        <text x="34" y="80" fill="#f0b429" font-size="11">id</text>
+        <text x="90" y="80" fill="#8aa3b3" font-size="11">name</text>
+        <text x="185" y="80" fill="#8aa3b3" font-size="11">country</text>
+        <text x="34" y="100" fill="#d6e5ec" font-size="11">1</text>
+        <text x="90" y="100" fill="#d6e5ec" font-size="11">Ana Weber</text>
+        <text x="185" y="100" fill="#d6e5ec" font-size="11">Germany</text>
+        <text x="34" y="120" fill="#d6e5ec" font-size="11">2</text>
+        <text x="90" y="120" fill="#d6e5ec" font-size="11">Ben Dubois</text>
+        <text x="185" y="120" fill="#d6e5ec" font-size="11">France</text>
+        <text x="145" y="150" text-anchor="middle" fill="#5c7686" font-size="10">← rows (records) · columns (attributes) ↑</text>
+        <rect x="360" y="30" width="240" height="140" rx="8" fill="#122334" stroke="#336791" stroke-width="2"/>
+        <text x="480" y="52" text-anchor="middle" fill="#e9f1f5" font-size="13" font-weight="700">orders (relation)</text>
+        <line x1="360" y1="62" x2="600" y2="62" stroke="#1e3a4f"/>
+        <text x="374" y="80" fill="#f0b429" font-size="11">id</text>
+        <text x="420" y="80" fill="#5ba3d0" font-size="11">customer_id (FK)</text>
+        <text x="374" y="100" fill="#d6e5ec" font-size="11">10</text>
+        <text x="420" y="100" fill="#d6e5ec" font-size="11">1</text>
+        <text x="374" y="120" fill="#d6e5ec" font-size="11">11</text>
+        <text x="420" y="120" fill="#d6e5ec" font-size="11">2</text>
+        <line x1="270" y1="95" x2="420" y2="95" stroke="#5ba3d0" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="320" y="88" text-anchor="middle" fill="#5ba3d0" font-size="9.5">relationship</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Relational vs NoSQL — not better, different</h3>
+      <p>"NoSQL" is an umbrella for databases that drop the strict relational table model for a different shape. The honest framing is <em>trade-offs</em>, not winners.</p>
+      <table>
+        <tr><th>Dimension</th><th>Relational (SQL)</th><th>NoSQL (document/key-value/column/graph)</th></tr>
+        <tr><td>Data shape</td><td>Fixed schema of typed columns</td><td>Flexible — JSON documents, key-value pairs, graphs</td></tr>
+        <tr><td>Relationships</td><td>Joins across normalised tables</td><td>Often embedded/duplicated; joins limited or absent</td></tr>
+        <tr><td>Transactions</td><td>Strong ACID across many rows/tables</td><td>Often per-document; varies widely by product</td></tr>
+        <tr><td>Scaling</td><td>Scales up well; sharding is extra work</td><td>Many are built to scale out across many nodes</td></tr>
+        <tr><td>Best for</td><td>Structured data with relationships &amp; integrity (orders, finance, inventory)</td><td>Rapidly changing/semi-structured data, huge scale, caching, graphs</td></tr>
+      </table>
+      <div class="callout">Examples: <strong>Document</strong> — MongoDB, Couchbase. <strong>Key-value</strong> — Redis, DynamoDB. <strong>Wide-column</strong> — Cassandra, HBase. <strong>Graph</strong> — Neo4j. Many apps use a relational database as the source of truth and a NoSQL store (e.g. Redis) alongside it for caching.</div>
+      <div class="callout warn">⚠️ "NoSQL" originally meant "non-relational," not "no SQL at all." Many NoSQL engines now offer SQL-like query languages, and relational databases (PostgreSQL, MySQL) store and query JSON natively — the line is blurrier than the marketing suggests.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> OLTP vs OLAP — two jobs, two shapes</h3>
+      <p>The same relational model serves two very different workloads:</p>
+      <ul>
+        <li><strong>OLTP</strong> (Online Transaction Processing) — many small, fast reads and writes: "place this order," "update this balance." Normalised schemas, row-oriented storage. This is what most of this course targets.</li>
+        <li><strong>OLAP</strong> (Online Analytical Processing) — few huge aggregating queries over history: "revenue by region by quarter." Often denormalised star schemas and column-oriented engines (BigQuery, Snowflake, DuckDB, ClickHouse).</li>
+      </ul>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stashing Work — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📦 Stashing Work <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">A shelf for half-finished work when you need a clean tree right now — and how to get it back without surprises.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The problem stash solves</h3>
+      <p>You're mid-change on a feature when an urgent bug comes in. Your work isn't ready to commit, but you need a clean working directory to switch branches. <code class="inline">git stash</code> tucks your uncommitted changes onto a stack and resets your tree to the last commit — instantly clean.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git stash
+<span class="cmt"># Shelves tracked, modified files; working dir returns to the last commit</span>
+
+git stash push -m "half-done login refactor"
+<span class="cmt"># Same, but with a label so you remember what it is later</span>
+
+<span class="cmt"># ...fix the urgent bug on another branch, commit it, then come back...</span>
+
+git stash pop
+<span class="cmt"># Reapply the most recent stash and remove it from the stack</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> pop vs apply, and the stash stack</h3>
+      <p>The stash is a <strong>stack</strong> — you can have several. <code class="inline">pop</code> reapplies and removes; <code class="inline">apply</code> reapplies but keeps the stash (useful to apply the same shelved work to more than one branch).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git stash list
+<span class="cmt"># stash@{0}: On feature: half-done login refactor</span>
+<span class="cmt"># stash@{1}: WIP on main: a1b2c3 Earlier shelf</span>
+
+git stash apply stash@{1}   <span class="cmt"># reapply a SPECIFIC stash, keep it on the stack</span>
+git stash pop stash@{1}     <span class="cmt"># reapply that one and drop it</span>
+
+git stash show -p stash@{0} <span class="cmt"># view the diff a stash contains before applying</span>
+git stash drop stash@{1}    <span class="cmt"># delete one stash without applying it</span>
+git stash clear             <span class="cmt"># ⚠️ delete ALL stashes</span></pre>
+      <div class="callout warn">⚠️ <code class="inline">pop</code> can hit a conflict if the branch moved since you stashed. If it does, the stash is <strong>not</strong> dropped — resolve the conflict, then <code class="inline">git stash drop</code> manually once you're happy.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Stashing untracked and ignored files</h3>
+      <p>By default <code class="inline">git stash</code> only shelves <strong>tracked</strong> files. Brand-new (untracked) files stay behind, which surprises people. Use flags to include them:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git stash -u
+<span class="cmt"># Also stash UNTRACKED files (new files Git doesn't know about yet)</span>
+
+git stash -a
+<span class="cmt"># Also stash untracked AND ignored files (everything)</span>
+
+git stash -p
+<span class="cmt"># Interactively choose which hunks to stash (like git add -p)</span>
+
+git stash --keep-index
+<span class="cmt"># Stash only what's NOT staged — keep your staged changes in place</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Turning a stash into a branch</h3>
+      <p>If you stashed work and the branch has since moved a lot, applying can be messy. <code class="inline">git stash branch</code> creates a new branch from the commit you were on when you stashed, then applies the stash there cleanly.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git stash branch recover-login stash@{0}
+<span class="cmt"># New branch "recover-login" from the original base, stash applied, stash dropped</span></pre>
+      <div class="callout tip">💡 Stash is for <em>temporary</em> shelving — minutes to hours. For anything you want to keep for days, make a real commit on a branch (even a scrappy "wip" commit you'll later squash). Stashes are easy to forget and have no branch name to remind you.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

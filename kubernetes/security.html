@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pod security &amp; NetworkPolicy — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🛡️ Pod security &amp; NetworkPolicy <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Hardening the Pod itself, enforcing baseline standards, and locking down Pod-to-Pod traffic.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> securityContext — hardening a container</h3>
+      <p>A <code class="inline">securityContext</code> (per-Pod or per-container) controls the privileges the container runs with. A hardened baseline:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 2000
+  containers:
+    - name: app
+      image: myapp:1.0
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        privileged: false
+        capabilities:
+          drop: ["ALL"]</pre>
+      <ul>
+        <li><strong>runAsNonRoot / runAsUser</strong> — don't run as root in the container.</li>
+        <li><strong>allowPrivilegeEscalation: false</strong> — can't gain more privileges than the parent.</li>
+        <li><strong>readOnlyRootFilesystem: true</strong> — immutable rootfs; writes go to explicit volumes only.</li>
+        <li><strong>capabilities.drop: ["ALL"]</strong> — strip Linux capabilities, add back only what's needed.</li>
+        <li><strong>privileged: false</strong> — a privileged container is near-equivalent to root on the node; almost never needed.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Pod Security Standards &amp; Admission</h3>
+      <p>The old <strong>PodSecurityPolicy</strong> was removed in v1.25. Its replacement is <strong>Pod Security Admission (PSA)</strong>, a built-in admission controller enforcing the three <strong>Pod Security Standards</strong> at the namespace level:</p>
+      <table>
+        <tr><th>Standard</th><th>Allows</th></tr>
+        <tr><td><strong>privileged</strong></td><td>Unrestricted — anything</td></tr>
+        <tr><td><strong>baseline</strong></td><td>Blocks the known-dangerous (privileged, host namespaces, most host mounts)</td></tr>
+        <tr><td><strong>restricted</strong></td><td>Heavily hardened — enforces runAsNonRoot, drop ALL caps, seccomp, etc.</td></tr>
+      </table>
+      <p>You opt a namespace in with labels, choosing a mode per standard: <code class="inline">enforce</code> (reject), <code class="inline">audit</code> (log), <code class="inline">warn</code> (warn on apply).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl label ns prod \
+  pod-security.kubernetes.io/enforce=restricted \
+  pod-security.kubernetes.io/warn=restricted</pre>
+      <div class="callout tip">💡 For policies beyond the three built-in levels (custom rules, image-registry allowlists, required labels), reach for a policy engine like <strong>Kyverno</strong> or <strong>OPA/Gatekeeper</strong> as a validating admission webhook.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> NetworkPolicy — a firewall for Pods</h3>
+      <p>By default <strong>all Pods can talk to all Pods</strong>, across namespaces. A <strong>NetworkPolicy</strong> restricts ingress/egress by label selector — but only if your CNI enforces it (Calico, Cilium do; some basic ones don't). Policies are additive and allow-list based.</p>
+      <p>The foundational move is a <strong>default-deny</strong>, then open exactly what's needed:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># deny all ingress in this namespace</span>
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny-ingress, namespace: prod }
+spec:
+  podSelector: {}            <span class="cmt"># all Pods</span>
+  policyTypes: [Ingress]</pre>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># then allow only the frontend to reach the api on 8080</span>
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: api-from-frontend, namespace: prod }
+spec:
+  podSelector: { matchLabels: { app: api } }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app: frontend } }
+      ports:
+        - { protocol: TCP, port: 8080 }</pre>
+      <div class="callout warn">⚠️ Two traps: (1) a NetworkPolicy only takes effect if the CNI supports it — on a cluster whose CNI ignores policies, the YAML applies cleanly but enforces nothing. (2) As soon as any policy selects a Pod, that Pod is default-deny for the covered direction — forget an egress rule for DNS and your Pods can't resolve names.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Image &amp; supply-chain hygiene</h3>
+      <ul>
+        <li>Pin image <strong>digests</strong> (<code class="inline">@sha256:...</code>) or specific tags, never <code class="inline">:latest</code> in production.</li>
+        <li>Scan images for CVEs in CI (Trivy, Grype) and sign/verify them (cosign + admission policy).</li>
+        <li>Use minimal base images (distroless, Alpine) to shrink the attack surface.</li>
+        <li>Encrypt Secrets at rest and keep them out of images and Git (see <a href="config-storage.html">ConfigMaps &amp; Secrets</a>).</li>
+      </ul>
+      <div class="callout tip">💡 The "4C's of cloud-native security" interview framing: <strong>Cloud, Cluster, Container, Code</strong> — each layer secures the one inside it. securityContext/PSA = Container; RBAC/NetworkPolicy = Cluster.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

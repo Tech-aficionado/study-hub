@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scheduling &amp; affinity — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🧭 Scheduling &amp; affinity <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">How to influence WHERE a Pod lands — from a blunt label match to repelling Pods off reserved nodes.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> nodeSelector — the simplest constraint</h3>
+      <p>A hard requirement: only schedule onto nodes carrying these labels. Blunt but clear.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl label node node-1 disktype=ssd
+<span class="cmt"># in the Pod spec:</span>
+spec:
+  nodeSelector:
+    disktype: ssd</pre>
+      <p><code class="inline">nodeName</code> (pin to one exact node) exists too but bypasses the scheduler entirely — avoid it outside debugging.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Node affinity — nodeSelector with nuance</h3>
+      <p>Affinity adds <strong>soft</strong> preferences and richer operators:</p>
+      <ul>
+        <li><code class="inline">requiredDuringScheduling...</code> — hard rule (like nodeSelector, but with <code class="inline">In/NotIn/Exists</code>).</li>
+        <li><code class="inline">preferredDuringScheduling...</code> — soft; the scheduler weights it but will still place the Pod if unmet.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - { key: topology.kubernetes.io/zone, operator: In, values: [us-east-1a, us-east-1b] }
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 50
+        preference:
+          matchExpressions:
+            - { key: disktype, operator: In, values: [ssd] }</pre>
+      <p>"IgnoredDuringExecution" means the rule is only checked at <em>scheduling</em> time — a label change later won't evict a running Pod.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Pod affinity / anti-affinity &amp; spreading</h3>
+      <ul>
+        <li><strong>podAffinity</strong> — place this Pod near Pods matching a label (e.g. co-locate a cache with its app on the same node/zone).</li>
+        <li><strong>podAntiAffinity</strong> — keep it <em>away</em> from matching Pods (e.g. spread replicas across nodes so one node's failure doesn't take them all).</li>
+        <li><strong>topologySpreadConstraints</strong> — the modern, cleaner way to spread Pods evenly across zones/nodes with a <code class="inline">maxSkew</code>.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector: { matchLabels: { app: web } }</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Taints &amp; tolerations — repelling, not attracting</h3>
+      <p>Affinity is a Pod <em>choosing</em> nodes. <strong>Taints</strong> are a node <em>repelling</em> Pods: a taint on a node says "don't schedule here unless you explicitly tolerate this". Used to reserve nodes (GPU, control-plane, dedicated tenants).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl taint nodes gpu-1 gpu=true:NoSchedule</pre>
+      <p>Only Pods with a matching <strong>toleration</strong> can then land there (tolerating isn't the same as requiring — pair with nodeSelector/affinity to actively target the node):</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>tolerations:
+  - key: gpu
+    operator: Equal
+    value: "true"
+    effect: NoSchedule</pre>
+      <table>
+        <tr><th>Taint effect</th><th>Does</th></tr>
+        <tr><td><code class="inline">NoSchedule</code></td><td>New Pods without a toleration won't be scheduled here</td></tr>
+        <tr><td><code class="inline">PreferNoSchedule</code></td><td>Soft — avoid if possible</td></tr>
+        <tr><td><code class="inline">NoExecute</code></td><td>Also <strong>evicts</strong> already-running Pods that don't tolerate it</td></tr>
+      </table>
+      <div class="callout tip">💡 Mental model: <strong>affinity = Pod attraction to nodes</strong>; <strong>taints/tolerations = node repulsion of Pods</strong>. Control-plane nodes are tainted so your workloads don't land on them; node-level agents (DaemonSets) carry tolerations so they can.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> PriorityClass &amp; preemption</h3>
+      <p>A <strong>PriorityClass</strong> gives Pods a priority value. When the cluster is full and a high-priority Pod can't schedule, the scheduler may <strong>preempt</strong> (evict) lower-priority Pods to make room. Use it to guarantee critical workloads win under contention — and set a sensible default so routine Pods don't accidentally outrank system ones.</p>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

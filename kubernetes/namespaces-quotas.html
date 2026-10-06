@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Namespaces &amp; quotas — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🗂️ Namespaces &amp; quotas <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Carve one cluster into isolated sections, and cap how much each one can consume.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Namespaces — virtual clusters</h3>
+      <p>A <strong>Namespace</strong> partitions a physical cluster into logical sections (<code class="inline">dev</code>, <code class="inline">staging</code>, <code class="inline">prod</code>, per-team). Names only need to be unique <em>within</em> a namespace, and RBAC/quotas/network policies can be scoped per namespace.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create namespace staging
+kubectl get pods -n staging
+kubectl get ns
+kubectl config set-context --current --namespace=staging  <span class="cmt"># make it the default</span></pre>
+      <p>Default namespaces: <code class="inline">default</code> (your stuff if you don't choose), <code class="inline">kube-system</code> (control-plane add-ons — don't touch), <code class="inline">kube-public</code>, <code class="inline">kube-node-lease</code>.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> What a namespace does NOT isolate</h3>
+      <ul>
+        <li><strong>Not a security boundary by default</strong> — without NetworkPolicies, Pods in different namespaces can still talk to each other over the Pod network.</li>
+        <li><strong>Cluster-scoped objects aren't namespaced</strong> — Nodes, PersistentVolumes, StorageClasses, ClusterRoles, and CRDs live outside any namespace.</li>
+        <li><strong>DNS crosses namespaces</strong> — reach another namespace's Service as <code class="inline">svc.other-ns</code>.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl api-resources --namespaced=true    <span class="cmt"># what IS namespaced</span>
+kubectl api-resources --namespaced=false   <span class="cmt"># what is cluster-scoped</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> ResourceQuota — cap a namespace's total consumption</h3>
+      <p>A <strong>ResourceQuota</strong> limits the aggregate resources a namespace may use — total CPU/memory requests &amp; limits, and object counts. Once a quota exists, every Pod in that namespace <em>must</em> declare the constrained resources or it's rejected.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: v1
+kind: ResourceQuota
+metadata: { name: team-quota, namespace: staging }
+spec:
+  hard:
+    requests.cpu: "10"
+    requests.memory: 20Gi
+    limits.cpu: "20"
+    limits.memory: 40Gi
+    pods: "50"
+    persistentvolumeclaims: "10"</pre>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl describe resourcequota team-quota -n staging   <span class="cmt"># used vs hard</span></pre>
+      <div class="callout warn">⚠️ With a ResourceQuota on requests/limits in place, a Pod that omits them is <strong>rejected</strong>. Pair the quota with a LimitRange that injects defaults, so developers aren't forced to annotate every Pod by hand.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> LimitRange — per-object min/max/default</h3>
+      <p>Where ResourceQuota caps the namespace <em>total</em>, a <strong>LimitRange</strong> governs <em>each</em> Pod/Container: default requests/limits when omitted, and enforced min/max so no single Pod hogs or under-requests.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: v1
+kind: LimitRange
+metadata: { name: constraints, namespace: staging }
+spec:
+  limits:
+    - type: Container
+      default: { cpu: 500m, memory: 512Mi }
+      defaultRequest: { cpu: 100m, memory: 128Mi }
+      max: { cpu: "2", memory: 2Gi }
+      min: { cpu: 50m, memory: 64Mi }</pre>
+      <div class="callout tip">💡 The standard multi-tenant recipe: one Namespace per team + a ResourceQuota (total budget) + a LimitRange (sane per-Pod defaults &amp; bounds) + RBAC (who can act in it) + optionally a default-deny NetworkPolicy. That stack turns a shared cluster into safely-isolated tenants.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

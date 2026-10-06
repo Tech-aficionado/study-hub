@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merging &amp; Conflicts — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔀 Merging &amp; Conflicts <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Fast-forward vs three-way merges, reading conflict markers without panic, and getting unstuck with --abort.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Fast-forward merge: just move the pointer</h3>
+      <p>If the branch you're merging <em>in</em> is directly ahead of your current branch — nothing new happened on your side — Git doesn't need a merge commit. It just slides your branch pointer forward. This is a <strong>fast-forward</strong>.</p>
+      <div class="svgpanel"><svg viewBox="0 0 620 150" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="ff" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8c93b0"/></marker></defs>
+        <circle cx="80" cy="75" r="22" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="80" y="79" text-anchor="middle" fill="#f3ece9" font-size="10">A</text>
+        <circle cx="220" cy="75" r="22" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="220" y="79" text-anchor="middle" fill="#f3ece9" font-size="10">B</text>
+        <circle cx="360" cy="75" r="22" fill="#271714" stroke="#3fdd94" stroke-width="2"/><text x="360" y="79" text-anchor="middle" fill="#f3ece9" font-size="10">C</text>
+        <line x1="102" y1="75" x2="196" y2="75" stroke="#8c93b0" stroke-width="2" marker-end="url(#ff)"/>
+        <line x1="242" y1="75" x2="336" y2="75" stroke="#8c93b0" stroke-width="2" marker-end="url(#ff)"/>
+        <text x="360" y="35" text-anchor="middle" fill="#3fdd94" font-size="10.5" font-weight="700">feature</text>
+        <text x="80" y="120" text-anchor="middle" fill="#f05032" font-size="10.5" font-weight="700">main (before)</text>
+        <text x="500" y="70" fill="#f05032" font-size="10.5" font-weight="700">main just moves</text>
+        <text x="500" y="86" fill="#8c93b0" font-size="9.5">forward to C — no</text>
+        <text x="500" y="100" fill="#8c93b0" font-size="9.5">merge commit needed</text>
+      </svg></div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git switch main
+git merge feature          <span class="cmt"># fast-forward if main hasn't moved</span>
+
+git merge --no-ff feature  <span class="cmt"># FORCE a merge commit even when FF is possible</span>
+<span class="cmt"># Many teams prefer --no-ff so the history records that a feature branch existed</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Three-way merge: when both sides moved</h3>
+      <p>If <em>both</em> branches have new commits since they split, Git performs a <strong>three-way merge</strong>: it compares your branch, their branch, and their common ancestor, then creates a new <strong>merge commit</strong> with <em>two</em> parents.</p>
+      <div class="svgpanel"><svg viewBox="0 0 620 190" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="tw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8c93b0"/></marker></defs>
+        <circle cx="70" cy="95" r="20" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="70" y="99" text-anchor="middle" fill="#f3ece9" font-size="9">A</text>
+        <circle cx="200" cy="45" r="20" fill="#271714" stroke="#f05032" stroke-width="2"/><text x="200" y="49" text-anchor="middle" fill="#f3ece9" font-size="9">B</text>
+        <circle cx="200" cy="145" r="20" fill="#271714" stroke="#3fdd94" stroke-width="2"/><text x="200" y="149" text-anchor="middle" fill="#f3ece9" font-size="9">C</text>
+        <circle cx="360" cy="95" r="22" fill="#271714" stroke="#f0b429" stroke-width="2"/><text x="360" y="92" text-anchor="middle" fill="#f3ece9" font-size="9">M</text><text x="360" y="104" text-anchor="middle" fill="#b0938c" font-size="7.5">merge</text>
+        <line x1="88" y1="88" x2="182" y2="52" stroke="#8c93b0" stroke-width="2" marker-end="url(#tw)"/>
+        <line x1="88" y1="102" x2="182" y2="138" stroke="#8c93b0" stroke-width="2" marker-end="url(#tw)"/>
+        <line x1="338" y1="88" x2="220" y2="52" stroke="#8c93b0" stroke-width="2" marker-end="url(#tw)"/>
+        <line x1="338" y1="102" x2="220" y2="138" stroke="#8c93b0" stroke-width="2" marker-end="url(#tw)"/>
+        <text x="200" y="25" text-anchor="middle" fill="#f05032" font-size="9.5" font-weight="700">main</text>
+        <text x="200" y="178" text-anchor="middle" fill="#3fdd94" font-size="9.5" font-weight="700">feature</text>
+        <text x="500" y="95" fill="#f0b429" font-size="10" font-weight="700">M has TWO parents</text>
+      </svg></div>
+      <p>If the two branches changed <strong>different</strong> lines, Git merges them automatically and the merge commit is created with no fuss. If they changed the <strong>same</strong> lines, you get a conflict (next card).</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Reading conflict markers</h3>
+      <p>A conflict is <strong>not an error</strong> — it's Git saying "two people changed the same lines and I won't guess which to keep." Git edits the file in place, wrapping the clash in three markers:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+color: blue;              <span class="cmt"># YOUR version (current branch)</span>
+=======
+color: green;             <span class="cmt"># THEIR version (branch being merged)</span>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature</pre>
+      <ul>
+        <li>Everything between <code class="inline">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> and <code class="inline">=======</code> is <strong>your</strong> side (HEAD).</li>
+        <li>Everything between <code class="inline">=======</code> and <code class="inline">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> is <strong>their</strong> side.</li>
+        <li>Edit the file to the version you want, <strong>delete all three marker lines</strong>, then stage and commit.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># After editing the file to the final, correct content:</span>
+git add style.css
+git commit            <span class="cmt"># completes the merge (Git pre-fills a merge message)</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Tools that make conflicts easier</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git status
+<span class="cmt"># Lists every file with "both modified" — your conflict to-do list</span>
+
+git merge --abort
+<span class="cmt"># Panic button: throw away the half-done merge, return to the pre-merge state</span>
+
+git checkout --ours style.css     <span class="cmt"># keep YOUR whole version of this file</span>
+git checkout --theirs style.css   <span class="cmt"># keep THEIR whole version of this file</span>
+
+git mergetool
+<span class="cmt"># Open a visual three-pane merge tool (VS Code, Beyond Compare, etc.)</span>
+
+git config --global merge.conflictstyle zdiff3
+<span class="cmt"># Also show the common ANCESTOR in markers — far easier to reason about</span></pre>
+      <div class="callout tip">💡 Turn on <code class="inline">rerere</code> ("reuse recorded resolution") with <code class="inline">git config --global rerere.enabled true</code>. Git remembers how you resolved a conflict and auto-applies the same resolution if the identical conflict appears again — a lifesaver on long-lived branches.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Merge vs rebase — the one-line answer</h3>
+      <p>Merge <strong>preserves</strong> exactly what happened (two histories joined by a merge commit). Rebase <strong>rewrites</strong> your commits onto a new base for a clean, linear history. Merge is safe on shared branches; rebase is for tidying your own un-pushed work. The next page covers rebase in depth.</p>
+      <div class="callout warn">⚠️ There is no universally "correct" choice — it's a team convention. Pick one, write it down, and be consistent. The dangerous move is rebasing commits others have already pulled.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

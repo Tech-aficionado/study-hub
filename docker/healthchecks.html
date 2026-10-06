@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthchecks & Restart Policies — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">❤️ Healthchecks & Restart Policies <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Teaching Docker the difference between "the process is alive" and "the app actually works" — and what to do when it isn't.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why "running" isn't the same as "working"</h3>
+      <p>A container can be perfectly "up" in <code class="inline">docker ps</code> while the app inside it is wedged — a web server stuck in an infinite loop, a process that started but can't reach its database, a thread pool that deadlocked. The process didn't crash, so Docker thinks everything is fine. It isn't.</p>
+      <p>A <strong>healthcheck</strong> closes that gap. Instead of trusting "the process exists", Docker periodically runs a command you choose <em>inside</em> the container and asks: can you still do your job? Think of it like a nurse taking a patient's pulse every few minutes rather than just checking they're lying in the bed.</p>
+      <div class="callout tip">💡 Liveness ("is the process there?") is what Docker tracks by default. A healthcheck adds <strong>readiness/health</strong> ("can it actually serve requests?") — the thing your users care about.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Writing a HEALTHCHECK</h3>
+      <p>You add it in the Dockerfile. The command's <strong>exit code</strong> is the verdict: <code class="inline">0</code> means healthy, <code class="inline">1</code> means unhealthy (<code class="inline">2</code> is reserved — don't use it).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># check every 30s that the site answers within 3s; 3 strikes = unhealthy</span>
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 --start-period=10s \
+  CMD curl -f http://localhost/ || exit 1</pre>
+      <table>
+        <tr><th>Option</th><th>Default</th><th>Meaning</th></tr>
+        <tr><td><code class="inline">--interval</code></td><td>30s</td><td>Time between checks</td></tr>
+        <tr><td><code class="inline">--timeout</code></td><td>30s</td><td>A check slower than this counts as a failure (killed with SIGKILL)</td></tr>
+        <tr><td><code class="inline">--retries</code></td><td>3</td><td>Consecutive failures before the status flips to <code class="inline">unhealthy</code></td></tr>
+        <tr><td><code class="inline">--start-period</code></td><td>0s</td><td>Grace window at startup — failures here don't count against retries</td></tr>
+        <tr><td><code class="inline">--start-interval</code></td><td>5s</td><td>Faster check cadence during the start period (needs Engine 25.0+)</td></tr>
+      </table>
+      <p>The status moves <code class="inline">starting</code> → <code class="inline">healthy</code> on the first pass, and only flips to <code class="inline">unhealthy</code> after <code class="inline">retries</code> failures in a row. <code class="inline">HEALTHCHECK NONE</code> disables one inherited from a base image.</p>
+      <div class="svgpanel">
+        <svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="55" width="110" height="42" rx="8" fill="#1c2129" stroke="#f0b429"/><text x="75" y="81" text-anchor="middle" fill="#f0b429" font-size="12" font-weight="700">starting</text>
+          <rect x="245" y="55" width="110" height="42" rx="8" fill="#1c2129" stroke="#3fdd94"/><text x="300" y="81" text-anchor="middle" fill="#3fdd94" font-size="12" font-weight="700">healthy</text>
+          <rect x="470" y="55" width="110" height="42" rx="8" fill="#1c2129" stroke="#ff6b6b"/><text x="525" y="81" text-anchor="middle" fill="#ff6b6b" font-size="12" font-weight="700">unhealthy</text>
+          <line x1="132" y1="76" x2="243" y2="76" stroke="#58b9ff" stroke-width="2" marker-end="url(#ah)"/><text x="187" y="68" text-anchor="middle" fill="#8c93b0" font-size="10">1st pass</text>
+          <line x1="357" y1="76" x2="468" y2="76" stroke="#58b9ff" stroke-width="2" marker-end="url(#ah)"/><text x="412" y="68" text-anchor="middle" fill="#8c93b0" font-size="10">N fails in a row</text>
+          <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58b9ff"/></marker></defs>
+        </svg>
+      </div>
+      <p>Check the result with <code class="inline">docker ps</code> (the STATUS column shows <code class="inline">(healthy)</code>) or <code class="inline">docker inspect --format '{{.State.Health.Status}}' &lt;name&gt;</code>. Any text the check writes to stdout/stderr is stored (first 4 KB) and visible in <code class="inline">docker inspect</code> — handy for debugging a failing probe.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Restart policies — self-healing containers</h3>
+      <p>A restart policy tells the Docker daemon whether to bring a container back automatically when it exits or when Docker itself restarts. Set it with <code class="inline">--restart</code>.</p>
+      <table>
+        <tr><th>Policy</th><th>What it does</th></tr>
+        <tr><td><code class="inline">no</code></td><td>Never restart automatically. The default.</td></tr>
+        <tr><td><code class="inline">on-failure[:N]</code></td><td>Restart only if it exits with a non-zero (error) code. Optional cap of N attempts. Does <em>not</em> restart on daemon restart.</td></tr>
+        <tr><td><code class="inline">always</code></td><td>Always restart. Also starts on daemon restart. A manual stop keeps it down only until the daemon next restarts.</td></tr>
+        <tr><td><code class="inline">unless-stopped</code></td><td>Like <code class="inline">always</code>, but if <em>you</em> stopped it, it stays stopped even across daemon restarts.</td></tr>
+      </table>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker run -d --restart unless-stopped --name redis redis
+
+<span class="cmt"># change the policy on an existing container, no re-create needed</span>
+docker update --restart on-failure:5 web
+
+<span class="cmt"># make every running container come back after a reboot</span>
+docker update --restart unless-stopped $(docker ps -q)</pre>
+      <div class="callout warn">⚠️ A restart policy only takes effect after the container has run successfully for at least <strong>10 seconds</strong>. That rule exists to stop a container that crashes instantly from spinning in a tight restart loop.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Putting them together, and a gotcha</h3>
+      <p>Healthchecks and restart policies answer different questions. A restart policy reacts to the process <em>exiting</em>; a healthcheck detects a process that's alive but <em>broken</em>. On a single host, a plain <code class="inline">--restart</code> does <strong>not</strong> automatically restart a container just because it went <code class="inline">unhealthy</code> — that automatic reaction is an orchestrator feature (Swarm services, Kubernetes liveness probes). On one Docker host, the healthcheck is still valuable as a signal: <code class="inline">docker ps</code> shows it, Compose can gate <code class="inline">depends_on</code> on it, and you can watch for it.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># compose: don't start web until the DB is actually ready, not just started</span>
+services:
+  db:
+    image: postgres:16
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy</pre>
+      <div class="callout danger">🚫 Don't combine Docker restart policies with a host process manager (systemd starting the container <em>and</em> <code class="inline">--restart always</code>) — the two fight over the container and you get confusing double-restarts. Pick one.</div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

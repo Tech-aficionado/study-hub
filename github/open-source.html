@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Source & Licenses — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">💚 Open Source & Licenses <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">How to make your first contribution, and the licenses that decide what anyone may legally do with code.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Making your first contribution</h3>
+      <ol>
+        <li>Find a project — look for the <code class="inline">good first issue</code> and <code class="inline">help wanted</code> labels.</li>
+        <li>Read <code class="inline">CONTRIBUTING.md</code> and the Code of Conduct <em>first</em> — every project has its own rules.</li>
+        <li>Comment on the issue to claim it, so you don't duplicate someone else's work.</li>
+        <li>Fork → branch → change → PR (see the Forks page).</li>
+        <li>Write a clear PR description linking the issue, and be responsive to review.</li>
+      </ol>
+      <div class="callout tip">💡 Start small — a docs fix or a well-reported bug is a real, welcome contribution and teaches you a project's workflow before you tackle code.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The community health files</h3>
+      <ul>
+        <li><strong>README.md</strong> — what the project is and how to use it.</li>
+        <li><strong>CONTRIBUTING.md</strong> — how to set up, test and submit changes.</li>
+        <li><strong>CODE_OF_CONDUCT.md</strong> — expected behaviour; makes a project welcoming.</li>
+        <li><strong>LICENSE</strong> — the legal terms (below).</li>
+        <li><strong>SECURITY.md</strong> — how to report vulnerabilities.</li>
+      </ul>
+      <p>Put shared ones in a special <code class="inline">.github</code> repo in your org and they apply as defaults across all its repos.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Why a license is non-negotiable</h3>
+      <p>Code with <strong>no license</strong> is "all rights reserved" by default — legally, nobody may use, copy, or modify it, even if it's public. If you want people to use your project, you <em>must</em> add a license. GitHub's "Add file → Choose a license template" picks one for you.</p>
+      <div class="callout danger">🛑 Public ≠ free to use. Without a LICENSE file, others technically cannot legally reuse your public code — add one deliberately.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> The common licenses</h3>
+      <table>
+        <tr><th>License</th><th>Type</th><th>In short</th></tr>
+        <tr><td><strong>MIT</strong></td><td>Permissive</td><td>Do almost anything; keep the copyright notice. The most popular.</td></tr>
+        <tr><td><strong>Apache 2.0</strong></td><td>Permissive</td><td>Like MIT + an explicit patent grant. Good for larger projects.</td></tr>
+        <tr><td><strong>BSD</strong></td><td>Permissive</td><td>Similar to MIT, a few variants.</td></tr>
+        <tr><td><strong>GPL v3</strong></td><td>Copyleft</td><td>Derivatives must also be open-sourced under GPL.</td></tr>
+        <tr><td><strong>AGPL v3</strong></td><td>Strong copyleft</td><td>GPL + covers software used over a network (SaaS).</td></tr>
+      </table>
+      <p><strong>Permissive</strong> = minimal restrictions, reusable in closed-source. <strong>Copyleft</strong> = share-alike: anything built on it must stay open under the same terms.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Choosing and respecting licenses</h3>
+      <ul>
+        <li>Picking one? <a href="https://choosealicense.com" target="_blank" rel="noopener">choosealicense.com</a> walks you through it; MIT or Apache 2.0 are safe defaults for most projects.</li>
+        <li>Using a dependency? Check its license is compatible with how you ship — GPL in a closed-source product is a problem.</li>
+        <li>GitHub shows a repo's detected license in the About panel and the license file header.</li>
+      </ul>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

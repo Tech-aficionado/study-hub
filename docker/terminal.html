@@ -6,6 +6,34 @@
 <title>CLI Playground — Docker Study</title>
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="../css/shared.css">
+<style>
+  /* page-specific layout for the playground (palette comes from css/style.css) */
+  .pg-wrap{display:grid; grid-template-columns:1fr 320px; gap:18px; align-items:start;}
+  @media(max-width:900px){ .pg-wrap{grid-template-columns:1fr;} }
+  .term-input-row input{font-size:16px;}            /* mobile: >=16px avoids zoom */
+  #termRun{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 18px; font-weight:700; cursor:pointer; font-size:14px;}
+  #termRun:hover{background:var(--accent2);}
+  .term-input-row{gap:10px;}
+  .compose-pane textarea{width:100%; min-height:150px; background:#010409; color:#c9d1d9; border:1px solid var(--border); border-radius:9px; padding:12px 14px; font-family:'SFMono-Regular',Consolas,monospace; font-size:13px; resize:vertical;}
+  /* live state panel */
+  .state-panel{background:linear-gradient(180deg,var(--bg3),var(--card)); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; position:sticky; top:60px;}
+  @media(max-width:900px){ .state-panel{position:static;} }   /* phones: stacks under terminal */
+  .sp-sec{margin-bottom:14px;}
+  .sp-title{font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:700; margin-bottom:6px;}
+  .sp-count{background:var(--border); color:var(--text); border-radius:10px; padding:1px 7px; font-size:10px; margin-left:4px;}
+  .sp-empty{color:#5b6472; font-size:12px; font-style:italic;}
+  .sp-table{width:100%; font-size:11.5px; border-collapse:collapse;}
+  .sp-table th{font-size:9.5px; padding:3px 6px;}
+  .sp-table td{padding:4px 6px; border-bottom:1px solid var(--border);}
+  .sp-dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px;}
+  .sp-dot-up{background:var(--green);} .sp-dot-down{background:var(--red);} .sp-dot-pause{background:var(--yellow);}
+  .chal{list-style:none; display:flex; align-items:flex-start; gap:9px; padding:7px 0; border-bottom:1px solid var(--border); font-size:12.8px; color:var(--muted);}
+  .chal:last-child{border-bottom:none;}
+  .chal-box{color:#5b6472; flex-shrink:0; font-size:14px;}
+  .chal.done{color:var(--green);} .chal.done .chal-box{color:var(--green);}
+  #challengeList{padding:0; margin:0;}
+  .try-setup{font-size:12.5px; color:var(--muted); margin:6px 0 0;}
+</style>
 </head>
 <body>
 <button class="menu-toggle" id="menuToggle">☰</button>
@@ -15,20 +43,48 @@
   <main class="main">
 
     <h2 class="page-title">💻 CLI Playground</h2>
-    <p class="page-sub">A simulated Docker terminal. Type real commands and get realistic output — nothing is actually installed or run.</p>
+    <p class="page-sub">A simulated Docker daemon in your browser. Real argument parsing, real error wording, real state — nothing is installed and nothing runs on your machine.</p>
 
-    <div class="card">
-      <div class="terminal">
-        <div class="term-head"><span class="dot" style="background:#ff5f56;"></span><span class="dot" style="background:#ffbd2e;"></span><span class="dot" style="background:#27c93f;"></span>&nbsp;docker-sim — bash</div>
-        <div class="term-body" id="termBody">
-          <div class="term-line"><span class="term-out">Simulated Docker CLI. Try: docker run -d -p 8080:80 nginx, docker ps, docker images, docker build -t myapp . , docker --help</span></div>
+    <div class="pg-wrap">
+      <div>
+        <div class="card">
+          <div class="terminal">
+            <div class="term-head"><span class="dot" style="background:#ff5f56;"></span><span class="dot" style="background:#ffbd2e;"></span><span class="dot" style="background:#27c93f;"></span>&nbsp;docker-sim — bash</div>
+            <div class="term-body" id="termBody">
+              <div class="term-line"><span class="term-out">Simulated Docker CLI. Try:  docker run -d -p 8080:80 --name web nginx  ·  docker ps  ·  docker network create mynet  ·  help
+Up/Down = history · Tab = complete · type "help &lt;command&gt;" for details.</span></div>
+            </div>
+            <div class="term-input-row">
+              <span class="term-prompt">$</span>
+              <input type="text" id="termInput" placeholder="type a docker command…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+              <button id="termRun" type="button">Run</button>
+            </div>
+            <div class="term-hint">run · ps · images · pull · build · start/stop/restart/pause/unpause/kill · rm · rmi · exec · logs · inspect · network · volume · rename · tag · top · port · stats · system · compose · help · clear</div>
+          </div>
         </div>
-        <div class="term-input-row">
-          <span class="term-prompt">$</span>
-          <input type="text" id="termInput" placeholder="type a docker command and hit Enter..." autocomplete="off">
+
+        <div class="card compose-pane">
+          <h3><span class="num">▦</span> compose.yaml (editable)</h3>
+          <p>This file backs the <code class="inline">docker compose</code> commands. Edit it, then run <code class="inline">docker compose up</code> in the terminal and watch the state panel.</p>
+          <textarea id="composeYaml" spellcheck="false">services:
+  web:
+    image: nginx
+    ports:
+      - "8080:80"
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"</textarea>
         </div>
-        <div class="term-hint">Supports: run, ps, images, pull, build, stop, rm, rmi, exec, logs, volume ls, network ls, compose up, --help, clear</div>
+
+        <div class="card">
+          <h3><span class="num">★</span> Guided challenges</h3>
+          <p>Work through these in the terminal — each ticks itself the moment the state proves you did it.</p>
+          <ul id="challengeList"></ul>
+        </div>
       </div>
+
+      <aside class="state-panel" id="statePanel"></aside>
     </div>
 
     <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
@@ -37,6 +93,7 @@
 <script src="js/nav.js"></script>
 <script src="js/common.js"></script>
 <script src="../js/bookmarks.js"></script>
+<script src="js/interview-data.js"></script>
 <script src="js/terminal.js"></script>
 </body>
 </html>
