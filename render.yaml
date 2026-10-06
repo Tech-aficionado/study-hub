@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: study-hub
+    runtime: static
+    staticPublishPath: .
+    buildCommand: ""
+    rootDir: .
+    routes:
+      - type: rewrite
+        source: /docker
+        destination: /docker/index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
