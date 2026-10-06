@@ -141,6 +141,30 @@
       });
     }
 
+    /* ---------- focus mode: hide the menu and centre the text for distraction-free reading ---------- */
+    if (hubBar && main) {
+      var FOCUS_KEY = 'studyhub_focus_mode';
+      var focusBtn = document.createElement('button');
+      focusBtn.type = 'button';
+      focusBtn.className = 'focus-toggle';
+      focusBtn.innerHTML = '<span aria-hidden="true">\u25CE</span><span class="focus-label">Focus</span>';
+      var applyFocus = function (on, save) {
+        body.classList.toggle('focus-mode', on);
+        focusBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        focusBtn.setAttribute('aria-label', on ? 'Exit focus mode' : 'Enter focus mode');
+        focusBtn.title = on ? 'Exit focus mode' : 'Focus mode: hide the menu and centre the text';
+        if (on && isOpen()) setOpen(false);
+        if (save) { try { localStorage.setItem(FOCUS_KEY, on ? '1' : '0'); } catch (e) {} }
+      };
+      focusBtn.addEventListener('click', function () { applyFocus(!body.classList.contains('focus-mode'), true); });
+      var bmBar = hubBar.querySelector('.bm-bar');
+      if (bmBar) bmBar.insertBefore(focusBtn, bmBar.firstChild);
+      else hubBar.appendChild(focusBtn);
+      var saved = false;
+      try { saved = localStorage.getItem(FOCUS_KEY) === '1'; } catch (e) {}
+      applyFocus(saved, false);
+    }
+
     /* ---------- previous / next page at the end of every module page ---------- */
     if (main && sidebar) {
       var items = Array.prototype.slice.call(sidebar.querySelectorAll('.nav-item[href]'));
