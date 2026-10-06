@@ -44,6 +44,19 @@
       return s.slice(0, 7);
     }
     function logReflog(msg) { state.reflog.unshift('HEAD@{0}: ' + msg); }
+    // Content-addressed ids: identical content always gets the same 40-hex id, as in Git.
+    // (Simulated with a simple hash, not real SHA-1.)
+    function hex40(str) {
+      var out40 = '', h = 2166136261 >>> 0;
+      for (var round = 0; round < 5; round++) {
+        for (var i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619) >>> 0;
+        h = Math.imul(h ^ round, 2246822519) >>> 0;
+        var s = h.toString(16); while (s.length < 8) s = '0' + s; out40 += s;
+      }
+      return out40;
+    }
+    function blobId(content) { return hex40('blob ' + content); }
+    function treeId(tree) { return hex40('tree ' + keys(tree).sort().map(function (f) { return f + '\0' + blobId(tree[f]); }).join('\n')); }
     function currentBranch() { return state.HEAD.type === 'branch' ? state.HEAD.ref : null; }
     function headCommitHash() {
       if (state.HEAD.type === 'branch') return state.branches[state.HEAD.ref] || null;
@@ -247,8 +260,16 @@
         var bn = names[0];
         if (!state.branches.hasOwnProperty(bn)) return err("error: branch '" + bn + "' not found.");
         if (bn === currentBranch()) return err("error: Cannot delete branch '" + bn + "' checked out.");
+        var tip = state.branches[bn];
+        // Like real Git, -d refuses a branch whose commits are not reachable from HEAD
+        // (they would become unreachable); -D deletes anyway.
+        var headH = headCommitHash();
+        if (del === 'soft' && tip && !(headH && ancestors(headH)[tip])) {
+          return err("error: the branch '" + bn + "' is not fully merged.\n" +
+            "hint: If you are sure you want to delete it, run 'git branch -D " + bn + "'");
+        }
         delete state.branches[bn];
-        return out('Deleted branch ' + bn);
+        return out('Deleted branch ' + bn + ' (was ' + tip + ').');
       }
       if (!names.length) {
         // list
@@ -814,20 +835,34 @@
       var pretty = args.indexOf('-p') !== -1;
       var target = args.filter(function (a) { return a[0] !== '-'; })[0];
       if (!target) return err('fatal: no object name given');
-      var h = resolveRev(target);
-      // a resolved revision names a commit object
+      // "<rev>^{tree}" must be checked first: plain resolveRev would read it as "<rev>^" (the parent)
+      var h = /\^\{tree\}$/.test(target) ? null : resolveRev(target);
       if (h && state.commits[h]) {
         if (showType) return out('commit');
         var c = state.commits[h];
         // pretty-print a commit object like git cat-file -p
-        var treeHash = 'tree' + h; // simulated tree id
-        var body = ['tree ' + treeHash.slice(0, 40)];
+        var body = ['tree ' + treeId(c.tree)];
         c.parents.forEach(function (p) { body.push('parent ' + p); });
         body.push('author You <you@example.com> (simulated)');
         body.push('committer You <you@example.com> (simulated)');
         body.push('');
         body.push(c.message);
         return out(pretty ? body.join('\n') : ('commit ' + h));
+      }
+      // <rev>^{tree} or a tree id printed above -> list the tree like git cat-file -p <tree>
+      var treeMatch = /^(.+)\^\{tree\}$/.exec(target);
+      var tr = null;
+      if (treeMatch) { var th = resolveRev(treeMatch[1]); if (th && state.commits[th]) tr = state.commits[th].tree; }
+      else keys(state.commits).forEach(function (k) { var t = state.commits[k].tree; if (treeId(t).indexOf(target) === 0 && target.length >= 4) tr = t; });
+      if (tr) {
+        if (showType) return out('tree');
+        return out(keys(tr).sort().map(function (f) { return '100644 blob ' + blobId(tr[f]) + '\t' + f; }).join('\n') || '');
+      }
+      // a blob id printed in a tree listing -> its content
+      if (target.length >= 4) {
+        var blob = null;
+        keys(state.commits).forEach(function (k) { var t = state.commits[k].tree; keys(t).forEach(function (f) { if (blobId(t[f]).indexOf(target) === 0) blob = t[f]; }); });
+        if (blob !== null) return out(showType ? 'blob' : blob);
       }
       // allow cat-file on a tag name -> the commit it points to
       if (state.tags.hasOwnProperty(target)) {
