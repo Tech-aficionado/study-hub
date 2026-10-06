@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dockerfile — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">📝 Writing Dockerfiles <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">The recipe that builds your image.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What a Dockerfile actually is</h3>
+      <p>A Dockerfile is just a plain text file with a short list of steps, read top to bottom: "start from this base, copy in these files, run this install command, and when someone starts the container, run this." Docker reads it and builds an <strong>image</strong> out of it — one that you can then start as a container as many times as you like.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># 1. Base image to build from</span>
+FROM node:20-alpine
+
+<span class="cmt"># 2. Metadata (optional)</span>
+LABEL maintainer="you@example.com"
+
+<span class="cmt"># 3. Set working directory inside the image</span>
+WORKDIR /app
+
+<span class="cmt"># 4. Copy dependency manifests FIRST (layer caching!)</span>
+COPY package*.json ./
+RUN npm ci --production
+
+<span class="cmt"># 5. Copy the rest of the source</span>
+COPY . .
+
+<span class="cmt"># 6. Document the port the app listens on</span>
+EXPOSE 3000
+
+<span class="cmt"># 7. Run as non-root user (security)</span>
+USER node
+
+<span class="cmt"># 8. The command that runs when the container starts</span>
+CMD ["node", "server.js"]</pre>
+      <div class="callout tip">💡 Each line that actually does something (<code class="inline">RUN</code>, <code class="inline">COPY</code>...) becomes its own cached layer. Change line 7 and Docker only re-does steps from line 7 onward — everything above it is reused instantly from cache. That's why the order of your Dockerfile matters for build speed.</div>
+      <div class="videopanel">
+        <div class="vhead">
+          <span class="vtitle"><span class="ytdot">▶</span> Docker Tutorial for Beginners [FULL COURSE]</span>
+          <span class="vcreator">TechWorld with Nana · Austria</span>
+        </div>
+        <div class="video-frame-wrap">
+          <iframe src="https://www.youtube.com/embed/3c-iBn73dDE" title="Docker Tutorial for Beginners" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Key instructions reference</h3>
+      <table>
+        <tr><th>Instruction</th><th>Purpose</th></tr>
+        <tr><td><code class="inline">FROM</code></td><td>Base image — always the first instruction</td></tr>
+        <tr><td><code class="inline">RUN</code></td><td>Execute a command at BUILD time, creates a new layer</td></tr>
+        <tr><td><code class="inline">COPY</code></td><td>Copy files from build context into the image</td></tr>
+        <tr><td><code class="inline">ADD</code></td><td>Like COPY, but also extracts tar files & fetches URLs</td></tr>
+        <tr><td><code class="inline">WORKDIR</code></td><td>Set the working directory for subsequent instructions</td></tr>
+        <tr><td><code class="inline">ENV</code></td><td>Set environment variable, persists into running container</td></tr>
+        <tr><td><code class="inline">EXPOSE</code></td><td>Document which port the app uses</td></tr>
+        <tr><td><code class="inline">CMD</code></td><td>Default command when container starts (overridable)</td></tr>
+        <tr><td><code class="inline">ENTRYPOINT</code></td><td>Fixed executable; CMD becomes its args</td></tr>
+        <tr><td><code class="inline">USER</code></td><td>Switch to a non-root user</td></tr>
+        <tr><td><code class="inline">ARG</code></td><td>Build-time-only variable</td></tr>
+        <tr><td><code class="inline">VOLUME</code></td><td>Create a mount point for persistent storage</td></tr>
+        <tr><td><code class="inline">HEALTHCHECK</code></td><td>Periodic container health check</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> CMD vs ENTRYPOINT — the one thing that trips everyone up</h3>
+      <p>Both say "run this when the container starts," but they behave differently if someone tries to override it when running the container.</p>
+      <div class="grid-2">
+        <div>
+          <p><strong>CMD alone</strong> — fully replaceable:</p>
+          <pre class="code-block">CMD ["python", "app.py"]
+<span class="cmt"># docker run myimg → runs python app.py
+# docker run myimg bash → runs bash INSTEAD, the whole CMD is thrown away</span></pre>
+        </div>
+        <div>
+          <p><strong>ENTRYPOINT + CMD</strong> — CMD just becomes a default argument:</p>
+          <pre class="code-block">ENTRYPOINT ["python"]
+CMD ["app.py"]
+<span class="cmt"># docker run myimg → python app.py
+# docker run myimg other.py → python other.py (still runs python!)</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Layer-caching best practices</h3>
+      <ul>
+        <li>Order instructions from least to most frequently changing.</li>
+        <li>Combine related <code class="inline">RUN</code> commands with <code class="inline">&&</code>.</li>
+        <li>Use a <code class="inline">.dockerignore</code> to exclude <code class="inline">node_modules</code>, <code class="inline">.git</code>, logs.</li>
+        <li>Prefer slim/alpine base images.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .dockerignore example</span>
+node_modules
+.git
+*.log
+.env
+Dockerfile
+.dockerignore</pre>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

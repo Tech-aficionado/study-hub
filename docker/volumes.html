@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volumes & Storage — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">💾 Volumes & Storage <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Persisting data beyond a container's lifetime.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why you need volumes at all</h3>
+      <p>Here's the trap that catches every beginner: a container's writable layer gets deleted the moment the container itself is removed. If your app wrote data straight into the container's own filesystem — a database's files, uploaded images — that data is gone with it. <strong>Volumes</strong> fix this by storing data somewhere that lives independently of any one container, so you can delete and recreate the container as often as you like without losing anything.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Three storage types</h3>
+      <table>
+        <tr><th>Type</th><th>Managed by</th><th>Use case</th></tr>
+        <tr><td><strong>Named volume</strong></td><td>Docker</td><td>Databases, persistent app data — <strong>recommended default</strong></td></tr>
+        <tr><td><strong>Bind mount</strong></td><td>You (host path)</td><td>Local dev — live-reload source code into container</td></tr>
+        <tr><td><strong>tmpfs mount</strong></td><td>RAM only (Linux)</td><td>Sensitive, ephemeral data</td></tr>
+      </table>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># named volume</span>
+docker volume create dbdata
+docker run -d -v dbdata:/var/lib/postgresql/data postgres
+
+<span class="cmt"># bind mount (host path : container path)</span>
+docker run -d -v $(pwd)/src:/app/src myapp
+
+<span class="cmt"># tmpfs</span>
+docker run -d --tmpfs /app/cache myapp
+
+<span class="cmt"># manage volumes</span>
+docker volume ls
+docker volume inspect dbdata
+docker volume rm dbdata
+docker volume prune   <span class="cmt"># remove all unused volumes</span></pre>
+    </div>
+
+    <div class="callout warn">⚠️ <code class="inline">docker volume prune</code> permanently deletes data in unused volumes. Always check <code class="inline">docker volume ls</code> first.</div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

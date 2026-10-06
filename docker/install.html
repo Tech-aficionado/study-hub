@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Install & Setup — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">⚙️ Install & First Steps <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Get Docker running on your machine.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Install Docker Desktop (Windows/Mac)</h3>
+      <p>Download from <a href="https://www.docker.com/products/docker-desktop/" target="_blank">docker.com/products/docker-desktop</a>. On Windows it requires WSL2 (enabled automatically). On Linux, install <code class="inline">docker-ce</code> via your package manager instead.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># verify install</span>
+docker --version
+docker compose version
+docker run hello-world</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Sanity-check your setup</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker info          <span class="cmt"># daemon status, resources</span>
+docker system df     <span class="cmt"># disk usage by images/containers/volumes</span></pre>
+      <div class="callout tip">Try the live <a href="terminal.html">CLI Playground</a> — a simulated terminal that teaches real command syntax without needing Docker installed.</div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

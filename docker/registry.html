@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registries & Docker Hub — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">☁️ Registries & Docker Hub <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Storing and distributing your images.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Pushing your own image to the world</h3>
+      <p>Building an image on your laptop is only useful to you. To let a server, a teammate, or a CI pipeline pull it down, you push it to a <strong>registry</strong> — the same way a Dockerfile builds an image, a registry is just storage for images, with Docker Hub being the default public one.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker login
+docker tag myapp:1.0 yourusername/myapp:1.0
+docker push yourusername/myapp:1.0
+docker pull yourusername/myapp:1.0</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Common registries</h3>
+      <table>
+        <tr><th>Registry</th><th>Notes</th></tr>
+        <tr><td>Docker Hub</td><td>Default public registry; free tier has pull-rate limits</td></tr>
+        <tr><td>GitHub Container Registry (ghcr.io)</td><td>Tied to GitHub repos/orgs, great for CI</td></tr>
+        <tr><td>AWS ECR</td><td>Private registry integrated with IAM/ECS/EKS</td></tr>
+        <tr><td>Self-hosted (registry:2)</td><td>Run your own with the official registry image</td></tr>
+      </table>
+    </div>
+
+    <div class="callout warn">⚠️ Never bake secrets/API keys into an image layer — anyone with the image can extract them with <code class="inline">docker history</code>. Use build secrets or runtime env injection instead.</div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-stage Builds — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🏭 Multi-stage Builds <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Keep build tools out of your production image.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The problem: your production image carries build tools it doesn't need</h3>
+      <p>Compiling code — say, a Go binary or a React app — needs a whole toolchain: compilers, package managers, source files. None of that is needed once the compiled result exists. If you build and run in the same stage, your final image ships that entire toolchain anyway, bloating it by hundreds of megabytes for no reason. <strong>Multi-stage builds</strong> fix this: one stage does the heavy building, and you copy <em>only the finished result</em> into a second, much leaner stage that's what actually ships.</p>
+      <div class="svgpanel">
+        <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58b9ff"/></marker></defs>
+          <rect x="20" y="30" width="200" height="90" rx="10" fill="rgba(248,81,73,.1)" stroke="#f85149" stroke-dasharray="5 4"/>
+          <text x="120" y="55" text-anchor="middle" fill="#f85149" font-size="12" font-weight="700">Stage 1: builder</text>
+          <text x="120" y="75" text-anchor="middle" fill="#8b949e" font-size="10.5">golang:1.22 (~800MB)</text>
+          <text x="120" y="93" text-anchor="middle" fill="#8b949e" font-size="10.5">compiles /app/server</text>
+          <text x="120" y="111" text-anchor="middle" fill="#8b949e" font-size="10" font-style="italic">discarded after build</text>
+          <line x1="220" y1="75" x2="320" y2="75" stroke="#58b9ff" stroke-width="2" marker-end="url(#arrow3)"/>
+          <text x="270" y="65" text-anchor="middle" fill="#8b949e" font-size="9.5">COPY --from=builder</text>
+          <rect x="330" y="30" width="200" height="90" rx="10" fill="rgba(63,185,80,.1)" stroke="#3fb950"/>
+          <text x="430" y="55" text-anchor="middle" fill="#3fb950" font-size="12" font-weight="700">Stage 2: final</text>
+          <text x="430" y="75" text-anchor="middle" fill="#8b949e" font-size="10.5">alpine:3.19 (~5MB)</text>
+          <text x="430" y="93" text-anchor="middle" fill="#8b949e" font-size="10.5">+ server binary only</text>
+          <text x="430" y="111" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="700">= ~15MB shipped image</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Example: Go binary</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Stage 1: build</span>
+FROM golang:1.22 AS builder
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 go build -o /app/server .
+
+<span class="cmt"># Stage 2: minimal runtime (final image)</span>
+FROM alpine:3.19
+COPY --from=builder /app/server /usr/local/bin/server
+ENTRYPOINT ["server"]</pre>
+      <div class="callout tip">Result: a ~15MB final image instead of a 1GB+ image carrying the entire Go toolchain.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Example: React/Node frontend</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:1.27-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]</pre>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

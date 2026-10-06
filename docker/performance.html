@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">⚡ Performance & Optimization <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Smaller images, faster builds.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Shrinking image size</h3>
+      <ul>
+        <li>Use alpine or distroless base images instead of full OS images</li>
+        <li>Multi-stage builds to drop build-only tooling</li>
+        <li>Combine RUN commands + clean package-manager caches in the same layer</li>
+        <li>Use BuildKit cache mounts</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># bad: cache persists even after cleanup in next line</span>
+RUN apt-get update
+RUN apt-get install -y curl
+RUN rm -rf /var/lib/apt/lists/*
+
+<span class="cmt"># good: single layer, cache cleaned within the SAME layer</span>
+RUN apt-get update && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/*</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> BuildKit cache mounts (fast rebuilds)</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># syntax=docker/dockerfile:1</span>
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt</pre>
+      <p>Cache mounts persist a directory ACROSS builds, so dependency installs reuse their cache even when source code changes.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Monitoring resource usage</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker stats                      <span class="cmt"># live CPU/mem/network/IO per container</span>
+docker system df -v               <span class="cmt"># detailed disk usage breakdown</span>
+docker system prune -a --volumes  <span class="cmt"># nuke everything unused (careful!)</span></pre>
+      <div class="callout warn">⚠️ <code class="inline">docker system prune -a --volumes</code> removes ALL unused images, containers, networks AND volumes. Irreversible for anything not currently referenced.</div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Containers — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">📋 Working with Containers <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Running, inspecting, and managing containers day to day.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> A container's life, step by step</h3>
+      <p>A container doesn't just exist or not exist — it moves through real states, and knowing them stops a lot of confusion. You <code class="inline">create</code> it, then <code class="inline">start</code> it and it becomes <strong>running</strong>. You can <code class="inline">pause</code> it (frozen in place, still in memory) or <code class="inline">stop</code> it (process ends, but the container and its filesystem still exist — you can <code class="inline">start</code> it again later). Only <code class="inline">rm</code> actually deletes it for good.</p>
+      <div class="svgpanel">
+        <svg viewBox="0 0 640 160" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+          <rect x="10" y="55" width="110" height="44" rx="22" fill="#1c2129" stroke="#58b9ff"/><text x="65" y="81" text-anchor="middle" fill="#e6edf3" font-size="12">Created</text>
+          <line x1="120" y1="77" x2="178" y2="77" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow2)"/><text x="149" y="68" text-anchor="middle" fill="#8b949e" font-size="9.5">start</text>
+          <rect x="180" y="50" width="110" height="54" rx="27" fill="rgba(63,185,80,.14)" stroke="#3fb950"/><text x="235" y="81" text-anchor="middle" fill="#3fb950" font-size="12.5" font-weight="700">Running</text>
+          <line x1="290" y1="65" x2="348" y2="30" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow2)"/><text x="330" y="40" text-anchor="middle" fill="#8b949e" font-size="9.5">pause</text>
+          <line x1="290" y1="90" x2="348" y2="125" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow2)"/><text x="330" y="118" text-anchor="middle" fill="#8b949e" font-size="9.5">stop</text>
+          <rect x="350" y="8" width="110" height="44" rx="22" fill="#1c2129" stroke="#bc8cff"/><text x="405" y="34" text-anchor="middle" fill="#e6edf3" font-size="12">Paused</text>
+          <rect x="350" y="100" width="110" height="48" rx="24" fill="#1c2129" stroke="#30363d"/><text x="405" y="128" text-anchor="middle" fill="#e6edf3" font-size="12">Stopped</text>
+          <line x1="460" y1="124" x2="518" y2="124" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow2)"/><text x="489" y="115" text-anchor="middle" fill="#8b949e" font-size="9.5">rm</text>
+          <rect x="520" y="100" width="110" height="48" rx="24" fill="rgba(248,81,73,.14)" stroke="#f85149"/><text x="575" y="128" text-anchor="middle" fill="#f85149" font-size="12" font-weight="700">Removed</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Running containers</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker run nginx                      <span class="cmt"># run in foreground</span>
+docker run -d nginx                   <span class="cmt"># detached (background)</span>
+docker run -d -p 8080:80 nginx        <span class="cmt"># map host:container port</span>
+docker run -it ubuntu bash            <span class="cmt"># interactive shell</span>
+docker run --name myweb -d nginx      <span class="cmt"># custom name</span>
+docker run --rm alpine echo hi        <span class="cmt"># auto-remove when it exits</span>
+docker run -e KEY=value nginx         <span class="cmt"># set env variable</span>
+docker run --memory=512m --cpus=1 nginx  <span class="cmt"># resource limits</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Managing running containers</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker ps                   <span class="cmt"># list running containers</span>
+docker ps -a                <span class="cmt"># list ALL (incl. stopped)</span>
+docker logs -f myweb        <span class="cmt"># stream logs</span>
+docker exec -it myweb bash  <span class="cmt"># shell into a running container</span>
+docker stop myweb
+docker start myweb
+docker restart myweb
+docker rm myweb
+docker rm -f myweb          <span class="cmt"># force stop + remove</span>
+docker stats                <span class="cmt"># live CPU/mem usage</span></pre>
+      <div class="callout tip">💡 Try all of these in the <a href="terminal.html">CLI Playground</a> before touching a real terminal.</div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

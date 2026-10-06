@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🏗️ Docker Architecture <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Client, daemon, and the pieces that work together.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Client–Server model</h3>
+      <div class="svgpanel">
+        <svg viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arrow1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58b9ff"/></marker></defs>
+          <rect x="20" y="60" width="140" height="56" rx="10" fill="#1c2129" stroke="#2496ED" stroke-width="2"/>
+          <text x="90" y="84" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="700">Docker CLI</text>
+          <text x="90" y="101" text-anchor="middle" fill="#8b949e" font-size="10.5">docker run / build / pull</text>
+          <line x1="162" y1="88" x2="248" y2="88" stroke="#58b9ff" stroke-width="2" marker-end="url(#arrow1)"/>
+          <line x1="248" y1="100" x2="162" y2="100" stroke="#58b9ff" stroke-width="2" marker-end="url(#arrow1)"/>
+          <text x="205" y="78" text-anchor="middle" fill="#8b949e" font-size="10">REST API</text>
+          <rect x="250" y="60" width="140" height="56" rx="10" fill="#1c2129" stroke="#3fb950" stroke-width="2"/>
+          <text x="320" y="84" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="700">dockerd</text>
+          <text x="320" y="101" text-anchor="middle" fill="#8b949e" font-size="10.5">the Docker daemon</text>
+          <line x1="392" y1="78" x2="470" y2="40" stroke="#58b9ff" stroke-width="1.5" marker-end="url(#arrow1)"/>
+          <line x1="392" y1="88" x2="470" y2="88" stroke="#58b9ff" stroke-width="1.5" marker-end="url(#arrow1)"/>
+          <line x1="392" y1="98" x2="470" y2="136" stroke="#58b9ff" stroke-width="1.5" marker-end="url(#arrow1)"/>
+          <rect x="472" y="20" width="146" height="34" rx="7" fill="#1c2129" stroke="#bc8cff"/><text x="545" y="41" text-anchor="middle" fill="#e6edf3" font-size="11.5">Images</text>
+          <rect x="472" y="71" width="146" height="34" rx="7" fill="#1c2129" stroke="#bc8cff"/><text x="545" y="92" text-anchor="middle" fill="#e6edf3" font-size="11.5">Containers</text>
+          <rect x="472" y="122" width="146" height="34" rx="7" fill="#1c2129" stroke="#bc8cff"/><text x="545" y="143" text-anchor="middle" fill="#e6edf3" font-size="11.5">Networks & Volumes</text>
+        </svg>
+      </div>
+      <p>When you type a <code class="inline">docker</code> command, you're not talking to Docker directly — you're talking to a small <strong>client</strong> program that forwards your request over an API to the real worker: the <strong>Docker daemon</strong> (<code class="inline">dockerd</code>), running quietly in the background. The daemon is what actually builds images, starts containers, and manages everything. They don't even have to be on the same machine — that's how you can control a Docker setup on a remote server from your own laptop.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The six things you'll keep hearing about</h3>
+      <table>
+        <tr><th>Component</th><th>In plain words</th></tr>
+        <tr><td><strong>Image</strong></td><td>A frozen template — code + dependencies + settings. Nothing is running yet.</td></tr>
+        <tr><td><strong>Container</strong></td><td>An image that's actually been started — a living, running (or stopped) instance.</td></tr>
+        <tr><td><strong>Dockerfile</strong></td><td>The recipe/instructions used to build an image in the first place.</td></tr>
+        <tr><td><strong>Registry</strong></td><td>Where images are stored so others can download them (Docker Hub, ECR, GHCR).</td></tr>
+        <tr><td><strong>Volume</strong></td><td>Storage that survives even after the container that used it is deleted.</td></tr>
+        <tr><td><strong>Network</strong></td><td>The virtual wiring that lets containers reach each other and the outside world.</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> What makes this possible under the hood</h3>
+      <p>You don't need to memorize these, but it helps to know Docker isn't magic — it's built from real Linux kernel features that already existed:</p>
+      <ul>
+        <li><strong>Namespaces</strong> — control what a process can SEE. Give a container its own namespace and it thinks it's the only thing running on the machine (its own process list, its own network interface, its own hostname).</li>
+        <li><strong>Control Groups (cgroups)</strong> — control what a process can USE. This is how you can cap a container at, say, 512MB of RAM or half a CPU core.</li>
+        <li><strong>Union filesystems (OverlayFS)</strong> — the trick that lets Docker stack several read-only layers and place one writable layer on top, without copying everything each time.</li>
+      </ul>
+      <div class="callout">On Windows or Mac, there's no Linux kernel to share directly — so Docker Desktop quietly runs a small Linux VM behind the scenes. That's why it uses some RAM even when you're not running any containers.</div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

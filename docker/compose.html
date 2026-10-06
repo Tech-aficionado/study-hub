@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker Compose — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🧩 Docker Compose <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Describe your whole stack once, start it with one command.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The problem Compose solves</h3>
+      <p>A real app is rarely just one container. It's usually a web server, a backend API, a database, maybe a cache — several containers that all need to start together, in the right order, wired to the same network. Running each one by hand with a long <code class="inline">docker run</code> command, every single time, gets old fast and is easy to get wrong.</p>
+      <p><strong>Docker Compose</strong> lets you write the whole stack down once, in one YAML file, and then bring the entire thing up — or tear it entirely down — with a single command. It also quietly creates a shared network for all those services, so they can already reach each other by name with zero extra setup. It's basically "infrastructure as code" for your local stack: the file can be committed to Git, so anyone on the team gets the exact same setup by running one command.</p>
+      <div class="videopanel">
+        <div class="vhead">
+          <span class="vtitle"><span class="ytdot">▶</span> Ultimate Docker Compose Tutorial</span>
+          <span class="vcreator">TechWorld with Nana · Austria</span>
+        </div>
+        <div class="video-frame-wrap">
+          <iframe src="https://www.youtube.com/embed/SXwC9fSwct8" title="Ultimate Docker Compose Tutorial" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Reading a real example, piece by piece</h3>
+      <p>Here's a typical stack: a web app, a Postgres database, and a Redis cache. Walking through it: <code class="inline">services</code> lists every container you want; each service's <code class="inline">ports</code> opens a door from your machine into that container; <code class="inline">volumes</code> keeps the database's data safe even if the container is destroyed; and <code class="inline">depends_on</code> tells Compose "start the database before the web app."</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># docker-compose.yml</span>
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgres://db:5432/app
+    depends_on:
+      - db
+    volumes:
+      - ./src:/app/src          <span class="cmt"># live reload in dev</span>
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  dbdata:</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The handful of commands you'll actually use</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker compose up -d          <span class="cmt"># start everything, in the background</span>
+docker compose ps             <span class="cmt"># what's running right now?</span>
+docker compose logs -f web    <span class="cmt"># follow one service's logs live</span>
+docker compose exec web bash  <span class="cmt"># open a shell inside a running service</span>
+docker compose build          <span class="cmt"># rebuild images after a Dockerfile change</span>
+docker compose down           <span class="cmt"># stop and remove everything Compose created</span>
+docker compose down -v        <span class="cmt"># same, but also wipe the volumes/data</span>
+docker compose config         <span class="cmt"># sanity-check the file, print the resolved config</span></pre>
+      <div class="callout tip">💡 <code class="inline">depends_on</code> only controls the START ORDER — it does not wait for the database to be actually ready to accept connections. If your app crashes on startup because the DB isn't ready yet, add a <code class="inline">healthcheck</code> plus <code class="inline">condition: service_healthy</code>.</div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

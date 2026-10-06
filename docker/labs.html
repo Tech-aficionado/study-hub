@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hands-on Labs — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🧪 Hands-on Labs</h2>
+    <p class="page-sub">Do these on your real machine once Docker is installed. Check them off mentally as you complete them.</p>
+
+    <div class="card">
+      <h3>Lab 1 — <span class="badge beginner">Beginner</span> Run your first containers</h3>
+      <ol>
+        <li>Run <code class="inline">docker run hello-world</code> and read the output.</li>
+        <li>Run nginx: <code class="inline">docker run -d -p 8080:80 --name web nginx</code>, open <a href="http://localhost:8080" target="_blank">localhost:8080</a>.</li>
+        <li>View logs, exec in: <code class="inline">docker logs web</code>, <code class="inline">docker exec -it web bash</code>.</li>
+        <li>Clean up: <code class="inline">docker stop web && docker rm web</code>.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 2 — <span class="badge beginner">Beginner</span> Build your own image</h3>
+      <ol>
+        <li>Create a folder with a one-line app.py or index.html.</li>
+        <li>Write a Dockerfile that copies it into an appropriate base image.</li>
+        <li>Build: <code class="inline">docker build -t my-first-image .</code></li>
+        <li>Run it, check its size with <code class="inline">docker images</code>.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 3 — <span class="badge intermediate">Intermediate</span> Multi-container app with Compose</h3>
+      <ol>
+        <li>Create a docker-compose.yml with a web service + a Postgres or Redis service.</li>
+        <li>Bring it up: <code class="inline">docker compose up -d</code>.</li>
+        <li>Confirm web can reach the database by service name (not localhost!).</li>
+        <li>Tear down with volumes: <code class="inline">docker compose down -v</code>.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 4 — <span class="badge advanced">Advanced</span> Multi-stage build + size comparison</h3>
+      <ol>
+        <li>Build a single-stage Dockerfile for a compiled app and note the size.</li>
+        <li>Rewrite as multi-stage and rebuild.</li>
+        <li>Compare sizes — aim for &gt;10x reduction.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 5 — <span class="badge advanced">Advanced</span> Harden an image</h3>
+      <ol>
+        <li>Add a non-root USER to any Dockerfile you've written.</li>
+        <li>Run with <code class="inline">--read-only --cap-drop=ALL</code>, fix mounts as needed.</li>
+        <li>Scan it: <code class="inline">docker scout cves &lt;image&gt;</code> and address HIGH/CRITICAL findings.</li>
+      </ol>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

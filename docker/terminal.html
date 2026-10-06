@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLI Playground — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">💻 CLI Playground</h2>
+    <p class="page-sub">A simulated Docker terminal. Type real commands and get realistic output — nothing is actually installed or run.</p>
+
+    <div class="card">
+      <div class="terminal">
+        <div class="term-head"><span class="dot" style="background:#ff5f56;"></span><span class="dot" style="background:#ffbd2e;"></span><span class="dot" style="background:#27c93f;"></span>&nbsp;docker-sim — bash</div>
+        <div class="term-body" id="termBody">
+          <div class="term-line"><span class="term-out">Simulated Docker CLI. Try: docker run -d -p 8080:80 nginx, docker ps, docker images, docker build -t myapp . , docker --help</span></div>
+        </div>
+        <div class="term-input-row">
+          <span class="term-prompt">$</span>
+          <input type="text" id="termInput" placeholder="type a docker command and hit Enter..." autocomplete="off">
+        </div>
+        <div class="term-hint">Supports: run, ps, images, pull, build, stop, rm, rmi, exec, logs, volume ls, network ls, compose up, --help, clear</div>
+      </div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="js/terminal.js"></script>
+</body>
+</html>

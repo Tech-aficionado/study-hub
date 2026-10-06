@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Library — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">▶️ Video Library</h2>
+    <p class="page-sub">Curated Docker videos from well-known creators, embedded directly on this page (served from your own local server, not inside a sandboxed widget — so playback works normally).</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Docker in 100 Seconds</h3>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Docker in 100 Seconds</span><span class="vcreator">Fireship · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/Gjnup-PuquQ" title="Docker in 100 Seconds" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Docker Tutorial for Beginners [FULL COURSE]</h3>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Docker Tutorial for Beginners</span><span class="vcreator">TechWorld with Nana · Austria</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/3c-iBn73dDE" title="Docker Tutorial for Beginners" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Docker Networking is CRAZY!!</h3>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Docker Networking is CRAZY!!</span><span class="vcreator">NetworkChuck · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/bKFMS5C4CG0" title="Docker Networking" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Ultimate Docker Compose Tutorial</h3>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Ultimate Docker Compose Tutorial</span><span class="vcreator">TechWorld with Nana · Austria</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/SXwC9fSwct8" title="Ultimate Docker Compose Tutorial" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

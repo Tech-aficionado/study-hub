@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Images & Layers — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">📦 Images & Layers <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">How Docker images are built from stacked, cached layers.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Image vs container, finally explained clearly</h3>
+      <p>If you've coded before, this click instantly: an <strong>image</strong> is like a <em>class</em>, and a <strong>container</strong> is like an <em>object</em> made from that class. The image is the inert, unchanging template sitting in storage. A container is what you get the moment you actually run that image — it's alive, it has a process, it can be stopped and started.</p>
+      <p>There's also a classic physical analogy worth knowing: a Docker container is named after real shipping containers. A shipping container can hold anything — furniture, electronics, food — but every ship, crane, and truck in the world handles it the exact same standard way. Swap the contents (Node.js app, Postgres database, Redis cache) and the "shipping" mechanism (the Docker runtime) doesn't care — it loads and runs it the same way on any server, OS, or cloud.</p>
+      <p>Under the hood, every instruction in your Dockerfile — <code class="inline">RUN</code>, <code class="inline">COPY</code>, <code class="inline">ADD</code> — stacks one more read-only <strong>layer</strong> onto the image. When you finally run it as a container, Docker adds one last thin layer on top that you're actually allowed to write to.</p>
+      <div class="svgpanel">
+        <svg viewBox="0 0 460 230" xmlns="http://www.w3.org/2000/svg">
+          <rect x="30" y="10" width="400" height="36" rx="7" fill="rgba(248,81,73,.14)" stroke="#f85149" stroke-dasharray="5 4"/>
+          <text x="50" y="33" fill="#f85149" font-size="12" font-weight="700">✎ Writable layer</text>
+          <text x="300" y="33" fill="#8b949e" font-size="10.5">(created at runtime)</text>
+          <rect x="30" y="54" width="400" height="34" rx="6" fill="#1c2129" stroke="#30363d"/><text x="50" y="76" fill="#e6edf3" font-size="12" font-family="monospace">RUN pip install -r requirements.txt</text>
+          <rect x="30" y="96" width="400" height="34" rx="6" fill="#1c2129" stroke="#30363d"/><text x="50" y="118" fill="#e6edf3" font-size="12" font-family="monospace">COPY . /app</text>
+          <rect x="30" y="138" width="400" height="34" rx="6" fill="#1c2129" stroke="#30363d"/><text x="50" y="160" fill="#e6edf3" font-size="12" font-family="monospace">RUN apt-get install curl</text>
+          <rect x="30" y="180" width="400" height="38" rx="7" fill="rgba(63,185,80,.14)" stroke="#3fb950"/><text x="50" y="204" fill="#3fb950" font-size="12" font-weight="700" font-family="monospace">FROM python:3.12-slim</text>
+          <text x="330" y="204" fill="#8b949e" font-size="10.5">base image</text>
+        </svg>
+      </div>
+      <div class="callout">These layers are cached and shared across images. If two different images both start with <code class="inline">FROM python:3.12-slim</code>, that layer is only ever stored once on your disk and only ever downloaded once — not twice.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Essential image commands</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>docker pull nginx:latest        <span class="cmt"># download an image</span>
+docker images                  <span class="cmt"># list local images</span>
+docker build -t myapp:1.0 .    <span class="cmt"># build from Dockerfile</span>
+docker tag myapp:1.0 myapp:latest
+docker rmi myapp:1.0           <span class="cmt"># remove an image</span>
+docker history myapp:1.0       <span class="cmt"># inspect layers</span>
+docker inspect myapp:1.0       <span class="cmt"># full metadata as JSON</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Image tags: don't let "latest" fool you</h3>
+      <p>An image name follows the shape <code class="inline">[registry/]repository[:tag]</code>. If you leave the tag off, Docker quietly assumes <code class="inline">:latest</code> — but despite the name, that is <strong>not</strong> guaranteed to mean "the newest stable version." It's just whatever label happened to be pushed last.</p>
+      <div class="callout warn">⚠️ Never rely on <code class="inline">:latest</code> in anything real — it means two people running "the same" build command on different days can silently get different code. Pin an exact version instead, like <code class="inline">python:3.12.4-slim</code>, not <code class="inline">python:latest</code>.</div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

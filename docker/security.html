@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Hardening — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🔒 Security Hardening <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Production-grade image and runtime hardening.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Checklist for production images</h3>
+      <ul class="checklist" id="securityChecklist">
+        <li><input type="checkbox" id="sc1"><label for="sc1">Run as a non-root <code class="inline">USER</code>, never root</label></li>
+        <li><input type="checkbox" id="sc2"><label for="sc2">Use minimal base images (alpine, distroless, slim)</label></li>
+        <li><input type="checkbox" id="sc3"><label for="sc3">Pin exact image versions/digests, never <code class="inline">:latest</code></label></li>
+        <li><input type="checkbox" id="sc4"><label for="sc4">Scan images for CVEs (docker scout, Trivy, Grype)</label></li>
+        <li><input type="checkbox" id="sc5"><label for="sc5">Never bake secrets into image layers</label></li>
+        <li><input type="checkbox" id="sc6"><label for="sc6">Set <code class="inline">--read-only</code> filesystem where possible</label></li>
+        <li><input type="checkbox" id="sc7"><label for="sc7">Drop unneeded Linux capabilities (<code class="inline">--cap-drop=ALL</code>)</label></li>
+        <li><input type="checkbox" id="sc8"><label for="sc8">Set CPU/memory limits to prevent noisy-neighbor DoS</label></li>
+        <li><input type="checkbox" id="sc9"><label for="sc9">Keep the Docker daemon & host OS patched</label></li>
+        <li><input type="checkbox" id="sc10"><label for="sc10">Use a .dockerignore to avoid leaking .git/.env</label></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Scanning & non-root example</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># scan an image for known vulnerabilities</span>
+docker scout cves myapp:1.0
+
+<span class="cmt"># run with hardened flags</span>
+docker run --read-only --cap-drop=ALL --security-opt=no-new-privileges \
+  --memory=256m --cpus=0.5 myapp:1.0</pre>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Dockerfile: create and switch to a non-root user</span>
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser</pre>
+    </div>
+
+    <div class="callout danger">🚨 The Docker socket (/var/run/docker.sock) is root-equivalent access to the host. Never mount it into a container unless you fully trust that image.</div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

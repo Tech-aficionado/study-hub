@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What is Docker? — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <div class="module-hero">
+      <div class="emoji">🐳</div>
+      <div>
+        <h1>Docker Study</h1>
+        <p>Part of your Study Hub — containers, images, networking, Compose and more, from zero to production-ready.</p>
+      </div>
+    </div>
+    <h2 class="page-title">🐳 What is Docker? <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">The problem Docker solves, and why it changed how software ships.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The problem Docker exists to solve</h3>
+      <p>Say you build an app on your laptop. It runs great. You send it to a teammate, or push it to a server — and it breaks. Why? Their machine has a different OS version, a missing library, or a config file set up slightly differently. This is the famous <strong>"it works on my machine"</strong> problem, and before Docker, teams lost real hours chasing it.</p>
+      <p>Docker's fix is simple to say: instead of shipping just your <em>code</em> and hoping the other machine matches, you ship your code <strong>together with everything it needs to run</strong> — the runtime, the libraries, the settings, even the small slice of OS it depends on. That whole bundle is called a <strong>container</strong>. Because the container carries its own environment with it, it behaves the same on your laptop, on a teammate's machine, and in production.</p>
+      <div class="callout tip">💡 Think of a container as a sealed box: code + runtime + libraries + config, all packed together. Open that box on any machine with Docker installed, and it runs identically — nothing outside the box matters.</div>
+      <div class="videopanel">
+        <div class="vhead">
+          <span class="vtitle"><span class="ytdot">▶</span> Docker in 100 Seconds</span>
+          <span class="vcreator">Fireship · USA</span>
+        </div>
+        <div class="video-frame-wrap">
+          <iframe src="https://www.youtube.com/embed/Gjnup-PuquQ" title="Docker in 100 Seconds" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The three pieces, in plain words</h3>
+      <p>Every Docker explanation eventually comes down to three words. Here they are, without the jargon:</p>
+      <ul>
+        <li><strong>Dockerfile</strong> — a plain text file that's basically a recipe: "start from this base, install these things, copy in this code, run this command when you start." People call it the <em>DNA</em> of your container — it's the instructions, not the thing itself.</li>
+        <li><strong>Image</strong> — what you get after Docker follows that recipe. It's a frozen, read-only snapshot of your app plus everything it needs. It doesn't run anything by itself — it's just sitting there, ready to be used, like a blueprint or a class in programming.</li>
+        <li><strong>Container</strong> — an image that's actually been started and is running. If an image is the blueprint, a container is the building made from it. You can start several containers from the exact same image, just like you can build several houses from one blueprint.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Containers vs Virtual Machines — the real difference</h3>
+      <p>A <strong>Virtual Machine</strong> pretends to be a whole separate computer. To run one app, it has to boot an entire fake operating system first — that's why VMs are heavy (gigabytes) and slow to start (minutes). A <strong>container</strong> skips that: it shares the one real operating system kernel that's already running on the host, and only packages the app-level stuff on top of it. That's the whole reason containers are so much faster and lighter — they're not virtualizing hardware, just isolating a process.</p>
+      <div class="svgpanel">
+        <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2496ED"/><stop offset="1" stop-color="#1b6fb0"/></linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bc8cff"/><stop offset="1" stop-color="#8d5fd1"/></linearGradient>
+            <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fb950"/><stop offset="1" stop-color="#2d8a3b"/></linearGradient>
+          </defs>
+          <text x="150" y="22" text-anchor="middle" fill="#8b949e" font-size="12" font-weight="700">VIRTUAL MACHINES</text>
+          <rect x="40" y="35" width="100" height="34" rx="6" fill="url(#g1)"/><text x="90" y="56" text-anchor="middle" fill="#fff" font-size="12">App A</text>
+          <rect x="160" y="35" width="100" height="34" rx="6" fill="url(#g1)"/><text x="210" y="56" text-anchor="middle" fill="#fff" font-size="12">App B</text>
+          <rect x="40" y="78" width="100" height="34" rx="6" fill="url(#g2)"/><text x="90" y="99" text-anchor="middle" fill="#fff" font-size="11">Guest OS</text>
+          <rect x="160" y="78" width="100" height="34" rx="6" fill="url(#g2)"/><text x="210" y="99" text-anchor="middle" fill="#fff" font-size="11">Guest OS</text>
+          <rect x="40" y="121" width="220" height="34" rx="6" fill="url(#g3)"/><text x="150" y="142" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Hypervisor</text>
+          <rect x="40" y="164" width="220" height="34" rx="6" fill="#30363d"/><text x="150" y="185" text-anchor="middle" fill="#e6edf3" font-size="12">Host Operating System</text>
+          <rect x="40" y="207" width="220" height="34" rx="6" fill="#21262d" stroke="#30363d"/><text x="150" y="228" text-anchor="middle" fill="#8b949e" font-size="11">Server Infrastructure</text>
+          <text x="150" y="265" text-anchor="middle" fill="#8b949e" font-size="11.5">Each app ships with a full guest OS</text>
+          <text x="150" y="282" text-anchor="middle" fill="#8b949e" font-size="11.5">→ GBs in size, boots in minutes</text>
+          <line x1="330" y1="20" x2="330" y2="290" stroke="#30363d" stroke-width="1" stroke-dasharray="4 4"/>
+          <text x="490" y="22" text-anchor="middle" fill="#8b949e" font-size="12" font-weight="700">CONTAINERS</text>
+          <rect x="400" y="35" width="100" height="34" rx="6" fill="url(#g1)"/><text x="450" y="56" text-anchor="middle" fill="#fff" font-size="12">App A</text>
+          <rect x="520" y="35" width="100" height="34" rx="6" fill="url(#g1)"/><text x="570" y="56" text-anchor="middle" fill="#fff" font-size="12">App B</text>
+          <rect x="400" y="78" width="220" height="34" rx="6" fill="url(#g3)"/><text x="510" y="99" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Docker Engine</text>
+          <rect x="400" y="121" width="220" height="34" rx="6" fill="#30363d"/><text x="510" y="142" text-anchor="middle" fill="#e6edf3" font-size="12">Host Operating System</text>
+          <rect x="400" y="164" width="220" height="34" rx="6" fill="#21262d" stroke="#30363d"/><text x="510" y="185" text-anchor="middle" fill="#8b949e" font-size="11">Server Infrastructure</text>
+          <text x="510" y="222" text-anchor="middle" fill="#8b949e" font-size="11.5">Apps share the host kernel directly</text>
+          <text x="510" y="239" text-anchor="middle" fill="#8b949e" font-size="11.5">→ MBs in size, boots in milliseconds</text>
+        </svg>
+      </div>
+      <table>
+        <tr><th>Aspect</th><th>Virtual Machine</th><th>Container</th></tr>
+        <tr><td>Boot time</td><td>Minutes</td><td>Milliseconds–seconds</td></tr>
+        <tr><td>Size</td><td>GBs (full OS)</td><td>MBs (app + deps only)</td></tr>
+        <tr><td>Isolation</td><td>Full hardware-level</td><td>Process-level (namespaces/cgroups)</td></tr>
+        <tr><td>Density per host</td><td>Low (10s)</td><td>High (100s–1000s)</td></tr>
+        <tr><td>Kernel</td><td>Own kernel per VM</td><td>Shares host kernel</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Why any of this actually matters to you</h3>
+      <ul>
+        <li><strong>"It works on my machine" stops being an excuse</strong> — the same container runs the same way everywhere: your laptop, CI, staging, production.</li>
+        <li><strong>Clean isolation</strong> — one app's dependencies can't quietly break another app sitting on the same server.</li>
+        <li><strong>Startup in milliseconds</strong>, not the minutes a VM needs to boot.</li>
+        <li><strong>Build once, run anywhere</strong> — the same image works on your cloud, a different cloud, or your own server.</li>
+        <li><strong>You can pack way more onto one machine</strong> — no wasted RAM/CPU on duplicate guest operating systems.</li>
+      </ul>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>
