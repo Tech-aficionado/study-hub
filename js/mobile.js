@@ -22,6 +22,38 @@
     var toggle = document.getElementById('menuToggle');
     var main = document.querySelector('.main');
 
+    /* ---------- PWA: manifest, icons, service worker (one-time per page load) ---------- */
+    var depth = location.pathname.split('/').filter(Boolean).length > 0 && /\.html$/.test(location.pathname)
+      ? location.pathname.split('/').length - 2 : 0; // module page = 1 ("/docker/x.html"), hub = 0
+    var rootPrefix = depth > 0 ? '../' : '';
+    if (!document.querySelector('link[rel="manifest"]')) {
+      var manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      manifestLink.href = rootPrefix + 'manifest.json';
+      document.head.appendChild(manifestLink);
+    }
+    if (!document.querySelector('link[rel="icon"]')) {
+      var favicon = document.createElement('link');
+      favicon.rel = 'icon';
+      favicon.href = rootPrefix + 'favicon.ico';
+      document.head.appendChild(favicon);
+    }
+    if (!document.querySelector('link[rel="apple-touch-icon"]')) {
+      var touchIcon = document.createElement('link');
+      touchIcon.rel = 'apple-touch-icon';
+      touchIcon.href = rootPrefix + 'icons/icon-180.png';
+      document.head.appendChild(touchIcon);
+    }
+    if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
+      var appleCapable = document.createElement('meta');
+      appleCapable.name = 'apple-mobile-web-app-capable';
+      appleCapable.content = 'yes';
+      document.head.appendChild(appleCapable);
+    }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register(rootPrefix + 'sw.js').catch(function () {});
+    }
+
     /* ---------- browser chrome colour matches the page theme ---------- */
     var bg = getComputedStyle(root).getPropertyValue('--bg').trim();
     if (bg && !document.querySelector('meta[name="theme-color"]')) {
@@ -141,22 +173,36 @@
       });
     }
 
-    /* ---------- focus mode: hide the menu and centre the text for distraction-free reading ---------- */
+    /* ---------- focus mode: hide chrome and centre the text for distraction-free reading ---------- */
     if (hubBar && main) {
       var FOCUS_KEY = 'studyhub_focus_mode';
       var focusBtn = document.createElement('button');
       focusBtn.type = 'button';
       focusBtn.className = 'focus-toggle';
       focusBtn.innerHTML = '<span aria-hidden="true">\u25CE</span><span class="focus-label">Focus</span>';
+
+      /* a small pill that reappears once the top bar is hidden, so there is always a way back */
+      var exitBtn = document.createElement('button');
+      exitBtn.type = 'button';
+      exitBtn.className = 'focus-exit';
+      exitBtn.innerHTML = '<span aria-hidden="true">\u2715</span><span>Exit focus</span>';
+      exitBtn.setAttribute('aria-label', 'Exit focus mode');
+      body.appendChild(exitBtn);
+
       var applyFocus = function (on, save) {
         body.classList.toggle('focus-mode', on);
         focusBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        exitBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
         focusBtn.setAttribute('aria-label', on ? 'Exit focus mode' : 'Enter focus mode');
-        focusBtn.title = on ? 'Exit focus mode' : 'Focus mode: hide the menu and centre the text';
+        focusBtn.title = on ? 'Exit focus mode' : 'Focus mode: full-screen, distraction-free reading';
         if (on && isOpen()) setOpen(false);
         if (save) { try { localStorage.setItem(FOCUS_KEY, on ? '1' : '0'); } catch (e) {} }
       };
       focusBtn.addEventListener('click', function () { applyFocus(!body.classList.contains('focus-mode'), true); });
+      exitBtn.addEventListener('click', function () { applyFocus(false, true); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && body.classList.contains('focus-mode')) applyFocus(false, true);
+      });
       var bmBar = hubBar.querySelector('.bm-bar');
       if (bmBar) bmBar.insertBefore(focusBtn, bmBar.firstChild);
       else hubBar.appendChild(focusBtn);
