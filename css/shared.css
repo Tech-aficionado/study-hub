@@ -245,3 +245,136 @@ code.inline{overflow-wrap:anywhere;}
   .iv-body{padding:0 13px 14px;}
   .iv-select select{font-size:16px;}
 }
+
+/* =====================================================================
+   MOBILE READING EXPERIENCE (js/mobile.js)
+   Compact top bar with page title + reading progress, auto-hiding bar,
+   drawer close button, previous/next pager, back-to-top, hub layout.
+   ===================================================================== */
+html{-webkit-text-size-adjust:100%; text-size-adjust:100%;}
+a, button, summary, .quiz-opt, .nav-item{-webkit-tap-highlight-color:transparent;}
+
+/* Top bar extras: hidden on desktop, where the full breadcrumb fits.
+   (.hub-bar prefix needed to beat each module's ".hub-bar a{display:inline-flex}") */
+.hub-bar .hb-home, .hub-bar .hb-title{display:none;}
+/* Small diagrams (Venn etc., viewBox under 400 units wide) blow up to 1000px+ on desktop. */
+.svgpanel svg[viewBox^="0 0 1"], .svgpanel svg[viewBox^="0 0 2"], .svgpanel svg[viewBox^="0 0 3"],
+.svgpanel svg[viewBox^="0 -14 3"]{display:block; max-width:520px; margin:0 auto;}
+.hub-bar{overflow:hidden;}
+.hb-progress{
+  position:absolute; left:0; right:0; bottom:-1px; height:2px; pointer-events:none;
+  background:linear-gradient(90deg,var(--accent),var(--accent2,var(--accent)));
+  transform:scaleX(0); transform-origin:0 50%;
+}
+
+/* Previous / next pager (every module page) */
+.page-pager{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:28px 0 8px;}
+.page-pager a{
+  display:flex; flex-direction:column; gap:3px; min-width:0; padding:14px 16px; border-radius:12px;
+  background:var(--bg2); border:1px solid var(--border); color:var(--text); text-decoration:none;
+  transition:border-color .15s, transform .15s;
+}
+.page-pager a:hover{border-color:var(--accent); text-decoration:none;}
+.page-pager a:active{transform:scale(.98);}
+.page-pager a:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.page-pager .pp-next{text-align:right; grid-column:2;}
+.pp-dir{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:700;}
+.pp-name{font-size:14.5px; font-weight:700; color:var(--accent2,var(--accent)); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+/* Back to top */
+.to-top{
+  position:fixed; right:16px; bottom:calc(16px + env(safe-area-inset-bottom, 0px)); z-index:240;
+  width:44px; height:44px; border-radius:50%; border:1px solid var(--border);
+  background:var(--bg2); color:var(--text); font-size:18px; font-weight:700; cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+  opacity:0; transform:translateY(12px); pointer-events:none; transition:opacity .2s, transform .2s;
+}
+.to-top.above-fab{bottom:calc(76px + env(safe-area-inset-bottom, 0px));}
+.to-top.show{opacity:1; transform:none; pointer-events:auto;}
+.to-top:hover{border-color:var(--accent);}
+.to-top:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+/* Drawer close button (only when the sidebar is a drawer) */
+.sb-close{display:none;}
+
+@media (max-width: 900px){
+  .sb-close{
+    /* sticky so it stays reachable after the drawer scrolls to the current page */
+    display:flex; align-items:center; justify-content:center; position:sticky; top:10px; z-index:2;
+    margin:0 12px -36px auto;
+    width:36px; height:36px; border-radius:9px; border:1px solid var(--border);
+    box-shadow:0 4px 12px rgba(0,0,0,.3);
+    background:var(--bg3,var(--bg2)); color:var(--text); font-size:14px; cursor:pointer;
+  }
+  .sidebar .brand{padding-right:56px;}
+  .sidebar{overscroll-behavior:contain; padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));}
+  .nav-item{min-height:42px; display:flex; align-items:center;}
+  .nav-item:active{background:var(--bg3,rgba(127,127,127,.12));}
+  body.nav-locked{overflow:hidden; touch-action:none;}
+  body.nav-locked .sidebar{touch-action:pan-y;}
+
+  /* Auto-hiding top bar: slides away while reading down, returns on scroll up. */
+  .hub-bar, .menu-toggle{transition:transform .22s ease;}
+  body.bar-hidden .hub-bar{transform:translateY(-100%);}
+  body.bar-hidden .menu-toggle{transform:translateY(-56px);}
+}
+
+@media (max-width: 720px){
+  /* Top bar: [☰] [⌂] Topic / Page title ........ [☆] [🔖 n] */
+  .hub-bar > a:not(.hb-home){display:none;}
+  .hub-bar .hb-home{
+    display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+    width:34px; height:34px; border-radius:9px; border:1px solid var(--border);
+    color:var(--text); font-size:17px; font-weight:400; text-decoration:none;
+  }
+  .hub-bar .hb-title{display:flex; flex-direction:column; justify-content:center; min-width:0; flex:1; line-height:1.15;}
+  .hb-topic{font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--accent2,var(--accent)); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .hb-page{font-size:13px; color:var(--text); font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .hub-bar .bm-bar{margin-left:0; gap:6px;}
+
+  /* Section headings keep their Save star on the same line instead of a row of its own. */
+  .card h3{flex-wrap:nowrap; align-items:flex-start;}
+  .card h3 .num{flex-shrink:0;}
+  .card h3 .bm-section{flex-shrink:0; min-height:30px; margin-top:-3px;}
+
+  /* Pager: stacked full-width buttons are easier to hit with a thumb. */
+  .page-pager{grid-template-columns:1fr; gap:10px;}
+  .page-pager .pp-next{grid-column:1; order:-1;}
+  .page-pager > span:empty{display:none;}
+  .page-pager .pp-prev{text-align:left;}
+  .pp-name{white-space:normal;}
+
+  /* Hub page: brand + Bookmarks on one row, stats as a compact strip, tighter hero. */
+  .wrap{padding:22px 16px calc(64px + env(safe-area-inset-bottom, 0px));}
+  .hub-header{flex-wrap:wrap; align-items:center; margin-bottom:22px; gap:14px 10px;}
+  .hub-brand{flex:1 1 0; min-width:0; gap:12px;}
+  .hub-brand .mark{width:44px; height:44px; font-size:22px; border-radius:12px; flex-shrink:0;}
+  .hub-brand h1{font-size:19px;}
+  .hub-brand p{font-size:12px; line-height:1.4;}
+  .hub-header .bm-open{margin-left:0; order:2; min-height:38px;}
+  .hub-header .bm-open .bm-label{display:none;}
+  .hub-stats{
+    display:grid !important; order:3; width:100%; grid-template-columns:repeat(4,1fr); gap:8px;
+  }
+  .hub-stat{text-align:center; background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:9px 4px 7px;}
+  .hub-stat .n{font-size:18px; line-height:1.2;}
+  .hub-stat .l{font-size:9.5px; letter-spacing:.04em; line-height:1.3;}
+  .hero{padding:22px 18px; border-radius:18px; margin-bottom:26px; gap:16px;}
+  .hero h2{font-size:22px; line-height:1.25;}
+  .hero p{font-size:14px;}
+  .section-title{margin-bottom:12px;}
+  .topic-grid{gap:14px; margin-bottom:30px;}
+  .topic-card{padding:20px; gap:10px;}
+  .topic-card .icon{font-size:30px;}
+  .topic-card h3{font-size:18px;}
+  .topic-card:active{transform:scale(.985);}
+}
+
+/* Touch screens: no sticky hover lift on cards. */
+@media (hover: none){
+  .topic-card:hover{transform:none; box-shadow:none; border-color:var(--border);}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .hub-bar, .menu-toggle, .to-top, .page-pager a{transition:none;}
+}
