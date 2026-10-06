@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labs — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🧪 Labs <span class="badge intermediate">Hands-on</span></h2>
+    <p class="page-sub">Progressive challenges against the playground's sample database. Try each yourself first, then expand the solution.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> How to run these</h3>
+      <p>Open the <a href="playground.html">SQL Playground</a> in another tab. Each lab is written against the sample schema (<code class="inline">customers</code>, <code class="inline">orders</code>, <code class="inline">order_items</code>, <code class="inline">products</code>, <code class="inline">categories</code>, <code class="inline">employees</code>, <code class="inline">departments</code>). Paste your attempt, run it, then open the solution to compare.</p>
+      <div class="callout tip">💡 There's usually more than one correct query. If your result rows match, you solved it — even if your SQL differs from the sample solution.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Lab A — Filtering & sorting (beginner)</h3>
+      <p><strong>Task:</strong> list the 5 most expensive products in the Electronics category (id 1), showing name and price, highest first.</p>
+      <details>
+        <summary style="cursor:pointer;color:#5ba3d0;font-weight:700">Show solution</summary>
+        <pre class="code-block"><button class="copy-btn">Copy</button>SELECT name, price
+FROM products
+WHERE category_id = 1
+ORDER BY price DESC
+LIMIT 5;</pre>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Lab B — Aggregation (beginner/intermediate)</h3>
+      <p><strong>Task:</strong> for each order status, show how many orders have that status, ordered from most common to least.</p>
+      <details>
+        <summary style="cursor:pointer;color:#5ba3d0;font-weight:700">Show solution</summary>
+        <pre class="code-block"><button class="copy-btn">Copy</button>SELECT status, COUNT(*) AS n
+FROM orders
+GROUP BY status
+ORDER BY n DESC;</pre>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Lab C — Joins (intermediate)</h3>
+      <p><strong>Task:</strong> show each customer's name and their total number of orders, including customers with zero orders (they should show 0, not be dropped).</p>
+      <details>
+        <summary style="cursor:pointer;color:#5ba3d0;font-weight:700">Show solution</summary>
+        <pre class="code-block"><button class="copy-btn">Copy</button>SELECT c.name, COUNT(o.id) AS orders
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id
+GROUP BY c.id, c.name
+ORDER BY orders DESC;</pre>
+        <p style="font-size:12.5px;color:#8aa3b3">Key points: <code class="inline">LEFT JOIN</code> keeps zero-order customers; <code class="inline">COUNT(o.id)</code> (not <code class="inline">COUNT(*)</code>) correctly counts 0 for them, because COUNT ignores NULLs.</p>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Lab D — Subquery / revenue (intermediate)</h3>
+      <p><strong>Task:</strong> find the total revenue (sum of <code class="inline">quantity * unit_price</code>) for each order, and show only the orders whose revenue is above the average order revenue.</p>
+      <details>
+        <summary style="cursor:pointer;color:#5ba3d0;font-weight:700">Show solution</summary>
+        <pre class="code-block"><button class="copy-btn">Copy</button>WITH order_rev AS (
+  SELECT order_id, SUM(quantity * unit_price) AS revenue
+  FROM order_items
+  GROUP BY order_id
+)
+SELECT * FROM order_rev
+WHERE revenue &gt; (SELECT AVG(revenue) FROM order_rev)
+ORDER BY revenue DESC;</pre>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Lab E — Window functions (advanced)</h3>
+      <p><strong>Task:</strong> for each department, list the top 2 highest-paid employees with their name, salary, and rank within the department.</p>
+      <details>
+        <summary style="cursor:pointer;color:#5ba3d0;font-weight:700">Show solution</summary>
+        <pre class="code-block"><button class="copy-btn">Copy</button>WITH ranked AS (
+  SELECT name, department_id, salary,
+    DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rk
+  FROM employees
+)
+SELECT department_id, name, salary, rk
+FROM ranked
+WHERE rk &lt;= 2
+ORDER BY department_id, rk;</pre>
+        <p style="font-size:12.5px;color:#8aa3b3">Using <code class="inline">DENSE_RANK</code> keeps ties together without gaps. Swap in <code class="inline">ROW_NUMBER</code> if you want exactly 2 rows per department even on ties.</p>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">7</span> Lab F — Recursive CTE (advanced)</h3>
+      <p><strong>Task:</strong> show the management chain depth — every employee with how many levels of management sit above them (the CEO is level 1).</p>
+      <details>
+        <summary style="cursor:pointer;color:#5ba3d0;font-weight:700">Show solution</summary>
+        <pre class="code-block"><button class="copy-btn">Copy</button>WITH RECURSIVE chain AS (
+  SELECT id, name, manager_id, 1 AS level
+  FROM employees WHERE manager_id IS NULL
+  UNION ALL
+  SELECT e.id, e.name, e.manager_id, c.level + 1
+  FROM employees e JOIN chain c ON e.manager_id = c.id
+)
+SELECT level, name FROM chain ORDER BY level, name;</pre>
+      </details>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

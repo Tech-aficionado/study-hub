@@ -170,3 +170,38 @@ footer{text-align:center; color:#716487; font-size:11.5px; margin-top:44px; padd
   }
   .overlay.show{display:block; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:90;}
 }
+
+/* ---------- Playground ---------- */
+.pg-grid{display:grid; grid-template-columns:1.2fr .8fr; gap:18px; align-items:start;}
+@media(max-width:860px){ .pg-grid{grid-template-columns:1fr;} }
+.yaml-pane{
+  width:100%; min-height:230px; background:#09070f; color:#dcd6ea; border:1px solid var(--border);
+  border-radius:9px; padding:12px 14px; font-family:'SFMono-Regular',Consolas,monospace; font-size:13px;
+  line-height:1.5; resize:vertical; white-space:pre;
+}
+.yaml-pane:focus{outline:none; border-color:var(--accent);}
+.yaml-out{
+  margin-top:10px; background:#09070f; border:1px solid var(--border); border-radius:9px; padding:12px 14px;
+  font-family:'SFMono-Regular',Consolas,monospace; font-size:12.6px; white-space:pre-wrap; min-height:40px; color:#dcd6ea;
+}
+.yaml-out.ok{border-color:var(--green); color:var(--green);}
+.yaml-out.bad{border-color:var(--red); color:var(--red);}
+.live-panel{font-size:12.6px;}
+.live-panel .lp-sec{border-bottom:1px solid var(--border); padding:9px 0;}
+.live-panel .lp-sec:last-child{border-bottom:none;}
+.live-panel h4{margin:0 0 5px; font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:#6e6080;}
+.live-panel .dim{color:#6e6080;}
+.live-panel .pstat{font-size:10px; padding:1px 6px; border-radius:10px; border:1px solid var(--border);}
+.live-panel .pstat.passing{color:var(--green); border-color:rgba(63,221,148,.4);}
+.live-panel .pstat.failing{color:var(--red); border-color:rgba(255,107,107,.4);}
+.live-panel .pstat.pending{color:var(--yellow); border-color:rgba(240,180,41,.4);}
+.term-line .term-out.err{color:var(--red);}
+.term-line .term-out.dim{color:#6e6080;}
+.run-row{display:flex; gap:8px; align-items:center; padding:8px 12px; border-top:1px solid var(--border);}
+.run-row input{flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:monospace; font-size:16px; min-width:0;}
+.run-btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-weight:700; cursor:pointer; font-size:13px; flex-shrink:0;}
+.run-btn:hover{background:var(--accent2);}
+.challenge-list{list-style:none; padding:0; margin:0; font-size:13px;}
+.challenge-list li{padding:7px 0; border-bottom:1px solid var(--border);}
+.challenge-list li:last-child{border-bottom:none;}
+.challenge-list li.ch-done{color:var(--green);}

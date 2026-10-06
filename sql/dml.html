@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INSERT, UPDATE, DELETE, UPSERT — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">✏️ INSERT, UPDATE, DELETE & UPSERT <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Changing data safely — and the dialect-specific "insert or update" patterns.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> INSERT — adding rows</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- one row</span>
+INSERT INTO customers (name, email) VALUES ('Ana', 'ana@example.com');
+
+<span class="cmt">-- many rows in one statement (faster than many separate INSERTs)</span>
+INSERT INTO customers (name, email) VALUES
+  ('Ben', 'ben@example.com'),
+  ('Carla', 'carla@example.com');
+
+<span class="cmt">-- insert the result of a query</span>
+INSERT INTO archived_orders (id, total)
+SELECT id, total FROM orders WHERE order_date &lt; '2020-01-01';</pre>
+      <div class="callout tip">💡 Returning the new id: PostgreSQL &amp; SQLite support <code class="inline">INSERT … RETURNING id;</code>. MySQL uses <code class="inline">LAST_INSERT_ID()</code> after the insert.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> UPDATE — changing existing rows</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>UPDATE products
+SET price = price * 1.10          <span class="cmt">-- 10% price rise</span>
+WHERE category_id = 1;
+
+<span class="cmt">-- update using a value from another table (PostgreSQL)</span>
+UPDATE orders o
+SET status = 'vip'
+FROM customers c
+WHERE c.id = o.customer_id AND c.country = 'US';</pre>
+      <div class="callout danger">🛑 An <code class="inline">UPDATE</code> with no <code class="inline">WHERE</code> touches EVERY row. Preview with a <code class="inline">SELECT</code> using the same WHERE first, and run inside a transaction so you can <code class="inline">ROLLBACK</code> a mistake.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> DELETE — removing rows</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>DELETE FROM orders WHERE status = 'cancelled';
+
+<span class="cmt">-- empty a whole table fast (resets, no per-row triggers/undo granularity)</span>
+TRUNCATE TABLE sessions;    <span class="cmt">-- PostgreSQL / MySQL; SQLite uses DELETE FROM sessions;</span></pre>
+      <table>
+        <tr><th></th><th>DELETE</th><th>TRUNCATE</th></tr>
+        <tr><td>Scope</td><td>Can target specific rows with WHERE</td><td>All rows only</td></tr>
+        <tr><td>Speed on big tables</td><td>Slower (row by row, logged)</td><td>Much faster (deallocates pages)</td></tr>
+        <tr><td>Fires row triggers</td><td>Yes</td><td>No (in most engines)</td></tr>
+        <tr><td>Resets auto-increment</td><td>No</td><td>Usually yes</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> UPSERT — insert, or update if it already exists</h3>
+      <p>"Insert this row; if a row with the same key already exists, update it instead." The syntax is one of the biggest dialect differences in all of SQL.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- PostgreSQL &amp; SQLite: ON CONFLICT</span>
+INSERT INTO customers (email, name) VALUES ('ana@example.com', 'Ana B.')
+ON CONFLICT (email)
+DO UPDATE SET name = EXCLUDED.name;   <span class="cmt">-- EXCLUDED = the row we tried to insert</span>
+
+<span class="cmt">-- MySQL: ON DUPLICATE KEY UPDATE</span>
+INSERT INTO customers (email, name) VALUES ('ana@example.com', 'Ana B.')
+ON DUPLICATE KEY UPDATE name = VALUES(name);
+<span class="cmt">-- MySQL 8.0.19+: ... AS new ON DUPLICATE KEY UPDATE name = new.name;</span></pre>
+      <div class="callout warn">⚠️ UPSERT needs a UNIQUE or PRIMARY KEY constraint to detect the "conflict" — <code class="inline">ON CONFLICT (email)</code> only works if <code class="inline">email</code> is UNIQUE. Without a unique key there is nothing to conflict on.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Soft deletes — a common real-world pattern</h3>
+      <p>Many apps never physically DELETE user data; they set a <code class="inline">deleted_at</code> timestamp and filter it out. This preserves history, enables "undo," and keeps foreign keys intact.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>UPDATE users SET deleted_at = now() WHERE id = 42;   <span class="cmt">-- "delete"</span>
+SELECT * FROM users WHERE deleted_at IS NULL;         <span class="cmt">-- "live" rows only</span></pre>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

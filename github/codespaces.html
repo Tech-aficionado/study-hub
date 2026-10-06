@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codespaces — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">☁️ Codespaces <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">A full, cloud-hosted dev environment that spins up from your repo in seconds — "it works on my machine" solved.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What a Codespace is</h3>
+      <p>A <strong>Codespace</strong> is a development environment running on a GitHub-hosted container in the cloud, which you reach through VS Code in the browser (or your local VS Code / JetBrains via a connection). The repo is already cloned, the right tools are installed, and nothing touches your laptop. New contributors go from "open repo" to "running code" in under a minute.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The dev container (<code class="inline">devcontainer.json</code>)</h3>
+      <p>A Codespace is defined by a <strong>dev container</strong> spec in <code class="inline">.devcontainer/devcontainer.json</code>. It pins the base image, tools, VS Code extensions, forwarded ports and setup commands — so <em>everyone</em> gets an identical, reproducible environment.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .devcontainer/devcontainer.json</span>
+{
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "forwardPorts": [3000],
+  "postCreateCommand": "npm install",
+  "customizations": {
+    "vscode": { "extensions": ["dbaeumer.vscode-eslint"] }
+  }
+}</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Creating and using one</h3>
+      <ul>
+        <li>From the repo: <strong>Code → Codespaces → Create codespace on main</strong>.</li>
+        <li>From the CLI: <code class="inline">gh codespace create</code>, then <code class="inline">gh codespace code</code> to open it.</li>
+        <li>Ports your app opens are <strong>auto-forwarded</strong> with a shareable URL for a quick preview.</li>
+        <li>It is a real Linux box — a terminal, Git, your tools, all pre-set.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Lifecycle and cost</h3>
+      <p>Codespaces bill by the minute of compute plus storage, with a monthly free allowance for personal accounts. To control cost: they <strong>auto-suspend</strong> after an idle timeout, and you should <strong>delete</strong> ones you no longer need.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>gh codespace list
+gh codespace stop -c &lt;name&gt;
+gh codespace delete -c &lt;name&gt;</pre>
+      <div class="callout warn">⚠️ A stopped codespace still costs storage; a deleted one with uncommitted changes loses them. Commit and push before deleting.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> When to reach for it</h3>
+      <ul>
+        <li>Onboarding — contributors skip hours of local setup.</li>
+        <li>Reviewing a PR in a real environment with one click (<code class="inline">gh codespace create -r owner/repo -b pr-branch</code>).</li>
+        <li>Working from a locked-down or underpowered machine (iPad, Chromebook).</li>
+        <li>Keeping project toolchains isolated from each other.</li>
+      </ul>
+      <div class="callout tip">💡 The same <code class="inline">devcontainer.json</code> also powers VS Code's local "Dev Containers" extension, so the environment is portable beyond Codespaces.</div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

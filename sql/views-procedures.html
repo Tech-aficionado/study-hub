@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Views, Procedures & Triggers — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🗂️ Views, Procedures & Triggers <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Reusable logic that lives inside the database — saved queries, callable routines, and automatic reactions to data changes.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Views — a saved query that looks like a table</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>CREATE VIEW active_customers AS
+SELECT id, name, email FROM customers WHERE deleted_at IS NULL;
+
+SELECT * FROM active_customers WHERE email LIKE '%@gmail.com';
+<span class="cmt">-- Query the view like a table — it re-runs the underlying SELECT each time</span></pre>
+      <div class="callout tip">💡 Views shine for two things: hiding complexity (a messy 5-table join becomes <code class="inline">SELECT * FROM report</code>) and access control (grant SELECT on a view that excludes the <code class="inline">salary</code> column instead of the raw table).</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Materialized views — cached results</h3>
+      <p>A regular view re-computes every query. A <strong>materialized view</strong> stores the result on disk and you refresh it on a schedule — great for expensive analytics that don't need to be real-time.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- PostgreSQL</span>
+CREATE MATERIALIZED VIEW monthly_revenue AS
+SELECT date_trunc('month', order_date) AS month, SUM(total) AS revenue
+FROM orders GROUP BY 1;
+
+REFRESH MATERIALIZED VIEW monthly_revenue;   <span class="cmt">-- recompute when you want fresh data</span></pre>
+      <div class="callout warn">⚠️ PostgreSQL and Oracle have native materialized views. MySQL does <strong>not</strong> — you emulate them with a real table plus a scheduled job/trigger. SQLite has no materialized views either.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Stored procedures and functions</h3>
+      <p>Routines that live in the database and run close to the data — useful for multi-step logic, batch jobs, and enforcing rules centrally.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- PostgreSQL function</span>
+CREATE OR REPLACE FUNCTION order_total(p_order_id INT)
+RETURNS NUMERIC AS $$
+  SELECT SUM(quantity * unit_price)
+  FROM order_items WHERE order_id = p_order_id;
+$$ LANGUAGE sql;
+
+SELECT order_total(10);</pre>
+      <table>
+        <tr><th>Dialect</th><th>Procedural language</th></tr>
+        <tr><td>PostgreSQL</td><td>PL/pgSQL (and others), <code class="inline">CREATE FUNCTION</code> / <code class="inline">CREATE PROCEDURE</code></td></tr>
+        <tr><td>MySQL</td><td><code class="inline">CREATE PROCEDURE … BEGIN … END</code> with a changed <code class="inline">DELIMITER</code></td></tr>
+        <tr><td>SQLite</td><td>No stored procedures — do it in application code</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Triggers — automatic reactions to changes</h3>
+      <p>A trigger runs a block of SQL automatically when a row is inserted, updated, or deleted. Common uses: audit logs, maintaining denormalized counts, enforcing complex rules, setting <code class="inline">updated_at</code>.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- SQLite: write an audit row whenever a product's price changes</span>
+CREATE TRIGGER log_price_change
+AFTER UPDATE OF price ON products
+FOR EACH ROW
+BEGIN
+  INSERT INTO price_log (product_id, old_price, new_price, changed_at)
+  VALUES (OLD.id, OLD.price, NEW.price, datetime('now'));
+END;</pre>
+      <p><code class="inline">OLD</code> and <code class="inline">NEW</code> reference the row before and after the change. Triggers fire <code class="inline">BEFORE</code> or <code class="inline">AFTER</code> the operation.</p>
+      <div class="callout danger">🛑 Triggers are powerful but invisible — logic that fires with no call site in your app code is hard to debug and easy to forget. Use them for cross-cutting concerns (auditing), not core business logic that belongs in reviewable application code.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> When to push logic into the database vs the app</h3>
+      <ul>
+        <li><strong>In the DB:</strong> integrity rules every client must obey, auditing, performance-critical set operations, and logic shared by many apps.</li>
+        <li><strong>In the app:</strong> business rules that change often, anything needing tests/version control/code review, and logic you want portable across database engines.</li>
+      </ul>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

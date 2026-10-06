@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joins In Depth — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🧷 Joins In Depth <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Every join type — INNER, LEFT, RIGHT, FULL, CROSS, SELF — with both the Venn picture and what actually happens at the row level.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The two tables we'll join</h3>
+      <p>Throughout, picture a small <code class="inline">customers</code> table and an <code class="inline">orders</code> table. A join matches rows where <code class="inline">orders.customer_id = customers.id</code>.</p>
+      <div class="svgpanel"><svg viewBox="0 0 600 170" xmlns="http://www.w3.org/2000/svg">
+        <text x="150" y="18" text-anchor="middle" fill="#8aa3b3" font-size="11">customers</text>
+        <rect x="30" y="28" width="240" height="120" rx="6" fill="#122334" stroke="#336791"/>
+        <text x="45" y="48" fill="#f0b429" font-size="11">id</text><text x="120" y="48" fill="#8aa3b3" font-size="11">name</text>
+        <text x="45" y="70" fill="#d6e5ec" font-size="11">1</text><text x="120" y="70" fill="#d6e5ec" font-size="11">Ana</text>
+        <text x="45" y="92" fill="#d6e5ec" font-size="11">2</text><text x="120" y="92" fill="#d6e5ec" font-size="11">Ben</text>
+        <text x="45" y="114" fill="#d6e5ec" font-size="11">3</text><text x="120" y="114" fill="#d6e5ec" font-size="11">Carla (no orders)</text>
+        <text x="450" y="18" text-anchor="middle" fill="#8aa3b3" font-size="11">orders</text>
+        <rect x="330" y="28" width="240" height="120" rx="6" fill="#122334" stroke="#336791"/>
+        <text x="345" y="48" fill="#f0b429" font-size="11">id</text><text x="410" y="48" fill="#5ba3d0" font-size="11">customer_id</text>
+        <text x="345" y="70" fill="#d6e5ec" font-size="11">10</text><text x="410" y="70" fill="#d6e5ec" font-size="11">1</text>
+        <text x="345" y="92" fill="#d6e5ec" font-size="11">11</text><text x="410" y="92" fill="#d6e5ec" font-size="11">1</text>
+        <text x="345" y="114" fill="#d6e5ec" font-size="11">12</text><text x="410" y="114" fill="#d6e5ec" font-size="11">99 (no customer)</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> INNER JOIN — intersection</h3>
+      <div class="svgpanel"><svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
+        <clipPath id="r1"><circle cx="190" cy="65" r="52"/></clipPath>
+        <circle cx="110" cy="65" r="52" fill="none" stroke="#5ba3d0" stroke-width="2"/>
+        <circle cx="190" cy="65" r="52" fill="none" stroke="#336791" stroke-width="2"/>
+        <g clip-path="url(#r1)"><circle cx="110" cy="65" r="52" fill="#3fdd94" opacity="0.5"/></g>
+        <text x="150" y="70" text-anchor="middle" fill="#06231a" font-size="11" font-weight="700">INNER</text>
+      </svg></div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT c.name, o.id AS order_id
+FROM customers c
+INNER JOIN orders o ON o.customer_id = c.id;</pre>
+      <p>Only rows that match on <strong>both</strong> sides. Carla (no orders) and order 12 (no matching customer) both disappear. Result: Ana×2 orders, Ben×0 would also disappear if Ben had no orders.</p>
+      <table>
+        <tr><th>name</th><th>order_id</th></tr>
+        <tr><td>Ana</td><td>10</td></tr>
+        <tr><td>Ana</td><td>11</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> LEFT JOIN — all of the left, matched or not</h3>
+      <div class="svgpanel"><svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
+        <clipPath id="r2"><circle cx="110" cy="65" r="52"/></clipPath>
+        <g clip-path="url(#r2)"><rect x="40" y="10" width="140" height="110" fill="#f0b429" opacity="0.45"/></g>
+        <circle cx="110" cy="65" r="52" fill="none" stroke="#5ba3d0" stroke-width="2"/>
+        <circle cx="190" cy="65" r="52" fill="none" stroke="#336791" stroke-width="2"/>
+        <text x="100" y="70" text-anchor="middle" fill="#3a2a06" font-size="11" font-weight="700">LEFT</text>
+      </svg></div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT c.name, o.id AS order_id
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id;</pre>
+      <p>Every customer appears. Carla has no order, so <code class="inline">order_id</code> is NULL for her.</p>
+      <table>
+        <tr><th>name</th><th>order_id</th></tr>
+        <tr><td>Ana</td><td>10</td></tr>
+        <tr><td>Ana</td><td>11</td></tr>
+        <tr><td>Ben</td><td>NULL</td></tr>
+        <tr><td>Carla</td><td>NULL</td></tr>
+      </table>
+      <div class="callout tip">💡 "Anti-join" — find rows with NO match by keeping the LEFT JOIN rows where the right side is NULL: <code class="inline">… LEFT JOIN orders o ON … WHERE o.id IS NULL</code> finds customers who never ordered.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> RIGHT JOIN and FULL OUTER JOIN</h3>
+      <p><strong>RIGHT JOIN</strong> keeps every row from the right table. It's just a mirror of LEFT JOIN — most people swap the table order and use LEFT instead, as it reads more naturally.</p>
+      <p><strong>FULL OUTER JOIN</strong> keeps everything from both sides, matching where possible and NULL-filling where not. Perfect for reconciling two datasets ("what's in A but not B, and vice-versa").</p>
+      <div class="svgpanel"><svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="110" cy="65" r="52" fill="#9f7aea" opacity="0.4"/>
+        <circle cx="190" cy="65" r="52" fill="#9f7aea" opacity="0.4"/>
+        <circle cx="110" cy="65" r="52" fill="none" stroke="#5ba3d0" stroke-width="2"/>
+        <circle cx="190" cy="65" r="52" fill="none" stroke="#336791" stroke-width="2"/>
+        <text x="150" y="70" text-anchor="middle" fill="#e9f1f5" font-size="11" font-weight="700">FULL</text>
+      </svg></div>
+      <div class="callout danger">🛑 MySQL has <strong>no</strong> <code class="inline">FULL OUTER JOIN</code>. Emulate it with <code class="inline">LEFT JOIN … UNION … RIGHT JOIN …</code>. PostgreSQL, SQLite (3.39+), SQL Server, and Oracle support it natively.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> CROSS JOIN — every combination</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT s.size, col.color
+FROM sizes s
+CROSS JOIN colors col;    <span class="cmt">-- every size paired with every color (Cartesian product)</span></pre>
+      <p>No <code class="inline">ON</code> clause — it pairs every left row with every right row. 3 sizes × 4 colors = 12 rows. Useful for generating grids/combinations.</p>
+      <div class="callout warn">⚠️ An <em>accidental</em> cross join is a classic bug: forget the <code class="inline">ON</code> condition (or write <code class="inline">FROM a, b</code> with no join predicate in WHERE) and you get the full Cartesian product — millions of rows from two modest tables.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> SELF JOIN — a table joined to itself</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT e.name AS employee, m.name AS manager
+FROM employees e
+LEFT JOIN employees m ON m.id = e.manager_id;
+<span class="cmt">-- Alias the SAME table twice: 'e' as the worker, 'm' as their manager</span></pre>
+      <p>You alias one table as two logical copies. Essential for hierarchies (employee → manager), finding pairs, or comparing rows within the same table.</p>
+      <div class="svgpanel"><svg viewBox="0 0 420 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="40" width="120" height="40" rx="8" fill="#122334" stroke="#336791"/><text x="90" y="64" text-anchor="middle" fill="#d6e5ec" font-size="11">e = employees</text>
+        <rect x="270" y="40" width="120" height="40" rx="8" fill="#122334" stroke="#336791"/><text x="330" y="64" text-anchor="middle" fill="#d6e5ec" font-size="11">m = employees</text>
+        <line x1="150" y1="60" x2="270" y2="60" stroke="#5ba3d0" stroke-width="2"/>
+        <text x="210" y="52" text-anchor="middle" fill="#5ba3d0" font-size="10">e.manager_id = m.id</text>
+        <text x="210" y="100" text-anchor="middle" fill="#5c7686" font-size="10">one physical table, two aliases</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">7</span> USING and NATURAL JOIN</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- USING: shorthand when both sides share the column NAME</span>
+SELECT * FROM orders JOIN customers USING (customer_id);  <span class="cmt">-- needs a 'customer_id' in both</span>
+
+<span class="cmt">-- NATURAL JOIN: auto-joins on ALL same-named columns — avoid, it's fragile</span>
+SELECT * FROM orders NATURAL JOIN customers;</pre>
+      <div class="callout warn">⚠️ Avoid <code class="inline">NATURAL JOIN</code> in real code: adding a same-named column later (like <code class="inline">created_at</code> in both tables) silently changes the join condition and breaks the query. Always write an explicit <code class="inline">ON</code>.</div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

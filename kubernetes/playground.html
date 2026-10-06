@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kubernetes Playground — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+<style>
+  .pg-input-row{display:flex; gap:8px; align-items:center; padding:8px 14px; border-top:1px solid var(--border); flex-wrap:wrap;}
+  .pg-input-row .pgp{color:var(--green); font-family:monospace; flex-shrink:0;}
+  #pgInput{flex:1; min-width:140px; background:transparent; border:none; outline:none; color:var(--text); font-family:monospace; font-size:16px;}
+  #pgRunBtn{background:var(--accent); color:#fff; border:none; border-radius:7px; padding:7px 16px; font-weight:700; cursor:pointer; font-size:13px;}
+  #pgRunBtn:hover{background:var(--accent2);}
+  #pgResetBtn,#pgApplyBtn{background:var(--bg2); color:var(--text); border:1px solid var(--border); border-radius:7px; padding:7px 14px; cursor:pointer; font-size:13px;}
+  .term-line.pg-hint-line .term-out{color:#5e6c90;}
+  .term-line.term-err .term-out{color:var(--red);}
+  #pgYaml{width:100%; min-height:200px; background:#060a14; color:#d7deef; border:1px solid var(--border); border-radius:9px; padding:14px; font-family:'SFMono-Regular',Consolas,monospace; font-size:13px; resize:vertical; line-height:1.5;}
+  #pgCluster{font-size:13px;}
+  .pg-ns{color:var(--muted); font-size:12px; margin-bottom:10px;}
+  .pg-nodes{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  @media(max-width:620px){ .pg-nodes{grid-template-columns:1fr;} }
+  .pg-node{background:var(--bg2); border:1px solid var(--border); border-radius:9px; padding:10px 12px;}
+  .pg-node.pend-node{grid-column:1/-1; border-style:dashed;}
+  .pg-node-h{font-weight:700; font-size:12.5px; margin-bottom:8px; color:var(--text);}
+  .pg-empty{color:#5e6c90; font-size:11.5px; font-style:italic;}
+  .pg-pod{font-family:monospace; font-size:11.5px; padding:4px 7px; border-radius:6px; margin:4px 0; border:1px solid var(--border); display:flex; justify-content:space-between; gap:8px; align-items:center;}
+  .pg-pod.ok{border-color:rgba(63,221,148,.5); background:rgba(63,221,148,.08);}
+  .pg-pod.bad{border-color:rgba(255,107,107,.5); background:rgba(255,107,107,.08);}
+  .pg-pod.pend{border-color:rgba(240,180,41,.5); background:rgba(240,180,41,.08);}
+  .pg-pst{font-size:10px; color:var(--muted); white-space:nowrap;}
+  .pg-svcs{margin-top:14px; background:var(--bg2); border:1px solid var(--border); border-radius:9px; padding:10px 12px;}
+  .pg-svc{font-family:monospace; font-size:11.5px; padding:4px 0; border-bottom:1px solid var(--border);}
+  .pg-svc:last-child{border-bottom:none;}
+  .pg-sel{color:#5e6c90;}
+  .pg-noep{color:var(--red); font-weight:700;}
+  #pgChallenges{list-style:none; padding:0; margin:0;}
+  #pgChallenges li{padding:7px 0; border-bottom:1px solid var(--border); font-size:12.8px; color:var(--muted);}
+  #pgChallenges li:last-child{border-bottom:none;}
+  #pgChallenges li.pg-done{color:var(--text);}
+  #pgChallenges .pg-check{margin-right:8px;}
+  #pgTryHint{display:none; background:rgba(50,108,229,.12); border:1px solid var(--accent); border-radius:9px; padding:12px 14px; margin-bottom:14px; font-size:13px;}
+  .pg-term-wrap .term-body{min-height:220px; max-height:360px;}
+</style>
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🕹️ Kubernetes Playground <span class="badge beginner">Interactive</span></h2>
+    <p class="page-sub">A simulated cluster in your browser. Run real <code class="inline">kubectl</code> commands, watch Pods appear on nodes, and clear the challenges. Nothing here touches a real machine.</p>
+
+    <div id="pgTryHint"></div>
+
+    <div class="card">
+      <h3><span class="num">1</span> How to use it</h3>
+      <ul>
+        <li>Type a command and press <strong>Enter</strong> (or tap <strong>Run</strong> on mobile).</li>
+        <li><strong>Core:</strong> <code class="inline">kubectl get pods|deploy|rs|svc|nodes|ns|cm|secrets|endpoints|all</code> (with <code class="inline">-n</code>, <code class="inline">-A</code>, <code class="inline">-o wide</code>, <code class="inline">-o yaml</code>, <code class="inline">-l</code>, <code class="inline">--show-labels</code>), <code class="inline">describe</code>, <code class="inline">create deployment</code>, <code class="inline">expose</code>, <code class="inline">scale</code>, <code class="inline">set image</code>, <code class="inline">rollout status|history|undo</code>, <code class="inline">delete</code>, <code class="inline">logs</code>, <code class="inline">exec</code>, <code class="inline">label</code>, <code class="inline">run</code>, <code class="inline">apply -f -</code>.</li>
+        <li><strong>Tab</strong> completes, <strong>↑ / ↓</strong> recall history, <code class="inline">help</code> or <code class="inline">help &lt;cmd&gt;</code> for reference.</li>
+        <li><strong>Break things on purpose:</strong> an image containing <code class="inline">notexist</code> → ImagePullBackOff; <code class="inline">kubectl run bad --image=busybox -- exit 1</code> → CrashLoopBackOff; a Pod with a huge CPU request (via the YAML pane) → Pending + FailedScheduling.</li>
+      </ul>
+    </div>
+
+    <div class="card pg-term-wrap">
+      <h3><span class="num">2</span> Terminal</h3>
+      <div class="terminal">
+        <div class="term-head"><span class="dot" style="background:#ff5f56"></span><span class="dot" style="background:#ffbd2e"></span><span class="dot" style="background:#27c93f"></span><span style="margin-left:8px;">kubectl-playground — simulated cluster</span></div>
+        <div class="term-body" id="pgTerm"></div>
+        <div class="pg-input-row">
+          <span class="pgp">$</span>
+          <input id="pgInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="kubectl get pods" aria-label="Playground command input">
+          <button id="pgRunBtn" type="button">Run</button>
+          <button id="pgResetBtn" type="button">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Live cluster</h3>
+      <div id="pgCluster"></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> YAML editor — <code class="inline">kubectl apply -f -</code></h3>
+      <p class="page-sub" style="margin-bottom:10px;">Edit the manifest below and press <strong>Apply YAML</strong>. Supports Deployment, Service, ConfigMap and Pod (a 2-space-indented subset). A missing <code class="inline">selector</code>, or a selector that doesn't match the template labels, is rejected just like the real API server.</p>
+      <textarea id="pgYaml" spellcheck="false">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      image: nginx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  type: ClusterIP
+  selector:
+    app: api
+  port: 80
+  targetPort: 80</textarea>
+      <div style="margin-top:10px;"><button id="pgApplyBtn" type="button">Apply YAML</button></div>
+      <div class="callout tip">💡 Try breaking it: change the Service <code class="inline">selector</code> to <code class="inline">app: web</code> and apply — the Service will show <strong>NO ENDPOINTS</strong> because no Pod carries that label. Or set the template labels to not match the Deployment selector to see the validation error.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Guided challenges</h3>
+      <p class="page-sub" style="margin-bottom:12px;">Each ticks itself ✅ automatically when your commands satisfy it.</p>
+      <ul id="pgChallenges"></ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> A worked starter sequence</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create deployment web --image=nginx --replicas=3
+kubectl get pods -o wide
+kubectl expose deployment web --port=80 --type=NodePort
+kubectl get svc
+kubectl describe svc web            <span class="cmt"># see the Endpoints line</span>
+kubectl scale deployment/web --replicas=5
+kubectl set image deployment/web web=nginx:1.27
+kubectl rollout history deployment/web
+kubectl delete pod &lt;one-of-the-pod-names&gt;   <span class="cmt"># watch it get recreated</span></pre>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="js/interview-data.js"></script>
+<script src="js/playground.js"></script>
+</body>
+</html>

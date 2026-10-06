@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Troubleshooting runbook — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🩺 Troubleshooting runbook <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">The five failures you'll actually hit, each with the exact commands to diagnose and the real fix.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> First four commands, every time</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl get pods -o wide                    <span class="cmt"># status, restarts, node</span>
+kubectl describe pod &lt;pod&gt;                   <span class="cmt"># Events at the bottom are gold</span>
+kubectl logs &lt;pod&gt; [--previous] [-c &lt;ctr&gt;]   <span class="cmt"># app's own errors; --previous for a crashed container</span>
+kubectl get events --sort-by=.lastTimestamp <span class="cmt"># cluster-level timeline</span></pre>
+      <p>The <strong>Events</strong> at the bottom of <code class="inline">describe</code> name the exact reason (FailedScheduling, Failed, BackOff, Unhealthy). Read them before guessing.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Decision tree</h3>
+      <div class="svgpanel"><svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="ta" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#6a9bf0"/></marker></defs>
+        <rect x="235" y="14" width="170" height="36" rx="8" fill="#0e1830" stroke="#f0b429" stroke-width="2"/><text x="320" y="36" text-anchor="middle" fill="#eaeef8" font-size="11" font-weight="700">What's the STATUS?</text>
+
+        <line x1="320" y1="50" x2="90" y2="86" stroke="#6a9bf0" stroke-width="1.4" marker-end="url(#ta)"/>
+        <line x1="320" y1="50" x2="250" y2="86" stroke="#6a9bf0" stroke-width="1.4" marker-end="url(#ta)"/>
+        <line x1="320" y1="50" x2="400" y2="86" stroke="#6a9bf0" stroke-width="1.4" marker-end="url(#ta)"/>
+        <line x1="320" y1="50" x2="560" y2="86" stroke="#6a9bf0" stroke-width="1.4" marker-end="url(#ta)"/>
+
+        <rect x="20" y="88" width="140" height="34" rx="7" fill="#0e1830" stroke="#ff6b6b"/><text x="90" y="109" text-anchor="middle" fill="#eaeef8" font-size="9.5">Pending</text>
+        <rect x="180" y="88" width="150" height="34" rx="7" fill="#0e1830" stroke="#ff6b6b"/><text x="255" y="109" text-anchor="middle" fill="#eaeef8" font-size="9.5">ImagePullBackOff</text>
+        <rect x="345" y="88" width="150" height="34" rx="7" fill="#0e1830" stroke="#ff6b6b"/><text x="420" y="109" text-anchor="middle" fill="#eaeef8" font-size="9.5">CrashLoopBackOff</text>
+        <rect x="505" y="88" width="120" height="34" rx="7" fill="#0e1830" stroke="#ff6b6b"/><text x="565" y="109" text-anchor="middle" fill="#eaeef8" font-size="9.5">Running, no traffic</text>
+
+        <line x1="90" y1="122" x2="90" y2="150" stroke="#6a9bf0" stroke-width="1.3" marker-end="url(#ta)"/>
+        <line x1="255" y1="122" x2="255" y2="150" stroke="#6a9bf0" stroke-width="1.3" marker-end="url(#ta)"/>
+        <line x1="420" y1="122" x2="420" y2="150" stroke="#6a9bf0" stroke-width="1.3" marker-end="url(#ta)"/>
+        <line x1="565" y1="122" x2="565" y2="150" stroke="#6a9bf0" stroke-width="1.3" marker-end="url(#ta)"/>
+
+        <rect x="15" y="152" width="150" height="56" rx="7" fill="#121f3c" stroke="#3fdd94"/><text x="90" y="172" text-anchor="middle" fill="#eaeef8" font-size="8.8">no node fits:</text><text x="90" y="186" text-anchor="middle" fill="#8793b8" font-size="8">resources / taint /</text><text x="90" y="198" text-anchor="middle" fill="#8793b8" font-size="8">PVC unbound</text>
+        <rect x="180" y="152" width="150" height="56" rx="7" fill="#121f3c" stroke="#3fdd94"/><text x="255" y="172" text-anchor="middle" fill="#eaeef8" font-size="8.8">image can't pull:</text><text x="255" y="186" text-anchor="middle" fill="#8793b8" font-size="8">bad tag / private</text><text x="255" y="198" text-anchor="middle" fill="#8793b8" font-size="8">no imagePullSecret</text>
+        <rect x="345" y="152" width="150" height="56" rx="7" fill="#121f3c" stroke="#3fdd94"/><text x="420" y="172" text-anchor="middle" fill="#eaeef8" font-size="8.8">starts then dies:</text><text x="420" y="186" text-anchor="middle" fill="#8793b8" font-size="8">bad cmd / config /</text><text x="420" y="198" text-anchor="middle" fill="#8793b8" font-size="8">OOM / failing probe</text>
+        <rect x="505" y="152" width="125" height="56" rx="7" fill="#121f3c" stroke="#3fdd94"/><text x="567" y="172" text-anchor="middle" fill="#eaeef8" font-size="8.8">no endpoints:</text><text x="567" y="186" text-anchor="middle" fill="#8793b8" font-size="8">selector / readiness /</text><text x="567" y="198" text-anchor="middle" fill="#8793b8" font-size="8">targetPort</text>
+
+        <rect x="140" y="250" width="360" height="34" rx="8" fill="#0e1830" stroke="#326ce5" stroke-width="2"/><text x="320" y="272" text-anchor="middle" fill="#eaeef8" font-size="10" font-weight="700">describe pod → read Events → logs/--previous</text>
+        <line x1="90" y1="208" x2="300" y2="248" stroke="#6a9bf0" stroke-width="1" marker-end="url(#ta)"/>
+        <line x1="255" y1="208" x2="310" y2="248" stroke="#6a9bf0" stroke-width="1" marker-end="url(#ta)"/>
+        <line x1="420" y1="208" x2="340" y2="248" stroke="#6a9bf0" stroke-width="1" marker-end="url(#ta)"/>
+        <line x1="565" y1="208" x2="360" y2="248" stroke="#6a9bf0" stroke-width="1" marker-end="url(#ta)"/>
+        <text x="320" y="320" text-anchor="middle" fill="#8793b8" font-size="9">Events + logs name the real cause; the status is only the symptom.</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> ImagePullBackOff / ErrImagePull</h3>
+      <p>The kubelet can't pull the image. <code class="inline">describe pod</code> → Events shows the exact reason.</p>
+      <ul>
+        <li><strong>Wrong name/tag</strong> — typo, or a tag that doesn't exist (<code class="inline">manifest unknown</code>). Fix the image reference.</li>
+        <li><strong>Private registry, no creds</strong> — create a <code class="inline">docker-registry</code> Secret and reference it via <code class="inline">imagePullSecrets</code> (or on the ServiceAccount).</li>
+        <li><strong>Rate limited</strong> (Docker Hub <code class="inline">toomanyrequests</code>) — authenticate, or mirror the image.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create secret docker-registry regcred \
+  --docker-server=registry.example.com --docker-username=U --docker-password=P
+<span class="cmt"># then in the Pod spec: imagePullSecrets: [{ name: regcred }]</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> CrashLoopBackOff</h3>
+      <p>The container starts, exits, and the kubelet keeps restarting it with growing back-off. <strong>CrashLoop is a symptom, not a cause</strong> — the logs hold the cause.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl logs &lt;pod&gt; --previous      <span class="cmt"># the crashed instance's output</span>
+kubectl describe pod &lt;pod&gt;          <span class="cmt"># Last State → Reason + exit code</span></pre>
+      <ul>
+        <li>App error on boot (bad config, missing env/Secret, can't reach a dependency) — fix the config; use an init container to wait for dependencies.</li>
+        <li><strong>Exit 137 = OOMKilled</strong> → see card 5.</li>
+        <li>Failing <strong>liveness probe</strong> restarting a healthy-but-slow app → add a <code class="inline">startupProbe</code> (see <a href="probes.html">Probes</a>).</li>
+        <li>Container has no long-running process (exits 0 immediately) — the command returns instead of staying up.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Pending, OOMKilled, and "Service but no response"</h3>
+      <p><strong>Pending</strong> — the scheduler can't place the Pod. <code class="inline">describe pod</code> → Event <code class="inline">FailedScheduling</code> gives the reason:</p>
+      <ul>
+        <li><em>Insufficient cpu/memory</em> — requests exceed any node's free capacity. Lower requests, or add nodes (Cluster Autoscaler).</li>
+        <li><em>had taint ... that the pod didn't tolerate</em> — add a toleration or target other nodes.</li>
+        <li><em>unbound PersistentVolumeClaim</em> — no StorageClass / PVC can't bind (see <a href="storage.html">Storage</a>).</li>
+        <li><em>didn't match node affinity/selector</em> — no node has the required labels.</li>
+      </ul>
+      <p><strong>OOMKilled</strong> (exit 137) — container exceeded its memory limit. <code class="inline">describe pod</code> shows <code class="inline">Last State: Terminated, Reason: OOMKilled</code>. Raise the limit if usage is legit, fix a leak if it climbs forever, or lower in-app caches (see <a href="resources-qos.html">Resources &amp; QoS</a>).</p>
+      <p><strong>Service exists but nothing responds</strong> — almost always <strong>empty endpoints</strong>:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl get endpointslices -l kubernetes.io/service-name=&lt;svc&gt;
+kubectl describe svc &lt;svc&gt;      <span class="cmt"># "Endpoints:" empty? → no Pods backing it</span></pre>
+      <ul>
+        <li>Service <code class="inline">selector</code> doesn't match the Pods' labels.</li>
+        <li>Pods are failing their <strong>readiness</strong> probe (not Ready → not an endpoint).</li>
+        <li><code class="inline">targetPort</code> ≠ the real <code class="inline">containerPort</code>.</li>
+      </ul>
+      <div class="callout tip">💡 Golden rule: the <code class="inline">STATUS</code> column tells you <em>which</em> card to open; <code class="inline">describe</code>'s Events + <code class="inline">logs --previous</code> tell you <em>why</em>. Never fix from the status alone.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health probes — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">❤️ Health probes <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Three probes answer three different questions — mix them up and you cause the outage you were trying to prevent.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The three probes</h3>
+      <table>
+        <tr><th>Probe</th><th>Question</th><th>On failure</th></tr>
+        <tr><td><strong>liveness</strong></td><td>Is the container wedged and needs a restart?</td><td>kubelet <strong>restarts</strong> the container</td></tr>
+        <tr><td><strong>readiness</strong></td><td>Is it ready to serve traffic right now?</td><td>Pod removed from Service <strong>endpoints</strong> (no restart)</td></tr>
+        <tr><td><strong>startup</strong></td><td>Has a slow app finished booting?</td><td>kubelet keeps waiting; <strong>gates</strong> the other two until it passes</td></tr>
+      </table>
+      <div class="callout warn">⚠️ The classic self-inflicted outage: using a <em>liveness</em> probe for readiness logic (e.g. "is the database reachable"). A transient DB blip then restarts every Pod at once instead of just temporarily pulling them from the Service. Readiness removes from traffic; liveness restarts — don't swap them.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Probe mechanisms</h3>
+      <ul>
+        <li><strong>httpGet</strong> — a 2xx/3xx on a path = healthy. Most common for web apps.</li>
+        <li><strong>tcpSocket</strong> — can we open a TCP connection to a port? Good for non-HTTP servers.</li>
+        <li><strong>exec</strong> — run a command inside the container; exit 0 = healthy.</li>
+        <li><strong>grpc</strong> — native gRPC health check (v1.24+).</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>startupProbe:
+  httpGet: { path: /healthz, port: 8080 }
+  failureThreshold: 30
+  periodSeconds: 5        <span class="cmt"># up to 150s to boot before liveness kicks in</span>
+livenessProbe:
+  httpGet: { path: /healthz, port: 8080 }
+  periodSeconds: 10
+  failureThreshold: 3
+readinessProbe:
+  httpGet: { path: /ready, port: 8080 }
+  periodSeconds: 5
+  failureThreshold: 1</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The timing knobs</h3>
+      <table>
+        <tr><th>Field</th><th>Meaning</th></tr>
+        <tr><td><code class="inline">initialDelaySeconds</code></td><td>Wait this long before the first probe</td></tr>
+        <tr><td><code class="inline">periodSeconds</code></td><td>How often to probe</td></tr>
+        <tr><td><code class="inline">timeoutSeconds</code></td><td>Probe fails if it takes longer than this</td></tr>
+        <tr><td><code class="inline">failureThreshold</code></td><td>Consecutive failures before acting</td></tr>
+        <tr><td><code class="inline">successThreshold</code></td><td>Consecutive successes to be considered healthy again</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> startupProbe fixes slow starters</h3>
+      <p>A JVM or heavy app can take 60–120s to boot. If you widen the <em>liveness</em> probe's <code class="inline">initialDelaySeconds</code> to cover that, you also make real hangs take that long to detect forever. The <strong>startupProbe</strong> solves this: it holds off liveness/readiness until the app has started once (<code class="inline">failureThreshold × periodSeconds</code> = max boot time), then hands over to a tight liveness probe. Slow start AND fast hang-detection — both.</p>
+      <div class="callout tip">💡 Readiness is also how zero-downtime rollouts work: a new Pod isn't added to the Service until its readiness probe passes, so traffic never hits a half-started Pod. Pair it with <code class="inline">minReadySeconds</code> on the Deployment.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

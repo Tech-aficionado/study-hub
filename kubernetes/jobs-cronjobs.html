@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jobs &amp; CronJobs — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">⏱️ Jobs &amp; CronJobs <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Run-to-completion work and scheduled work — the batch side of Kubernetes.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Jobs — run until it succeeds, then stop</h3>
+      <p>A Deployment keeps Pods running forever. A <strong>Job</strong> runs a Pod to <em>completion</em>: it retries on failure, and once the required number of Pods have exited successfully, the Job is Complete and nothing restarts. Use it for migrations, backups, one-off imports, batch processing.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: batch/v1
+kind: Job
+metadata: { name: migrate }
+spec:
+  backoffLimit: 4           <span class="cmt"># retries before marking the Job Failed</span>
+  activeDeadlineSeconds: 600 <span class="cmt"># hard wall-clock cap</span>
+  template:
+    spec:
+      restartPolicy: OnFailure   <span class="cmt"># Jobs require OnFailure or Never</span>
+      containers:
+        - name: migrate
+          image: myapp:1.0
+          command: ["python", "manage.py", "migrate"]</pre>
+      <div class="callout warn">⚠️ A Job's Pod template must set <code class="inline">restartPolicy: OnFailure</code> or <code class="inline">Never</code> — not <code class="inline">Always</code> (which is for long-running Deployments). <code class="inline">backoffLimit</code> counts failed retries; <code class="inline">activeDeadlineSeconds</code> is a wall-clock stop regardless of retries.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Parallel Jobs — completions &amp; parallelism</h3>
+      <table>
+        <tr><th>Pattern</th><th>Fields</th><th>Behaviour</th></tr>
+        <tr><td>Single task</td><td>(none)</td><td>One Pod runs once to success</td></tr>
+        <tr><td>Fixed count</td><td><code class="inline">completions: N</code></td><td>N successful completions needed</td></tr>
+        <tr><td>Parallel fixed</td><td><code class="inline">completions: N, parallelism: M</code></td><td>Up to M Pods at once until N succeed</td></tr>
+        <tr><td>Work queue</td><td><code class="inline">parallelism: M</code> only</td><td>M workers drain a queue; any success-and-stop ends it</td></tr>
+      </table>
+      <p>Indexed Jobs (<code class="inline">completionMode: Indexed</code>) give each Pod a unique index via <code class="inline">JOB_COMPLETION_INDEX</code> — handy for sharding a dataset across parallel Pods.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> CronJobs — Jobs on a schedule</h3>
+      <p>A <strong>CronJob</strong> creates a Job on a cron schedule (UTC by default; set <code class="inline">spec.timeZone</code> for a specific zone). Perfect for nightly backups, report generation, cleanup.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: batch/v1
+kind: CronJob
+metadata: { name: nightly-backup }
+spec:
+  schedule: "0 2 * * *"          <span class="cmt"># 02:00 every day</span>
+  timeZone: "Europe/Berlin"
+  concurrencyPolicy: Forbid       <span class="cmt"># don't start a run if the last is still going</span>
+  startingDeadlineSeconds: 120
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: myapp:1.0
+              command: ["sh", "-c", "pg_dump ... | gzip > /backup/db.sql.gz"]</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> concurrencyPolicy and the gotchas</h3>
+      <ul>
+        <li><strong>Allow</strong> (default) — overlapping runs are fine.</li>
+        <li><strong>Forbid</strong> — skip the new run if the previous is still running.</li>
+        <li><strong>Replace</strong> — kill the running one and start the new.</li>
+      </ul>
+      <p>History limits (<code class="inline">successfulJobsHistoryLimit</code> / <code class="inline">failedJobsHistoryLimit</code>) keep old Job/Pod objects for log inspection — too high and they clutter the namespace, <code class="inline">0</code> deletes immediately. If the controller is down past <code class="inline">startingDeadlineSeconds</code>, a missed run is skipped rather than fired late.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl get cronjob
+kubectl get jobs --watch
+kubectl create job --from=cronjob/nightly-backup manual-run-1   <span class="cmt"># trigger now</span>
+kubectl logs job/manual-run-1</pre>
+      <div class="callout tip">💡 CronJobs guarantee <em>at-least-once</em>, not exactly-once — a run can occasionally fire twice. Make scheduled work idempotent (safe to run twice) rather than assuming it runs exactly once.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

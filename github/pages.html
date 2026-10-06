@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Pages — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🌐 GitHub Pages <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Free static-site hosting straight from a repository — docs, portfolios, project landing pages.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What Pages is</h3>
+      <p><strong>GitHub Pages</strong> serves static files (HTML, CSS, JS, images) from a repo over HTTPS, at no cost. It is ideal for documentation sites, personal portfolios, project pages and anything that doesn't need a server. It cannot run server-side code — no databases or back-end logic — only static assets and client-side JavaScript.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The three site types and their URLs</h3>
+      <table>
+        <tr><th>Type</th><th>Repo name</th><th>URL</th></tr>
+        <tr><td><strong>User</strong></td><td><code class="inline">username/username.github.io</code></td><td><code class="inline">username.github.io</code></td></tr>
+        <tr><td><strong>Organisation</strong></td><td><code class="inline">org/org.github.io</code></td><td><code class="inline">org.github.io</code></td></tr>
+        <tr><td><strong>Project</strong></td><td>any repo</td><td><code class="inline">username.github.io/repo</code></td></tr>
+      </table>
+      <div class="callout warn">⚠️ A project site is served under a <em>sub-path</em> (<code class="inline">/repo/</code>). Absolute asset links like <code class="inline">/style.css</code> break — use relative links or set the correct base path in your build tool.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Two ways to publish</h3>
+      <ul>
+        <li><strong>Deploy from a branch</strong> — point Pages at a branch (and optionally the <code class="inline">/docs</code> folder). GitHub serves whatever is there. Simple for hand-written HTML.</li>
+        <li><strong>GitHub Actions</strong> — a workflow builds and deploys (see "Deploy with Actions"). Required when you have a build step (Vite, Jekyll, Hugo, Next export).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Jekyll and the <code class="inline">.nojekyll</code> trick</h3>
+      <p>Pages runs <strong>Jekyll</strong> by default, which has one surprising side effect: it ignores files and folders starting with an underscore (<code class="inline">_next</code>, <code class="inline">_app</code>). If your framework uses those, add an empty <code class="inline">.nojekyll</code> file at the site root to disable Jekyll processing and serve files as-is.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Custom domains and HTTPS</h3>
+      <p>Point your own domain at Pages by adding a <code class="inline">CNAME</code> record (for <code class="inline">www</code>) or <code class="inline">A</code>/<code class="inline">ALIAS</code> records (for the apex) at your DNS provider, then set the domain in Settings → Pages. GitHub provisions a free TLS certificate; tick <strong>Enforce HTTPS</strong> once it's ready.</p>
+      <div class="callout tip">💡 A <code class="inline">404.html</code> at the site root is served for unknown paths — useful for single-page apps that need all routes to fall back to one entry point.</div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

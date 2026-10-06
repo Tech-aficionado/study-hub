@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kubectl &amp; kubeconfig — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">⌨️ kubectl &amp; kubeconfig <span class="badge beginner">Beginner → Intermediate</span></h2>
+    <p class="page-sub">kubectl is just an HTTP client for the API server — once you see that, every command makes sense.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The shape of every kubectl command</h3>
+      <p>Almost every command is <code class="inline">kubectl &lt;verb&gt; &lt;resource&gt; [name] [flags]</code>. Learn a handful of verbs and they combine with every resource type.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl get pods                 <span class="cmt"># list</span>
+kubectl get pod my-pod -o yaml   <span class="cmt"># one object, full YAML</span>
+kubectl describe pod my-pod      <span class="cmt"># human-readable detail + Events</span>
+kubectl create -f app.yaml       <span class="cmt"># error if it already exists</span>
+kubectl apply -f app.yaml        <span class="cmt"># create OR update (declarative)</span>
+kubectl delete -f app.yaml
+kubectl edit deployment my-app   <span class="cmt"># open in $EDITOR, applied on save</span></pre>
+      <div class="callout tip">💡 <strong>apply vs create</strong>: <code class="inline">create</code> is imperative ("make this now, fail if it exists"); <code class="inline">apply</code> is declarative ("make reality match this file") and is what you use in GitOps and CI. Prefer <code class="inline">apply</code> for anything you keep in version control.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Output and filtering flags you'll use daily</h3>
+      <table>
+        <tr><th>Flag</th><th>Does</th></tr>
+        <tr><td><code class="inline">-o wide</code></td><td>Extra columns (node, IP) in the table</td></tr>
+        <tr><td><code class="inline">-o yaml</code> / <code class="inline">-o json</code></td><td>Full object as YAML/JSON</td></tr>
+        <tr><td><code class="inline">-o jsonpath='{.items[*].metadata.name}'</code></td><td>Pull out specific fields for scripts</td></tr>
+        <tr><td><code class="inline">-A</code> / <code class="inline">--all-namespaces</code></td><td>Across every namespace</td></tr>
+        <tr><td><code class="inline">-n &lt;ns&gt;</code></td><td>Target one namespace</td></tr>
+        <tr><td><code class="inline">-l app=web,tier=front</code></td><td>Filter by labels</td></tr>
+        <tr><td><code class="inline">--show-labels</code></td><td>Show each object's labels</td></tr>
+        <tr><td><code class="inline">-w</code> / <code class="inline">--watch</code></td><td>Stream changes live</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> kubeconfig — how kubectl knows which cluster</h3>
+      <p>kubectl reads <code class="inline">~/.kube/config</code> (override with <code class="inline">$KUBECONFIG</code>). That file holds three lists and a pointer:</p>
+      <ul>
+        <li><strong>clusters</strong> — API server URLs + their CA certs.</li>
+        <li><strong>users</strong> — your credentials (client cert, token, or an exec plugin for cloud auth).</li>
+        <li><strong>contexts</strong> — each one pairs a cluster + a user + a default namespace.</li>
+        <li><strong>current-context</strong> — the single pointer that decides where the next command goes.</li>
+      </ul>
+      <div class="svgpanel"><svg viewBox="0 0 620 180" xmlns="http://www.w3.org/2000/svg">
+        <rect x="230" y="20" width="160" height="40" rx="8" fill="#0e1830" stroke="#f0b429" stroke-width="2"/><text x="310" y="38" text-anchor="middle" fill="#eaeef8" font-size="11" font-weight="700">current-context</text><text x="310" y="52" text-anchor="middle" fill="#8793b8" font-size="9">points at ONE context</text>
+        <line x1="280" y1="60" x2="150" y2="98" stroke="#6a9bf0" stroke-width="1.5"/>
+        <line x1="310" y1="60" x2="310" y2="98" stroke="#6a9bf0" stroke-width="1.5"/>
+        <line x1="340" y1="60" x2="470" y2="98" stroke="#6a9bf0" stroke-width="1.5"/>
+        <rect x="80" y="100" width="140" height="56" rx="8" fill="#0e1830" stroke="#326ce5"/><text x="150" y="124" text-anchor="middle" fill="#eaeef8" font-size="10.5">cluster</text><text x="150" y="140" text-anchor="middle" fill="#8793b8" font-size="9">API URL + CA</text>
+        <rect x="240" y="100" width="140" height="56" rx="8" fill="#0e1830" stroke="#3fdd94"/><text x="310" y="124" text-anchor="middle" fill="#eaeef8" font-size="10.5">user</text><text x="310" y="140" text-anchor="middle" fill="#8793b8" font-size="9">cert / token</text>
+        <rect x="400" y="100" width="140" height="56" rx="8" fill="#0e1830" stroke="#9f7aea"/><text x="470" y="124" text-anchor="middle" fill="#eaeef8" font-size="10.5">namespace</text><text x="470" y="140" text-anchor="middle" fill="#8793b8" font-size="9">default ns</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Switching clusters and namespaces</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl config get-contexts            <span class="cmt"># list; * marks current</span>
+kubectl config current-context
+kubectl config use-context kind-dev    <span class="cmt"># switch cluster</span>
+kubectl config set-context --current --namespace=staging
+<span class="cmt"># point at a different kubeconfig for one command:</span>
+KUBECONFIG=~/work/prod.yaml kubectl get pods</pre>
+      <div class="callout warn">⚠️ The classic incident: you ran a command against <strong>prod</strong> because the current-context was still prod from an hour ago. Check <code class="inline">kubectl config current-context</code> before anything destructive, and consider a shell prompt plugin (kube-ps1) that shows the context/namespace at all times.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Debug &amp; introspection commands</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl logs my-pod                    <span class="cmt"># container logs</span>
+kubectl logs my-pod -c sidecar --previous  <span class="cmt"># a specific container, previous crash</span>
+kubectl logs -f -l app=web             <span class="cmt"># follow logs across all matching Pods</span>
+kubectl exec -it my-pod -- sh          <span class="cmt"># shell inside the Pod</span>
+kubectl port-forward svc/my-svc 8080:80
+kubectl cp my-pod:/var/log/app.log ./app.log
+kubectl explain deployment.spec.strategy   <span class="cmt"># field docs, offline</span>
+kubectl api-resources                  <span class="cmt"># every resource type + its short name</span></pre>
+      <div class="callout tip">💡 <code class="inline">kubectl explain &lt;resource&gt;.&lt;field&gt;</code> is a built-in, always-current schema reference — faster than opening the website when you forget a field name.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

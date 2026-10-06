@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Troubleshooting — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🧯 Troubleshooting <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">The scary-looking Git messages everyone hits, what each actually means, and the exact command to get unstuck.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> "You are in 'detached HEAD' state"</h3>
+      <p><strong>What happened:</strong> you checked out a specific commit or tag instead of a branch, so <code class="inline">HEAD</code> points straight at a commit with no branch attached. Commits you make here aren't on any branch and can be lost.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># You're just looking around — go back to a branch:</span>
+git switch main
+
+<span class="cmt"># You made commits here you want to KEEP — put them on a new branch:</span>
+git switch -c my-recovered-work
+<span class="cmt"># (do this BEFORE switching away, or find the commit later via git reflog)</span></pre>
+      <div class="callout">Detached HEAD isn't a bug — it's useful for inspecting history or building from an old point. Just make a branch before committing if you want to keep the work.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> "Updates were rejected... non-fast-forward"</h3>
+      <p><strong>What happened:</strong> the remote has commits you don't have locally, so Git won't let your push overwrite them. Someone pushed since you last pulled.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Correct fix: get their changes, then push</span>
+git pull --rebase origin main   <span class="cmt"># replay your commits on top of theirs</span>
+<span class="cmt"># resolve any conflicts, then:</span>
+git push origin main</pre>
+      <div class="callout danger">🛑 Do NOT reach for <code class="inline">git push --force</code> as a reflex — it overwrites the teammate's commits that triggered the rejection. If you genuinely must force (e.g. after rebasing your <em>own</em> feature branch), use <code class="inline">git push --force-with-lease</code>, which refuses if someone else pushed in the meantime.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> "refusing to merge unrelated histories"</h3>
+      <p><strong>What happened:</strong> you're merging/pulling two repos that have no common ancestor — e.g. you created a repo locally AND initialised one on GitHub with a README, so both have independent root commits.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git pull origin main --allow-unrelated-histories
+<span class="cmt"># Explicitly tell Git it's OK to stitch two separate histories together</span>
+<span class="cmt"># You'll likely resolve a conflict or two, then commit the merge</span></pre>
+      <div class="callout tip">💡 Avoid it next time: when creating a GitHub repo you'll push an existing local project to, do <em>not</em> tick "add a README" — start it empty so there's no competing root commit.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> "LF will be replaced by CRLF" warnings</h3>
+      <p><strong>What happened:</strong> this is a <em>warning</em>, not an error — Git is normalising line endings per your <code class="inline">core.autocrlf</code> setting on Windows. Your commit still works.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Make the behaviour explicit and team-wide instead of per-machine:</span>
+<span class="cmt"># commit a .gitattributes with:</span>
+* text=auto
+
+<span class="cmt"># To silence the warning entirely (if you understand the trade-off):</span>
+git config --global core.safecrlf warn   <span class="cmt"># or "false" to hide it</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> "I committed to the wrong branch"</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Commit landed on main but belongs on a feature branch, and it's NOT pushed:</span>
+git switch -c feature-x        <span class="cmt"># make the branch here (carries the commit)</span>
+git switch main
+git reset --hard HEAD~1        <span class="cmt"># remove it from main (safe: it's safe on feature-x)</span></pre>
+      <div class="callout warn">⚠️ The <code class="inline">reset --hard</code> here is safe <em>only</em> because you first created <code class="inline">feature-x</code> pointing at that commit. Always make the new branch before resetting, so the commit is never orphaned.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> "I think I lost commits" — the universal rescue</h3>
+      <p>Git rarely deletes commits immediately. The <strong>reflog</strong> records every position <code class="inline">HEAD</code> has held — including commits a bad <code class="inline">reset</code> seemed to erase. This recovers most "disasters."</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git reflog
+<span class="cmt"># e.g.  a1b2c3 HEAD@{1}: commit: the work you thought was gone</span>
+
+git switch -c recovered a1b2c3
+<span class="cmt"># Recover that exact state onto a new branch</span></pre>
+      <div class="callout tip">💡 Golden habit: when something goes wrong, your first instinct should be <code class="inline">git status</code> then <code class="inline">git reflog</code> — not panic, and never deleting the <code class="inline">.git</code> folder. The information you need is almost always still there.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">7</span> "fatal: not a git repository"</h3>
+      <p><strong>What happened:</strong> you're running a Git command in a folder that has no <code class="inline">.git</code> directory — either you're in the wrong directory, or the repo was never initialised.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git rev-parse --show-toplevel   <span class="cmt"># prints the repo root, or errors if none</span>
+pwd                              <span class="cmt"># check where you actually are</span>
+git init                         <span class="cmt"># if this really should be a repo</span></pre>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

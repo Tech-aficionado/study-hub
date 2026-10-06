@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Filtering: LIKE, IN, BETWEEN, NULL, CASE — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔎 Filtering in Depth <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Everything you can put after WHERE — pattern matching, ranges, lists, NULL logic, and inline conditionals.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> LIKE and pattern matching</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>WHERE name LIKE 'A%'      <span class="cmt">-- starts with A   (% = any run of characters)</span>
+WHERE name LIKE '%son'    <span class="cmt">-- ends with "son"</span>
+WHERE name LIKE '%a%'     <span class="cmt">-- contains an "a"</span>
+WHERE code LIKE 'A_C'     <span class="cmt">-- A, any ONE char, C   (_ = exactly one character)</span></pre>
+      <table>
+        <tr><th>Dialect</th><th>Case-insensitive match</th></tr>
+        <tr><td>PostgreSQL</td><td><code class="inline">ILIKE</code>, or <code class="inline">~*</code> for regex</td></tr>
+        <tr><td>MySQL</td><td><code class="inline">LIKE</code> is case-insensitive by default (depends on column collation)</td></tr>
+        <tr><td>SQLite</td><td><code class="inline">LIKE</code> is case-insensitive for ASCII only</td></tr>
+      </table>
+      <div class="callout warn">⚠️ A leading-wildcard pattern (<code class="inline">LIKE '%foo'</code>) can't use a normal B-tree index, so it scans the whole table. For real text search, use full-text indexes (Postgres <code class="inline">tsvector</code>, MySQL <code class="inline">FULLTEXT</code>, SQLite FTS5).</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> IN, NOT IN, and BETWEEN</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>WHERE category_id IN (1, 2, 5);              <span class="cmt">-- matches any value in the list</span>
+WHERE country NOT IN ('US', 'CA');
+WHERE price BETWEEN 20 AND 100;              <span class="cmt">-- inclusive on BOTH ends: 20 ≤ price ≤ 100</span>
+WHERE order_date BETWEEN '2024-01-01' AND '2024-03-31';</pre>
+      <div class="callout danger">🛑 <code class="inline">NOT IN</code> with a subquery that can return NULL is a notorious trap: if the list contains a NULL, <code class="inline">NOT IN</code> returns no rows at all (because "x ≠ NULL" is unknown). Prefer <code class="inline">NOT EXISTS</code> when NULLs are possible.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> NULL — the three-valued logic</h3>
+      <p>SQL logic has THREE values: true, false, and <strong>unknown</strong>. Any comparison with NULL yields unknown, and <code class="inline">WHERE</code> keeps only rows that are <em>true</em>.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>WHERE phone IS NULL;        <span class="cmt">-- correct</span>
+WHERE phone IS NOT NULL;
+WHERE phone = NULL;         <span class="cmt">-- WRONG — always unknown, matches nothing</span></pre>
+      <div class="svgpanel"><svg viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg">
+        <text x="280" y="20" text-anchor="middle" fill="#8aa3b3" font-size="11">Three-valued logic: NULL = "unknown"</text>
+        <rect x="30" y="40" width="150" height="50" rx="8" fill="#122334" stroke="#3fdd94"/><text x="105" y="62" text-anchor="middle" fill="#3fdd94" font-size="12" font-weight="700">TRUE</text><text x="105" y="80" text-anchor="middle" fill="#8aa3b3" font-size="10">row kept</text>
+        <rect x="205" y="40" width="150" height="50" rx="8" fill="#122334" stroke="#ff6b6b"/><text x="280" y="62" text-anchor="middle" fill="#ff6b6b" font-size="12" font-weight="700">FALSE</text><text x="280" y="80" text-anchor="middle" fill="#8aa3b3" font-size="10">row dropped</text>
+        <rect x="380" y="40" width="150" height="50" rx="8" fill="#122334" stroke="#f0b429"/><text x="455" y="62" text-anchor="middle" fill="#f0b429" font-size="12" font-weight="700">UNKNOWN</text><text x="455" y="80" text-anchor="middle" fill="#8aa3b3" font-size="10">row dropped (not kept!)</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> CASE — inline if/else in a query</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT name, price,
+  CASE
+    WHEN price &gt;= 100 THEN 'premium'
+    WHEN price &gt;= 30  THEN 'mid'
+    ELSE 'budget'
+  END AS tier
+FROM products;
+
+<span class="cmt">-- CASE is also powerful inside aggregates ("conditional counting"):</span>
+SELECT
+  COUNT(*) AS total,
+  SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END) AS shipped
+FROM orders;</pre>
+      <div class="callout tip">💡 The <code class="inline">SUM(CASE WHEN … THEN 1 ELSE 0 END)</code> pattern (a.k.a. "pivot by hand") counts rows matching a condition in the same pass — the backbone of turning rows into columns.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Watch it taught end-to-end</h3>
+      <p>This hour-long walkthrough demonstrates filtering, SELECT, and the WHERE clause against real sample tables — a good companion to work through alongside the playground on this site.</p>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Learn SQL in 1 Hour - SQL Basics for Beginners</span><span class="vcreator">Joey Blue · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/9Pzj7Aj25lw" title="Learn SQL in 1 Hour - SQL Basics for Beginners" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

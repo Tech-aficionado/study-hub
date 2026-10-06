@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CREATE TABLE & Constraints — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🏛️ CREATE TABLE & Constraints <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Defining tables and the guardrails that keep bad data out — PK, FK with ON DELETE, UNIQUE, CHECK, NOT NULL, DEFAULT.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> A fully-constrained table</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- PostgreSQL</span>
+CREATE TABLE customers (
+  id         SERIAL PRIMARY KEY,                 <span class="cmt">-- auto-incrementing unique id</span>
+  email      VARCHAR(255) NOT NULL UNIQUE,       <span class="cmt">-- required and no duplicates</span>
+  name       VARCHAR(120) NOT NULL,
+  age        INTEGER CHECK (age &gt;= 0),           <span class="cmt">-- value rule enforced on write</span>
+  country    CHAR(2) NOT NULL DEFAULT 'US',      <span class="cmt">-- value used when none supplied</span>
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);</pre>
+      <div class="callout tip">💡 Constraints are the database defending its own correctness. A bug in application code can't insert a negative age or a duplicate email — the engine rejects it, every time, for every client.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The five everyday constraints</h3>
+      <table>
+        <tr><th>Constraint</th><th>Guarantees</th></tr>
+        <tr><td><code class="inline">PRIMARY KEY</code></td><td>Unique + NOT NULL; the row's identity. One per table (can span columns).</td></tr>
+        <tr><td><code class="inline">NOT NULL</code></td><td>The column must always have a value.</td></tr>
+        <tr><td><code class="inline">UNIQUE</code></td><td>No two rows share this value (e.g. email). Allows multiple NULLs in most engines.</td></tr>
+        <tr><td><code class="inline">CHECK (expr)</code></td><td>A custom rule — <code class="inline">price &gt;= 0</code>, <code class="inline">status IN ('a','b')</code>.</td></tr>
+        <tr><td><code class="inline">DEFAULT val</code></td><td>Value inserted when the column is omitted.</td></tr>
+      </table>
+      <div class="callout warn">⚠️ MySQL ignored <code class="inline">CHECK</code> constraints before version 8.0.16 — it parsed them but didn't enforce them. On modern MySQL (8.0.16+) they are enforced. SQLite and PostgreSQL have always enforced CHECK.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Foreign keys and referential actions</h3>
+      <p>A foreign key says "this column's value must exist as a primary key in another table." The <code class="inline">ON DELETE</code> / <code class="inline">ON UPDATE</code> clauses decide what happens to the children when the parent row is removed or changed.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>CREATE TABLE orders (
+  id          SERIAL PRIMARY KEY,
+  customer_id INTEGER NOT NULL,
+  total       NUMERIC(10,2) NOT NULL,
+  FOREIGN KEY (customer_id) REFERENCES customers(id)
+    ON DELETE CASCADE        <span class="cmt">-- delete a customer → their orders vanish too</span>
+    ON UPDATE CASCADE
+);</pre>
+      <table>
+        <tr><th>ON DELETE action</th><th>Effect when the parent row is deleted</th></tr>
+        <tr><td><code class="inline">CASCADE</code></td><td>Delete the child rows too.</td></tr>
+        <tr><td><code class="inline">RESTRICT</code> / <code class="inline">NO ACTION</code></td><td>Block the delete if children exist (the safe default).</td></tr>
+        <tr><td><code class="inline">SET NULL</code></td><td>Set the child's FK column to NULL (must be nullable).</td></tr>
+        <tr><td><code class="inline">SET DEFAULT</code></td><td>Set the child's FK to its DEFAULT value.</td></tr>
+      </table>
+      <div class="callout danger">🛑 SQLite does NOT enforce foreign keys unless you turn them on per connection: <code class="inline">PRAGMA foreign_keys = ON;</code>. It's off by default for historical compatibility — a frequent "my CASCADE isn't working" surprise.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Composite keys and table-level constraints</h3>
+      <p>A primary (or unique) key can span several columns — useful for junction tables in many-to-many relationships.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>CREATE TABLE enrollments (
+  student_id INTEGER NOT NULL REFERENCES students(id),
+  course_id  INTEGER NOT NULL REFERENCES courses(id),
+  grade      CHAR(1),
+  PRIMARY KEY (student_id, course_id)   <span class="cmt">-- a student can't enroll in the same course twice</span>
+);</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> ALTER and DROP — changing structure later</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>ALTER TABLE customers ADD COLUMN phone VARCHAR(20);
+ALTER TABLE customers ADD CONSTRAINT uq_phone UNIQUE (phone);
+ALTER TABLE customers DROP COLUMN phone;
+
+DROP TABLE IF EXISTS customers;    <span class="cmt">-- removes the table AND all its data</span></pre>
+      <div class="callout warn">⚠️ SQLite's <code class="inline">ALTER TABLE</code> is limited — it can rename/add columns and (since 3.35) drop a column, but can't add many constraints to an existing table. The classic workaround is "create a new table, copy, drop, rename." PostgreSQL and MySQL have far richer ALTER support.</div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

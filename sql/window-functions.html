@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Window Functions — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🪟 Window Functions <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Aggregate-style calculations that keep every row — rankings, running totals, and row-to-row comparisons.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The key idea: aggregate without collapsing</h3>
+      <p><code class="inline">GROUP BY</code> turns many rows into one per group. A <strong>window function</strong> computes a value <em>across a set of rows</em> but returns it <strong>alongside every original row</strong> — nothing collapses.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT name, department_id, salary,
+  AVG(salary) OVER (PARTITION BY department_id) AS dept_avg
+FROM employees;
+<span class="cmt">-- Every employee row kept, with their department's average salary attached</span></pre>
+      <div class="svgpanel"><svg viewBox="0 0 560 110" xmlns="http://www.w3.org/2000/svg">
+        <text x="140" y="18" text-anchor="middle" fill="#8aa3b3" font-size="11">GROUP BY: 5 rows → 1</text>
+        <rect x="30" y="30" width="30" height="12" fill="#336791"/><rect x="30" y="46" width="30" height="12" fill="#336791"/><rect x="30" y="62" width="30" height="12" fill="#336791"/>
+        <text x="90" y="56" fill="#8aa3b3" font-size="13">→</text>
+        <rect x="110" y="46" width="30" height="12" fill="#3fdd94"/>
+        <text x="400" y="18" text-anchor="middle" fill="#8aa3b3" font-size="11">WINDOW: 5 rows → 5 (+ computed column)</text>
+        <rect x="300" y="30" width="30" height="12" fill="#336791"/><rect x="300" y="46" width="30" height="12" fill="#336791"/><rect x="300" y="62" width="30" height="12" fill="#336791"/>
+        <text x="360" y="56" fill="#8aa3b3" font-size="13">→</text>
+        <rect x="380" y="30" width="30" height="12" fill="#336791"/><rect x="415" y="30" width="40" height="12" fill="#f0b429"/>
+        <rect x="380" y="46" width="30" height="12" fill="#336791"/><rect x="415" y="46" width="40" height="12" fill="#f0b429"/>
+        <rect x="380" y="62" width="30" height="12" fill="#336791"/><rect x="415" y="62" width="40" height="12" fill="#f0b429"/>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> OVER, PARTITION BY, ORDER BY</h3>
+      <ul>
+        <li><code class="inline">OVER (…)</code> — marks a function as a window function and defines the window.</li>
+        <li><code class="inline">PARTITION BY</code> — splits rows into groups the window resets for (like GROUP BY, but non-collapsing). Omit it to treat all rows as one partition.</li>
+        <li><code class="inline">ORDER BY</code> (inside OVER) — orders rows within each partition; required for ranking and running totals.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Ranking: ROW_NUMBER, RANK, DENSE_RANK</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT name, salary,
+  ROW_NUMBER() OVER (ORDER BY salary DESC) AS row_num,
+  RANK()       OVER (ORDER BY salary DESC) AS rnk,
+  DENSE_RANK() OVER (ORDER BY salary DESC) AS dense
+FROM employees;</pre>
+      <table>
+        <tr><th>salary</th><th>ROW_NUMBER</th><th>RANK</th><th>DENSE_RANK</th></tr>
+        <tr><td>200</td><td>1</td><td>1</td><td>1</td></tr>
+        <tr><td>200</td><td>2</td><td>1</td><td>1</td></tr>
+        <tr><td>150</td><td>3</td><td>3</td><td>2</td></tr>
+        <tr><td>100</td><td>4</td><td>4</td><td>3</td></tr>
+      </table>
+      <div class="callout tip">💡 On ties: <strong>ROW_NUMBER</strong> always gives distinct numbers (arbitrary tie-break), <strong>RANK</strong> gives ties the same rank then <em>skips</em> (1,1,3), <strong>DENSE_RANK</strong> gives ties the same rank with <em>no gap</em> (1,1,2). "Nth highest salary" interview questions hinge on this difference.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Top-N-per-group — the canonical pattern</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>WITH ranked AS (
+  SELECT name, department_id, salary,
+    ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rn
+  FROM employees
+)
+SELECT * FROM ranked WHERE rn &lt;= 3;   <span class="cmt">-- top 3 earners in EACH department</span></pre>
+      <p>You can't filter on a window function directly in <code class="inline">WHERE</code> (windows run after WHERE), so wrap it in a CTE/subquery and filter the computed rank there.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> LAG and LEAD — look at neighbouring rows</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT order_date, daily_total,
+  LAG(daily_total)  OVER (ORDER BY order_date) AS prev_day,
+  daily_total - LAG(daily_total) OVER (ORDER BY order_date) AS change,
+  LEAD(daily_total) OVER (ORDER BY order_date) AS next_day
+FROM daily_sales;
+<span class="cmt">-- LAG = previous row's value, LEAD = next row's — perfect for period-over-period deltas</span></pre>
+      <div class="callout tip">💡 "Consecutive days / increasing values" interview problems (e.g. LeetCode <em>Rising Temperature</em>, <em>Consecutive Numbers</em>) are naturally solved with LAG comparing each row to the one before.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Running totals and frames</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT order_date, amount,
+  SUM(amount) OVER (ORDER BY order_date
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total,
+  AVG(amount) OVER (ORDER BY order_date
+                    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg_3
+FROM sales;</pre>
+      <p>The <strong>frame</strong> clause (<code class="inline">ROWS/RANGE BETWEEN … AND …</code>) defines which rows the function sees relative to the current row. <code class="inline">UNBOUNDED PRECEDING … CURRENT ROW</code> is a running total; <code class="inline">2 PRECEDING … CURRENT ROW</code> is a 3-row moving window.</p>
+      <div class="callout warn">⚠️ When you add <code class="inline">ORDER BY</code> to an aggregate window with no explicit frame, the default frame is <code class="inline">RANGE UNBOUNDED PRECEDING TO CURRENT ROW</code> — which already gives a running total, but RANGE treats ties as one group. Use <code class="inline">ROWS</code> for a strict row-by-row window.</div>
+      <div class="callout tip">💡 Other useful window functions: <code class="inline">NTILE(4)</code> (quartiles/buckets), <code class="inline">FIRST_VALUE</code>/<code class="inline">LAST_VALUE</code>, <code class="inline">NTH_VALUE</code>, and <code class="inline">PERCENT_RANK</code>/<code class="inline">CUME_DIST</code> for distributions. All supported in PostgreSQL, modern MySQL (8.0+), and SQLite (3.25+).</div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

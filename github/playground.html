@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playground — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🕹️ GitHub Flow Playground <span class="badge intermediate">Interactive</span></h2>
+    <p class="page-sub">A simulated GitHub + git. Run real commands against a modelled remote repo, local clone, pull requests and issues — all in your browser, nothing is sent anywhere.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> How it works</h3>
+      <p>Type commands in the terminal (or tap <strong>Run</strong>). Start with <code class="inline">gh auth login</code>, create a repo, then <code class="inline">git clone</code> and <code class="inline">cd</code> into it before running git commands. Issues and pull requests <strong>share one number sequence</strong>, so if issue <code class="inline">#1</code> exists your first PR is <code class="inline">#2</code>. Branch protection on <code class="inline">main</code> blocks a merge until CI checks pass <em>and</em> there is 1 approval. The CI check comes from the <strong>workflow YAML</strong> pane — edit it, press <strong>Check workflow</strong>, and the simulated job either flags your mistakes or prints a run log and lets PR checks pass. A merge lands on the <em>remote</em> main, so your local <code class="inline">main</code> is behind until you <code class="inline">git pull</code> (watch the fast-forward). Press <code class="inline">help</code> anytime, use <strong>↑/↓</strong> for history and <strong>Tab</strong> to complete.</p>
+    </div>
+
+    <div class="pg-grid">
+      <div class="card">
+        <h3><span class="num">2</span> Terminal</h3>
+        <div class="terminal">
+          <div class="term-head"><span class="dot" style="background:#ff6b6b"></span><span class="dot" style="background:#f0b429"></span><span class="dot" style="background:#3fdd94"></span><span>bash — github-playground</span></div>
+          <div class="term-body" id="termBody"></div>
+          <div class="run-row">
+            <span class="term-prompt">$</span>
+            <input id="termInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="try: gh auth login">
+            <button class="run-btn" id="runBtn">Run</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card live-panel" id="livePanel"></div>
+    </div>
+
+    <div class="pg-grid">
+      <div class="card">
+        <h3><span class="num">3</span> CI workflow (editable)</h3>
+        <p class="page-sub" style="margin-bottom:10px">This is <code class="inline">.github/workflows/ci.yml</code>. The checker flags tabs, bad indentation, missing <code class="inline">on</code>/<code class="inline">jobs</code>/<code class="inline">runs-on</code>/<code class="inline">steps</code>, a step with neither <code class="inline">uses</code> nor <code class="inline">run</code>, unknown events, hard-coded secrets, and a missing <code class="inline">permissions</code> block when <code class="inline">GITHUB_TOKEN</code> writes.</p>
+        <textarea class="yaml-pane" id="yamlPane">name: CI
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm test</textarea>
+        <button class="run-btn" id="checkYamlBtn" style="margin-top:10px">Check workflow</button>
+        <div class="yaml-out" id="yamlOut">Press "Check workflow" to validate and run it.</div>
+      </div>
+
+      <div class="card">
+        <h3><span class="num">4</span> Guided challenges</h3>
+        <ul class="challenge-list" id="challengeList"></ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Break the YAML on purpose</h3>
+      <p>To see the checker work, try: delete the <code class="inline">on:</code> block, change <code class="inline">runs-on</code> to a tab-indented line, rename the event to <code class="inline">pushh</code>, add a step that is just <code class="inline">- name: nothing</code>, or paste a line like <code class="inline">token: ghp_abcd1234abcd1234abcd</code>. Then re-check — your PR's checks go <em>failing</em> and the merge is blocked until you fix it.</p>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="js/playground.js"></script>
+</body>
+</html>

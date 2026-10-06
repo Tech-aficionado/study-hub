@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Built-in Functions — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🧮 Built-in Functions <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">String, numeric, and date/time functions — plus the NULL-handling helpers you'll use constantly. Dialect names differ most here.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> String functions</h3>
+      <table>
+        <tr><th>Task</th><th>PostgreSQL</th><th>MySQL</th><th>SQLite</th></tr>
+        <tr><td>Concatenate</td><td><code class="inline">a || b</code> or <code class="inline">concat(a,b)</code></td><td><code class="inline">CONCAT(a,b)</code></td><td><code class="inline">a || b</code></td></tr>
+        <tr><td>Length</td><td><code class="inline">length(s)</code> / <code class="inline">char_length(s)</code></td><td><code class="inline">CHAR_LENGTH(s)</code></td><td><code class="inline">length(s)</code></td></tr>
+        <tr><td>Upper / lower</td><td><code class="inline">upper(s)</code> / <code class="inline">lower(s)</code></td><td>same</td><td>same</td></tr>
+        <tr><td>Substring</td><td><code class="inline">substring(s FROM 2 FOR 3)</code></td><td><code class="inline">SUBSTRING(s, 2, 3)</code></td><td><code class="inline">substr(s, 2, 3)</code></td></tr>
+        <tr><td>Trim</td><td><code class="inline">trim(s)</code></td><td>same</td><td>same</td></tr>
+        <tr><td>Replace</td><td><code class="inline">replace(s, 'a', 'b')</code></td><td>same</td><td>same</td></tr>
+        <tr><td>Position</td><td><code class="inline">position('x' IN s)</code></td><td><code class="inline">LOCATE('x', s)</code></td><td><code class="inline">instr(s, 'x')</code></td></tr>
+      </table>
+      <div class="callout warn">⚠️ In MySQL, <code class="inline">||</code> means logical OR by default, NOT string concatenation — use <code class="inline">CONCAT()</code> there. In PostgreSQL and SQLite, <code class="inline">||</code> concatenates strings. A frequent cross-dialect bug.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Numeric functions</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>ROUND(3.14159, 2)      <span class="cmt">-- 3.14</span>
+CEIL(4.1)   FLOOR(4.9) <span class="cmt">-- 5 and 4</span>
+ABS(-7)                <span class="cmt">-- 7</span>
+MOD(10, 3)  <span class="cmt">-- 1   (also: 10 % 3)</span>
+POWER(2, 10)           <span class="cmt">-- 1024</span>
+CAST(price AS INTEGER) <span class="cmt">-- type conversion</span></pre>
+      <div class="callout warn">⚠️ Integer division: in PostgreSQL and SQLite, <code class="inline">5 / 2 = 2</code> (both operands are integers). Cast one side to get <code class="inline">2.5</code>: <code class="inline">5 * 1.0 / 2</code> or <code class="inline">CAST(5 AS REAL) / 2</code>. MySQL's <code class="inline">/</code> always returns a decimal; use <code class="inline">DIV</code> for integer division.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Date & time functions</h3>
+      <table>
+        <tr><th>Task</th><th>PostgreSQL</th><th>MySQL</th><th>SQLite</th></tr>
+        <tr><td>Now</td><td><code class="inline">now()</code> / <code class="inline">current_timestamp</code></td><td><code class="inline">NOW()</code></td><td><code class="inline">datetime('now')</code></td></tr>
+        <tr><td>Today</td><td><code class="inline">current_date</code></td><td><code class="inline">CURDATE()</code></td><td><code class="inline">date('now')</code></td></tr>
+        <tr><td>Extract part</td><td><code class="inline">EXTRACT(YEAR FROM d)</code></td><td><code class="inline">YEAR(d)</code></td><td><code class="inline">strftime('%Y', d)</code></td></tr>
+        <tr><td>Add interval</td><td><code class="inline">d + INTERVAL '7 days'</code></td><td><code class="inline">DATE_ADD(d, INTERVAL 7 DAY)</code></td><td><code class="inline">date(d, '+7 days')</code></td></tr>
+        <tr><td>Difference</td><td><code class="inline">age(a, b)</code> / <code class="inline">a - b</code></td><td><code class="inline">DATEDIFF(a, b)</code></td><td><code class="inline">julianday(a) - julianday(b)</code></td></tr>
+        <tr><td>Format</td><td><code class="inline">to_char(d, 'YYYY-MM-DD')</code></td><td><code class="inline">DATE_FORMAT(d, '%Y-%m-%d')</code></td><td><code class="inline">strftime('%Y-%m-%d', d)</code></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> NULL handling: COALESCE and NULLIF</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- COALESCE returns the first non-NULL argument — a "default if missing"</span>
+SELECT name, COALESCE(phone, 'no phone on file') AS phone FROM customers;
+
+<span class="cmt">-- Use it to turn NULL sums into 0</span>
+SELECT COALESCE(SUM(total), 0) FROM orders WHERE customer_id = 999;
+
+<span class="cmt">-- NULLIF returns NULL if the two args are equal — classic guard for divide-by-zero</span>
+SELECT revenue / NULLIF(orders_count, 0) AS avg_order_value FROM stats;</pre>
+      <div class="callout tip">💡 <code class="inline">NULLIF(x, 0)</code> turns a zero denominator into NULL; dividing by NULL yields NULL instead of a divide-by-zero error. Wrap it in <code class="inline">COALESCE(..., 0)</code> if you want a 0 result instead of NULL.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> CAST and type conversion</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT CAST('2024-01-15' AS DATE);        <span class="cmt">-- standard, works everywhere</span>
+SELECT '2024-01-15'::date;                 <span class="cmt">-- PostgreSQL shorthand</span>
+SELECT CAST(price AS CHAR);                 <span class="cmt">-- number → text</span></pre>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

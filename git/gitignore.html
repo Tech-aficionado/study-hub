@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.gitignore &amp; .gitattributes — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🚫 .gitignore &amp; .gitattributes <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Keep junk out of the repo, and make line endings &amp; diffs behave the same for everyone on the team.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What belongs in .gitignore</h3>
+      <p>Not everything should be versioned: build output, dependency folders, secrets, editor and OS cruft. A <code class="inline">.gitignore</code> file lists patterns Git will never track. Commit it so the whole team shares the same rules.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .gitignore</span>
+node_modules/        <span class="cmt"># dependencies — reinstallable from package.json</span>
+dist/                <span class="cmt"># build output</span>
+*.log                <span class="cmt"># all log files</span>
+.env                 <span class="cmt"># secrets — NEVER commit these</span>
+.DS_Store            <span class="cmt"># macOS folder metadata</span>
+Thumbs.db            <span class="cmt"># Windows thumbnail cache</span>
+.idea/               <span class="cmt"># JetBrains editor settings</span>
+*.tmp</pre>
+      <div class="callout tip">💡 Don't write ignore files from scratch — GitHub maintains language/tool templates at <a href="https://github.com/github/gitignore" target="_blank">github/gitignore</a>. Start from the one for your stack (Node, Python, etc.) and tweak.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Pattern syntax</h3>
+      <table>
+        <tr><th>Pattern</th><th>Matches</th></tr>
+        <tr><td><code class="inline">*.log</code></td><td>Any file ending in .log, anywhere</td></tr>
+        <tr><td><code class="inline">build/</code></td><td>A directory named build (trailing slash = dir only)</td></tr>
+        <tr><td><code class="inline">/config.json</code></td><td>config.json only at the repo root (leading slash)</td></tr>
+        <tr><td><code class="inline">docs/**/*.pdf</code></td><td>PDFs at any depth under docs/</td></tr>
+        <tr><td><code class="inline">!important.log</code></td><td>Un-ignore (negate) — keep this one despite *.log</td></tr>
+        <tr><td><code class="inline">temp?</code></td><td>temp + one character (temp1, tempA)</td></tr>
+      </table>
+      <div class="callout">Order matters with negation: a <code class="inline">!</code> rule only works if the file wasn't already excluded by a parent-directory rule. You can't re-include a file if its whole directory is ignored.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The "already tracked" trap</h3>
+      <p>Adding a pattern to <code class="inline">.gitignore</code> does <strong>not</strong> stop tracking a file Git already tracks. Ignore rules only apply to <em>untracked</em> files. To stop tracking something you committed by mistake:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git rm --cached .env
+<span class="cmt"># Stop tracking .env (keeps your local copy); now .gitignore takes effect</span>
+git commit -m "Stop tracking .env, add to .gitignore"
+
+<span class="cmt"># Clear and re-apply ignore rules across the whole tree at once:</span>
+git rm -r --cached .
+git add .
+git commit -m "Apply .gitignore to already-tracked files"</pre>
+      <div class="callout danger">🛑 If you committed a real secret (API key, password), removing it from tracking is <em>not enough</em> — it still lives in history. You must rotate/revoke the secret AND scrub history (<code class="inline">git filter-repo</code> or BFG). Treat any committed secret as compromised.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Other ignore mechanisms</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git check-ignore -v path/to/file
+<span class="cmt"># Which rule (and which file) is causing this path to be ignored? Great for debugging</span>
+
+<span class="cmt"># Global ignore for YOUR machine only (editor files, OS cruft)</span>
+git config --global core.excludesFile ~/.gitignore_global
+
+<span class="cmt"># Per-repo private ignores NOT shared with the team:</span>
+<span class="cmt">.git/info/exclude</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> .gitattributes — team-wide file behaviour</h3>
+      <p>Where <code class="inline">.gitignore</code> says what to skip, <code class="inline">.gitattributes</code> says how to <em>treat</em> files Git does track. It's committed, so it enforces consistent line endings, diffs and merge behaviour for everyone — the robust fix for the Windows CRLF problem.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .gitattributes</span>
+* text=auto                 <span class="cmt"># normalise line endings: LF in repo, native on checkout</span>
+*.sh    text eol=lf         <span class="cmt"># shell scripts ALWAYS LF, even on Windows</span>
+*.bat   text eol=crlf       <span class="cmt"># batch files ALWAYS CRLF</span>
+*.png   binary              <span class="cmt"># never try to diff/merge or convert — treat as binary</span>
+*.lock  -diff               <span class="cmt"># don't show diffs for lockfiles (noisy, machine-generated)</span>
+*.pdf   diff=astextplain    <span class="cmt"># use a custom textconv to show readable diffs</span></pre>
+      <div class="callout tip">💡 Committing <code class="inline">* text=auto</code> in <code class="inline">.gitattributes</code> is better than relying on each developer's <code class="inline">core.autocrlf</code> — the rule travels with the repo, so a new teammate gets correct line endings without configuring anything.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

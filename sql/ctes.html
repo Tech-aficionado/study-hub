@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTEs & Recursive Queries — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🪜 CTEs & Recursive Queries <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">WITH clauses that name a subquery for readability — and recursive CTEs that walk hierarchies and generate series.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> A Common Table Expression (CTE)</h3>
+      <p>A CTE is a named, temporary result defined with <code class="inline">WITH</code> at the top of a query. It makes complex queries read top-to-bottom instead of inside-out.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>WITH order_totals AS (
+  SELECT order_id, SUM(quantity * unit_price) AS total
+  FROM order_items
+  GROUP BY order_id
+)
+SELECT * FROM order_totals
+WHERE total &gt; 100
+ORDER BY total DESC;</pre>
+      <div class="callout tip">💡 The same thing can be a subquery in FROM, but a CTE reads better and can be referenced multiple times in the same query. You can chain several: <code class="inline">WITH a AS (…), b AS (… FROM a …) SELECT … FROM b;</code></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Multiple CTEs chained together</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>WITH per_customer AS (
+  SELECT customer_id, COUNT(*) AS orders
+  FROM orders GROUP BY customer_id
+),
+ranked AS (
+  SELECT customer_id, orders,
+         RANK() OVER (ORDER BY orders DESC) AS rk
+  FROM per_customer
+)
+SELECT * FROM ranked WHERE rk &lt;= 5;   <span class="cmt">-- top 5 customers by order count</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Recursive CTE — anatomy</h3>
+      <p>A recursive CTE has two parts combined with <code class="inline">UNION ALL</code>: an <strong>anchor</strong> (the starting rows) and a <strong>recursive member</strong> that references the CTE itself, running until it produces no new rows.</p>
+      <div class="svgpanel"><svg viewBox="0 0 560 130" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="30" width="170" height="40" rx="8" fill="#1d2b16" stroke="#3fdd94"/><text x="105" y="48" text-anchor="middle" fill="#3fdd94" font-size="11" font-weight="700">Anchor</text><text x="105" y="63" text-anchor="middle" fill="#8aa3b3" font-size="9.5">SELECT 1</text>
+        <text x="205" y="54" fill="#8aa3b3" font-size="14">UNION ALL</text>
+        <rect x="300" y="30" width="240" height="40" rx="8" fill="#122334" stroke="#f0b429"/><text x="420" y="48" text-anchor="middle" fill="#f0b429" font-size="11" font-weight="700">Recursive member</text><text x="420" y="63" text-anchor="middle" fill="#8aa3b3" font-size="9.5">SELECT n+1 FROM cte WHERE n &lt; 10</text>
+        <path d="M420,70 q0,40 -210,20" fill="none" stroke="#f0b429" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#rc)"/>
+        <defs><marker id="rc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0b429"/></marker></defs>
+        <text x="300" y="118" text-anchor="middle" fill="#5c7686" font-size="10">feeds its own output back in until no new rows appear</text>
+      </svg></div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>WITH RECURSIVE nums(n) AS (
+  SELECT 1                       <span class="cmt">-- anchor: the first row</span>
+  UNION ALL
+  SELECT n + 1 FROM nums WHERE n &lt; 10   <span class="cmt">-- recursive step; the WHERE is the stop condition</span>
+)
+SELECT n FROM nums;              <span class="cmt">-- 1,2,3,…,10</span></pre>
+      <div class="callout danger">🛑 Always give the recursive member a terminating condition (<code class="inline">WHERE n &lt; 10</code>). Without one it loops forever — PostgreSQL will spin until it runs out of memory. SQLite caps nothing by default either.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Recursive CTE — walking an org chart</h3>
+      <p>The real power: traversing a parent/child hierarchy (employees → managers, categories → subcategories, threaded comments) to any depth.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>WITH RECURSIVE chain AS (
+  SELECT id, name, manager_id, 1 AS level
+  FROM employees
+  WHERE manager_id IS NULL           <span class="cmt">-- anchor: the top of the tree (CEO)</span>
+  UNION ALL
+  SELECT e.id, e.name, e.manager_id, c.level + 1
+  FROM employees e
+  JOIN chain c ON e.manager_id = c.id   <span class="cmt">-- attach each person under their manager</span>
+)
+SELECT level, name FROM chain ORDER BY level, name;</pre>
+      <div class="callout tip">💡 The <code class="inline">RECURSIVE</code> keyword is required in PostgreSQL, SQLite, and SQL standard. MySQL (8.0+) also requires <code class="inline">WITH RECURSIVE</code>. Older MySQL (5.x) had no CTEs at all — you emulated hierarchies with application code or stored procedures.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> When NOT to use a CTE</h3>
+      <p>CTEs are about readability, not always speed. In older PostgreSQL (&lt; 12) a CTE was an "optimization fence" — materialised and never merged into the outer query, sometimes slower than an equivalent subquery. PostgreSQL 12+ inlines non-recursive CTEs by default (use <code class="inline">AS MATERIALIZED</code> to force the old behaviour). For a one-off simple filter, a plain subquery or WHERE is fine.</p>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

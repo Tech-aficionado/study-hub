@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>README & Markdown — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📝 README & GitHub Markdown <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">The README is your project's front door. GitHub-flavoured Markdown (GFM) is how you write it.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why the README matters</h3>
+      <p>The <code class="inline">README.md</code> at a repo's root is rendered automatically on the repo home page — it is the first thing anyone sees. A good one answers, in order: <strong>what</strong> is this, <strong>why</strong> would I use it, <strong>how</strong> do I install and run it, and <strong>how</strong> do I contribute. A repo with no README looks abandoned even if the code is excellent.</p>
+      <div class="callout tip">💡 A special repo named exactly after your username (e.g. <code class="inline">octocat/octocat</code>) renders its README on your GitHub <em>profile</em> page — this is the "profile README" people use to introduce themselves.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Markdown core syntax</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># H1 heading</span>
+<span class="cmt">## H2 heading</span>
+
+**bold**  *italic*  `inline code`  ~~strikethrough~~
+
+- bullet item
+1. numbered item
+
+&gt; A blockquote
+
+[link text](https://example.com)
+![alt text](path/to/image.png)
+
+```js
+// a fenced code block with syntax highlighting
+console.log("hi");
+```</pre>
+      <p>Markdown turns plain text into formatted HTML. Two spaces at the end of a line, or a blank line, create a line break.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> GitHub-flavoured extras (GFM)</h3>
+      <p>GitHub extends standard Markdown with features that only work on GitHub:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Task lists — render as clickable checkboxes</span>
+- [x] done item
+- [ ] todo item
+
+<span class="cmt"># Tables</span>
+| Name | Role |
+| ---- | ---- |
+| Ana  | Dev  |
+
+<span class="cmt"># Auto-linked references</span>
+Fixes #42        <span class="cmt"># links to issue/PR 42</span>
+@octocat         <span class="cmt"># mentions a user</span>
+:rocket:         <span class="cmt"># emoji shortcode</span></pre>
+      <ul>
+        <li><strong>Task lists</strong> — in an issue or PR, ticking a box updates the saved content live.</li>
+        <li><strong>Autolinks</strong> — <code class="inline">#42</code>, <code class="inline">@user</code>, and commit SHAs become links automatically.</li>
+        <li><strong>Alerts</strong> — <code class="inline">&gt; [!NOTE]</code>, <code class="inline">[!TIP]</code>, <code class="inline">[!WARNING]</code>, <code class="inline">[!CAUTION]</code> render as coloured callout boxes.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Badges, images and relative links</h3>
+      <p>READMEs usually show <strong>badges</strong> (small status images) for build status, version, or license, e.g. a GitHub Actions badge:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>![CI](https://github.com/user/repo/actions/workflows/ci.yml/badge.svg)</pre>
+      <p>Link to other files in the repo with <strong>relative</strong> paths (<code class="inline">[Contributing](CONTRIBUTING.md)</code>) so the links keep working on forks and branches.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Structure of a strong README</h3>
+      <ol>
+        <li>Project title + one-line tagline + badges</li>
+        <li>A short "what & why" paragraph (and a screenshot/GIF if it is visual)</li>
+        <li>Installation / quick-start commands</li>
+        <li>Usage examples</li>
+        <li>Contributing + license sections (or links to those files)</li>
+      </ol>
+      <div class="callout">A screenshot or short GIF near the top is worth a thousand words for any tool with a UI — it is the single highest-impact thing you can add.</div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

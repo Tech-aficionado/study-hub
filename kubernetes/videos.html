@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Library — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🎥 Video Library <span class="badge beginner">Watch</span></h2>
+    <p class="page-sub">Hand-picked Kubernetes videos from well-known creators. Every ID verified via YouTube oEmbed. Start short, then go deep.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Fast overviews (start here)</h3>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Kubernetes Explained in 100 Seconds</span><span class="vcreator">Fireship · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/PziYflu8cB8" title="Kubernetes Explained in 100 Seconds" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Kubernetes Explained</span><span class="vcreator">IBM Technology · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/aSrqRSk43lY" title="Kubernetes Explained" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Docker vs Kubernetes vs Docker Swarm | Comparison in 5 mins</span><span class="vcreator">TechWorld with Nana · Austria</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/9_s3h_GVzZc" title="Docker vs Kubernetes vs Docker Swarm" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Get hands-on</h3>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> you need to learn Kubernetes RIGHT NOW!!</span><span class="vcreator">NetworkChuck · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/7bA0gTroJjw" title="you need to learn Kubernetes RIGHT NOW" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Kubernetes Crash Course for Absolute Beginners [NEW]</span><span class="vcreator">TechWorld with Nana · Austria</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/s_o8dwzRlu4" title="Kubernetes Crash Course for Absolute Beginners" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Full courses (go deep)</h3>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Kubernetes Tutorial for Beginners [FULL COURSE in 4 Hours]</span><span class="vcreator">TechWorld with Nana · Austria</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/X48VuDVv0do" title="Kubernetes Tutorial for Beginners" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Kubernetes Course - Full Beginners Tutorial (Containerize Your Apps!)</span><span class="vcreator">freeCodeCamp.org · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/d6WC5n9G_sM" title="Kubernetes Course - Full Beginners Tutorial" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+      <div class="callout tip">💡 Pair the videos with the <a href="playground.html">Playground</a>: run the same <code class="inline">kubectl</code> commands they demo and watch the live cluster panel react.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ingress &amp; Gateway API — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🚪 Ingress &amp; Gateway API <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">One public entry point that routes HTTP(S) by hostname and path to many internal Services — plus its modern successor.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The problem Ingress solves</h3>
+      <p>A <code class="inline">LoadBalancer</code> Service gives <em>one</em> Service a public IP — ten services means ten load balancers and ten IPs. <strong>Ingress</strong> puts a single HTTP reverse proxy in front of the cluster and routes by host and path to the right internal (ClusterIP) Service, so one IP + one certificate serves everything.</p>
+      <div class="svgpanel"><svg viewBox="0 0 620 190" xmlns="http://www.w3.org/2000/svg">
+        <rect x="235" y="16" width="150" height="40" rx="8" fill="#0e1830" stroke="#326ce5" stroke-width="2"/><text x="310" y="34" text-anchor="middle" fill="#eaeef8" font-size="11" font-weight="700">Ingress</text><text x="310" y="49" text-anchor="middle" fill="#8793b8" font-size="9">one IP + TLS</text>
+        <line x1="270" y1="56" x2="140" y2="96" stroke="#6a9bf0" stroke-width="1.5"/>
+        <line x1="310" y1="56" x2="310" y2="96" stroke="#6a9bf0" stroke-width="1.5"/>
+        <line x1="350" y1="56" x2="480" y2="96" stroke="#6a9bf0" stroke-width="1.5"/>
+        <text x="195" y="80" text-anchor="middle" fill="#8793b8" font-size="8.5">/api</text><text x="330" y="80" text-anchor="middle" fill="#8793b8" font-size="8.5">/app</text><text x="430" y="80" text-anchor="middle" fill="#8793b8" font-size="8.5">admin.x.com</text>
+        <rect x="70" y="98" width="140" height="40" rx="6" fill="#0e1830" stroke="#3fdd94"/><text x="140" y="122" text-anchor="middle" fill="#eaeef8" font-size="10">Service: api</text>
+        <rect x="240" y="98" width="140" height="40" rx="6" fill="#0e1830" stroke="#3fdd94"/><text x="310" y="122" text-anchor="middle" fill="#eaeef8" font-size="10">Service: app</text>
+        <rect x="410" y="98" width="140" height="40" rx="6" fill="#0e1830" stroke="#3fdd94"/><text x="480" y="122" text-anchor="middle" fill="#eaeef8" font-size="10">Service: admin</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Ingress needs an Ingress Controller</h3>
+      <p>Critically, the <code class="inline">Ingress</code> object is just <em>rules</em> — it does nothing on its own. You must install an <strong>Ingress Controller</strong> (ingress-nginx, Traefik, HAProxy, or a cloud one) that watches Ingress objects and actually serves the traffic. No controller = your Ingress is ignored.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shop
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: shop.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service: { name: api, port: { number: 80 } }
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: app, port: { number: 80 } }
+  tls:
+    - hosts: [shop.example.com]
+      secretName: shop-tls</pre>
+      <div class="callout warn">⚠️ Use <code class="inline">networking.k8s.io/v1</code> — the old <code class="inline">extensions/v1beta1</code> and <code class="inline">networking.k8s.io/v1beta1</code> were removed in v1.22. In v1, <code class="inline">pathType</code> is <strong>required</strong> (<code class="inline">Prefix</code>, <code class="inline">Exact</code>, or <code class="inline">ImplementationSpecific</code>) and the backend is <code class="inline">service.name</code> + <code class="inline">service.port</code>.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> TLS and the controller-specific bits</h3>
+      <p>Put a cert+key in a <code class="inline">kubernetes.io/tls</code> Secret and reference it in <code class="inline">spec.tls</code>; most clusters use <strong>cert-manager</strong> to issue/renew Let's Encrypt certs automatically. Behaviour beyond basic routing (rewrites, rate limits, auth) is set via controller-specific <strong>annotations</strong> — and those annotations are exactly the pain point the Gateway API fixes.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Gateway API — the successor</h3>
+      <p>The <strong>Gateway API</strong> (<code class="inline">gateway.networking.k8s.io</code>, GA since v1.0 / 2023) is the next-generation, more expressive, role-oriented replacement for Ingress. It splits one overloaded object into several:</p>
+      <ul>
+        <li><strong>GatewayClass</strong> — the kind of gateway (who implements it), set up by the infra provider.</li>
+        <li><strong>Gateway</strong> — an actual listener (ports, protocols, TLS), owned by cluster operators.</li>
+        <li><strong>HTTPRoute</strong> (and TCPRoute/GRPCRoute) — the routing rules, owned by app developers, attached to a Gateway.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata: { name: shop }
+spec:
+  parentRefs: [{ name: prod-gateway }]
+  hostnames: ["shop.example.com"]
+  rules:
+    - matches: [{ path: { type: PathPrefix, value: /api } }]
+      backendRefs: [{ name: api, port: 80 }]</pre>
+      <p>Why it matters: standard, portable <strong>header-based routing, traffic splitting (weights), and cross-namespace references</strong> are first-class fields instead of per-controller annotations. Weighted <code class="inline">backendRefs</code> make canary a native capability.</p>
+      <div class="callout tip">💡 Interview-ready summary: Ingress is L7 HTTP routing via one object + annotations; Gateway API is the newer, role-separated, more expressive standard (GatewayClass/Gateway/HTTPRoute) with built-in traffic splitting. New clusters increasingly prefer Gateway API; Ingress remains widely deployed.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

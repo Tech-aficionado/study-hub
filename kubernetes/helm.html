@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helm — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">⎈ Helm <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">The package manager for Kubernetes — template your manifests once, install them anywhere with different values.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why Helm exists</h3>
+      <p>Raw YAML gets repetitive and un-reusable fast: the same app for dev/staging/prod means three near-identical manifest sets differing only in replica counts, image tags, and hostnames. <strong>Helm</strong> packages manifests into a reusable, templated <strong>Chart</strong> with a <code class="inline">values.yaml</code> you override per environment — install the whole app in one command.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Chart, Release, Repository, Values</h3>
+      <ul>
+        <li><strong>Chart</strong> — the package: templated manifests + default values + metadata.</li>
+        <li><strong>Release</strong> — an installed instance of a chart in a cluster (named), with its own revision history.</li>
+        <li><strong>Repository</strong> — where charts are hosted (an HTTP index, or an OCI registry).</li>
+        <li><strong>Values</strong> — the parameters that fill the templates; defaults in <code class="inline">values.yaml</code>, overridden with <code class="inline">--set</code> or <code class="inline">-f my-values.yaml</code>.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>my-chart/
+├── Chart.yaml          <span class="cmt"># name, version, appVersion</span>
+├── values.yaml         <span class="cmt"># default values</span>
+└── templates/
+    ├── deployment.yaml <span class="cmt"># {{ .Values.replicaCount }} etc.</span>
+    ├── service.yaml
+    └── _helpers.tpl    <span class="cmt"># reusable template snippets</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Everyday commands</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm search repo nginx
+helm install web bitnami/nginx --set replicaCount=3
+helm upgrade web bitnami/nginx -f prod-values.yaml
+helm upgrade --install web ./my-chart     <span class="cmt"># install or upgrade in one</span>
+helm list
+helm history web
+helm rollback web 2
+helm uninstall web</pre>
+      <p>Dry-run and render before you apply:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>helm template web ./my-chart -f prod-values.yaml   <span class="cmt"># render to stdout, no cluster</span>
+helm install web ./my-chart --dry-run --debug      <span class="cmt"># server-side dry run</span>
+helm lint ./my-chart</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Templating &amp; the gotchas</h3>
+      <p>Templates use Go templating with Sprig functions: <code class="inline">{{ .Values.x }}</code>, <code class="inline">{{ .Release.Name }}</code>, conditionals (<code class="inline">{{ if }}</code>), loops (<code class="inline">{{ range }}</code>), and helpers in <code class="inline">_helpers.tpl</code>.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  template:
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repo }}:{{ .Values.image.tag }}"</pre>
+      <div class="callout tip">💡 Helm 3 removed the server-side <strong>Tiller</strong> component (the big security complaint about Helm 2) — Helm 3 is a client-only tool that stores release state as Secrets in the cluster. If an interviewer mentions Tiller, "that's Helm 2; Helm 3 is clientless" is the answer.</div>
+      <div class="callout warn">⚠️ Helm renders text templates, so YAML indentation inside templates is fragile — a mis-indented <code class="inline">{{ toYaml }}</code> breaks the manifest. Use <code class="inline">nindent</code>/<code class="inline">indent</code> and always <code class="inline">helm template</code> to inspect the rendered output before shipping. Alternatives worth naming: <strong>Kustomize</strong> (template-free overlays, built into kubectl) and <strong>Argo CD</strong> (GitOps delivery, often wrapping Helm/Kustomize).</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

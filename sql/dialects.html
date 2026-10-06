@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dialect Differences — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔀 Dialect Differences <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">The core SQL is portable; the edges aren't. One reference for the SQLite vs PostgreSQL vs MySQL gotchas scattered across this course.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Auto-increment primary keys</h3>
+      <table>
+        <tr><th>PostgreSQL</th><th>MySQL</th><th>SQLite</th></tr>
+        <tr><td><code class="inline">id SERIAL PRIMARY KEY</code> or <code class="inline">id INT GENERATED ALWAYS AS IDENTITY</code></td><td><code class="inline">id INT AUTO_INCREMENT PRIMARY KEY</code></td><td><code class="inline">id INTEGER PRIMARY KEY</code> (aliases rowid, auto-increments)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> String & concatenation</h3>
+      <table>
+        <tr><th>Task</th><th>PostgreSQL</th><th>MySQL</th><th>SQLite</th></tr>
+        <tr><td>Concatenate</td><td><code class="inline">a || b</code></td><td><code class="inline">CONCAT(a, b)</code> (<code class="inline">||</code> = OR!)</td><td><code class="inline">a || b</code></td></tr>
+        <tr><td>Case-insensitive LIKE</td><td><code class="inline">ILIKE</code></td><td><code class="inline">LIKE</code> (collation-dependent)</td><td><code class="inline">LIKE</code> (ASCII only)</td></tr>
+        <tr><td>Quote identifier</td><td><code class="inline">"col"</code> (double quotes)</td><td><code class="inline">`col`</code> (backticks)</td><td><code class="inline">"col"</code> or <code class="inline">`col`</code></td></tr>
+        <tr><td>String literal</td><td><code class="inline">'text'</code> (single quotes only)</td><td><code class="inline">'text'</code> or <code class="inline">"text"</code></td><td><code class="inline">'text'</code></td></tr>
+      </table>
+      <div class="callout warn">⚠️ Double quotes mean an <strong>identifier</strong> (column/table name) in standard SQL and PostgreSQL, but can mean a <strong>string</strong> in MySQL's default mode. Always use single quotes for string values to stay portable.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Pagination & limiting rows</h3>
+      <table>
+        <tr><th>PostgreSQL / MySQL / SQLite</th><th>SQL Server / Oracle</th></tr>
+        <tr><td><code class="inline">LIMIT 10 OFFSET 20</code></td><td><code class="inline">OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY</code></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Upsert (insert-or-update)</h3>
+      <table>
+        <tr><th>PostgreSQL / SQLite</th><th>MySQL</th></tr>
+        <tr><td><code class="inline">INSERT … ON CONFLICT (key) DO UPDATE SET … = EXCLUDED.col</code></td><td><code class="inline">INSERT … ON DUPLICATE KEY UPDATE col = VALUES(col)</code></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Feature support matrix</h3>
+      <table>
+        <tr><th>Feature</th><th>PostgreSQL</th><th>MySQL</th><th>SQLite</th></tr>
+        <tr><td>FULL OUTER JOIN</td><td>✅</td><td>❌ (emulate with UNION)</td><td>✅ 3.39+</td></tr>
+        <tr><td>INTERSECT / EXCEPT</td><td>✅</td><td>✅ 8.0.31+</td><td>✅</td></tr>
+        <tr><td>Window functions</td><td>✅</td><td>✅ 8.0+</td><td>✅ 3.25+</td></tr>
+        <tr><td>CTEs / recursive</td><td>✅</td><td>✅ 8.0+</td><td>✅</td></tr>
+        <tr><td>Materialized views</td><td>✅</td><td>❌</td><td>❌</td></tr>
+        <tr><td>Stored procedures</td><td>✅</td><td>✅</td><td>❌</td></tr>
+        <tr><td>Foreign keys</td><td>✅ (on)</td><td>✅ InnoDB</td><td>⚠️ off by default (<code class="inline">PRAGMA foreign_keys=ON</code>)</td></tr>
+        <tr><td>Strict typing</td><td>✅ (static)</td><td>✅ (static)</td><td>⚠️ dynamic; <code class="inline">STRICT</code> tables 3.37+</td></tr>
+        <tr><td>Native JSON type</td><td>✅ json/jsonb</td><td>✅ JSON</td><td>⚠️ TEXT + JSON1</td></tr>
+        <tr><td>RETURNING clause</td><td>✅</td><td>❌ (use LAST_INSERT_ID)</td><td>✅ 3.35+</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Date/time &amp; booleans</h3>
+      <table>
+        <tr><th>Task</th><th>PostgreSQL</th><th>MySQL</th><th>SQLite</th></tr>
+        <tr><td>Current timestamp</td><td><code class="inline">now()</code></td><td><code class="inline">NOW()</code></td><td><code class="inline">datetime('now')</code></td></tr>
+        <tr><td>Boolean</td><td>real <code class="inline">boolean</code></td><td><code class="inline">TINYINT(1)</code></td><td>integer 0/1</td></tr>
+        <tr><td>Integer division 5/2</td><td>2</td><td>2.5 (use <code class="inline">DIV</code> for 2)</td><td>2</td></tr>
+      </table>
+      <div class="callout tip">💡 Rule of thumb: write against the standard where you can (<code class="inline">CAST</code>, <code class="inline">COALESCE</code>, explicit <code class="inline">JOIN … ON</code>, single-quoted strings), and reach for this page whenever a query that worked on one engine errors on another.</div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

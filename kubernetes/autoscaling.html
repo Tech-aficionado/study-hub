@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoscaling — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📈 Autoscaling <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Three autoscalers at three layers: more Pods, bigger Pods, more nodes.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Three autoscalers, three jobs</h3>
+      <table>
+        <tr><th>Autoscaler</th><th>Scales</th><th>Axis</th></tr>
+        <tr><td><strong>HPA</strong> — Horizontal Pod Autoscaler</td><td>Number of Pod replicas</td><td>Out / in</td></tr>
+        <tr><td><strong>VPA</strong> — Vertical Pod Autoscaler</td><td>Each Pod's requests/limits</td><td>Up / down</td></tr>
+        <tr><td><strong>Cluster Autoscaler</strong></td><td>Number of nodes</td><td>Add / remove machines</td></tr>
+      </table>
+      <p>They compose: HPA adds Pods; when Pods can't be scheduled for lack of room, the Cluster Autoscaler adds a node. VPA right-sizes a single Pod and generally should not be used on the same workload as HPA-on-CPU (they fight).</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> metrics-server is the prerequisite</h3>
+      <p>HPA (on CPU/memory) and <code class="inline">kubectl top</code> both read live usage from the <strong>metrics-server</strong> add-on. It is NOT installed by default on most clusters. Without it, HPA shows <code class="inline">&lt;unknown&gt;</code> for the metric and never scales.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl top nodes        <span class="cmt"># works only if metrics-server is installed</span>
+kubectl top pods
+<span class="cmt"># minikube: minikube addons enable metrics-server</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> HPA — the one you'll use</h3>
+      <p>The HPA watches a metric and adjusts <code class="inline">replicas</code> to keep it near a target. It also needs the Pods to have CPU/memory <strong>requests</strong> set (the % target is relative to the request).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># quick imperative form</span>
+kubectl autoscale deployment web --cpu-percent=70 --min=2 --max=10</pre>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: web }
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }</pre>
+      <p>The <code class="inline">autoscaling/v2</code> API adds memory, multiple metrics, custom/external metrics (e.g. queue length via an adapter), and <code class="inline">behavior</code> blocks to tune scale-up/down rate and stabilization windows (to stop flapping).</p>
+      <div class="callout warn">⚠️ Two HPA gotchas: it needs <code class="inline">requests</code> set (no request = no percentage to compute), and it needs metrics-server (or a custom-metrics adapter) running. "HPA stuck at min replicas / &lt;unknown&gt;" is almost always one of those two.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> VPA and Cluster Autoscaler</h3>
+      <ul>
+        <li><strong>VPA</strong> recommends (or auto-applies) better requests/limits based on observed usage. In <code class="inline">Auto</code> mode it currently has to recreate the Pod to change resources (in-place resize is maturing). Great for right-sizing batch/stateful workloads you can't easily scale horizontally.</li>
+        <li><strong>Cluster Autoscaler</strong> watches for Pods stuck <code class="inline">Pending</code> because no node has room, and asks the cloud to add a node; it also removes under-utilised nodes (draining them first). It respects PodDisruptionBudgets so scale-down doesn't violate availability.</li>
+        <li><strong>Karpenter</strong> (AWS, now broader) is a popular alternative to Cluster Autoscaler that provisions right-sized nodes directly from pending Pods, faster and more flexibly.</li>
+      </ul>
+      <div class="callout tip">💡 Interview framing: "scale the app" = HPA (more replicas) or VPA (bigger replicas); "scale the cluster" = Cluster Autoscaler/Karpenter (more nodes). They operate at different layers and are usually used together.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

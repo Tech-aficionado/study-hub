@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labs — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🧪 Labs <span class="badge intermediate">Hands-on</span></h2>
+    <p class="page-sub">Run these on a local cluster (see <a href="setup.html">Local setup</a>) or dry-run the ideas in the <a href="playground.html">Playground</a>. Each lab has a goal, steps, and a "you've done it when" check.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Lab 1 — Deploy, expose, scale</h3>
+      <p><strong>Goal:</strong> get an app running and reachable, then scale it.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create deployment web --image=nginx --replicas=3
+kubectl expose deployment web --port=80 --type=NodePort
+kubectl get pods,svc -o wide
+kubectl scale deployment web --replicas=5
+kubectl port-forward deployment/web 8080:80
+<span class="cmt"># curl http://localhost:8080 in another terminal</span></pre>
+      <div class="callout tip">✅ Done when: 5 Pods are Running, the Service lists 5 endpoints (<code class="inline">kubectl describe svc web</code>), and curl returns the nginx page.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Lab 2 — Rolling update &amp; rollback</h3>
+      <p><strong>Goal:</strong> ship a new version with zero downtime, then undo it.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl set image deployment/web nginx=nginx:1.27
+kubectl annotate deployment/web kubernetes.io/change-cause="to 1.27"
+kubectl rollout status deployment/web
+kubectl rollout history deployment/web
+kubectl rollout undo deployment/web
+kubectl get rs       <span class="cmt"># see old + new ReplicaSets</span></pre>
+      <div class="callout tip">✅ Done when: history shows ≥ 2 revisions with CHANGE-CAUSE, and after undo the previous ReplicaSet is scaled back up.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Lab 3 — Config, Secrets, probes</h3>
+      <p><strong>Goal:</strong> inject config and a secret, and add a readiness probe.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create configmap web-config --from-literal=GREETING=hello
+kubectl create secret generic web-secret --from-literal=TOKEN=abc123
+<span class="cmt"># edit the Deployment: envFrom configMapRef + secretRef, and a readinessProbe</span>
+kubectl edit deployment web
+kubectl exec deploy/web -- printenv GREETING TOKEN</pre>
+      <div class="callout tip">✅ Done when: <code class="inline">printenv</code> shows both values, and a Pod only joins the Service's endpoints once its readiness probe passes.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Lab 4 — Break it on purpose (troubleshooting)</h3>
+      <p><strong>Goal:</strong> reproduce each failure and diagnose it with the <a href="troubleshooting.html">runbook</a>.</p>
+      <ul>
+        <li><strong>ImagePullBackOff:</strong> <code class="inline">kubectl set image deployment/web nginx=nginx:doesnotexist</code> → describe → read the Event.</li>
+        <li><strong>CrashLoopBackOff:</strong> run a container whose command is <code class="inline">sh -c 'exit 1'</code> → <code class="inline">logs --previous</code>.</li>
+        <li><strong>Pending:</strong> request <code class="inline">cpu: "100"</code> → describe → <code class="inline">FailedScheduling</code>.</li>
+        <li><strong>No endpoints:</strong> change the Service selector to a label no Pod has → <code class="inline">describe svc</code> shows empty Endpoints.</li>
+      </ul>
+      <div class="callout tip">✅ Done when: for each break you can state the Event/exit code that revealed the cause before fixing it.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Lab 5 — Persistent state &amp; a Job</h3>
+      <p><strong>Goal:</strong> use a PVC and run a one-off Job.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># create a PVC (uses the default StorageClass), mount it in a Pod, write a file,</span>
+<span class="cmt"># delete the Pod, recreate it, confirm the file is still there.</span>
+kubectl apply -f pvc.yaml
+<span class="cmt"># then run a Job and read its logs</span>
+kubectl create job hello --image=busybox:1.36 -- /bin/sh -c 'echo done; sleep 2'
+kubectl get jobs
+kubectl logs job/hello</pre>
+      <div class="callout tip">✅ Done when: the file written to the PVC survives Pod deletion/recreation, and the Job reaches <code class="inline">Complete</code> with your output in its logs.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

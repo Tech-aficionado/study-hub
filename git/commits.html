@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commits &amp; History — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📜 Commits &amp; History <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">What a commit really is, how to read history like a detective, and how to write messages your team will thank you for.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What a commit actually is</h3>
+      <p>A commit is a <strong>complete snapshot</strong> of your tracked files at one moment, plus metadata: author, timestamp, a message, and a pointer to its <strong>parent</strong> commit (the one before it). That parent pointer is what links commits into a history you can walk backward.</p>
+      <div class="svgpanel"><svg viewBox="0 0 620 150" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="cp" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8c93b0"/></marker></defs>
+        <circle cx="90" cy="75" r="26" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="90" y="72" text-anchor="middle" fill="#f3ece9" font-size="11">a1b2c3</text><text x="90" y="88" text-anchor="middle" fill="#b0938c" font-size="8.5">first</text>
+        <circle cx="250" cy="75" r="26" fill="#271714" stroke="#9f7aea" stroke-width="2"/><text x="250" y="72" text-anchor="middle" fill="#f3ece9" font-size="11">d4e5f6</text><text x="250" y="88" text-anchor="middle" fill="#b0938c" font-size="8.5">feature</text>
+        <circle cx="410" cy="75" r="26" fill="#271714" stroke="#f05032" stroke-width="2"/><text x="410" y="72" text-anchor="middle" fill="#f3ece9" font-size="11">g7h8i9</text><text x="410" y="88" text-anchor="middle" fill="#b0938c" font-size="8.5">fix bug</text>
+        <line x1="224" y1="75" x2="118" y2="75" stroke="#8c93b0" stroke-width="2" marker-end="url(#cp)"/>
+        <line x1="384" y1="75" x2="278" y2="75" stroke="#8c93b0" stroke-width="2" marker-end="url(#cp)"/>
+        <text x="520" y="60" fill="#f05032" font-size="11" font-weight="700">HEAD → main</text>
+        <line x1="470" y1="68" x2="436" y2="73" stroke="#f05032" stroke-width="2"/>
+        <text x="310" y="128" text-anchor="middle" fill="#8c93b0" font-size="11">Each commit points to its PARENT. The newest commit is the tip of the branch.</text>
+      </svg></div>
+      <div class="callout">The commit ID (e.g. <code class="inline">g7h8i9...</code>) is a 40-character SHA-1 hash of the commit's content. You almost always use just the first 7 characters — enough to be unique in most repos.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Writing a good commit message</h3>
+      <p>The widely-followed convention: a short imperative summary (≤ 50 chars), a blank line, then a body explaining the <em>why</em>. "Imperative" means it completes the sentence "If applied, this commit will…".</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Fix login rejecting emails that contain a plus sign
+
+The regex treated "+" as a disallowed character, so valid
+addresses like ada+test@example.com bounced at sign-in.
+Loosen the local-part pattern to match RFC 5321.
+
+Fixes #482</pre>
+      <table>
+        <tr><th>Weak</th><th>Strong</th></tr>
+        <tr><td>fix</td><td>Fix off-by-one in pagination page count</td></tr>
+        <tr><td>updated stuff</td><td>Bump axios to 1.7.4 for the CVE fix</td></tr>
+        <tr><td>changes</td><td>Extract date formatting into a shared helper</td></tr>
+      </table>
+      <div class="callout tip">💡 Teams using <strong>Conventional Commits</strong> prefix the summary: <code class="inline">feat:</code>, <code class="inline">fix:</code>, <code class="inline">docs:</code>, <code class="inline">refactor:</code>. Tools can then auto-generate changelogs and version bumps from the history.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Reading history: <code class="inline">git log</code> and its best options</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git log --oneline
+<span class="cmt"># One commit per line: short hash + summary. The everyday view.</span>
+
+git log --oneline --graph --all --decorate
+<span class="cmt"># ASCII graph of ALL branches, with branch/tag labels — the power view</span>
+
+git log -5
+<span class="cmt"># Just the last 5 commits</span>
+
+git log --stat
+<span class="cmt"># Each commit plus which files changed and how many lines</span>
+
+git log -p
+<span class="cmt"># Full patch (diff) for each commit</span>
+
+git log --author="Ada" --since="2 weeks ago"
+<span class="cmt"># Filter by author and time</span>
+
+git log -S"functionName"
+<span class="cmt"># "Pickaxe": commits that added or removed that string — great for "when did this appear?"</span>
+
+git log main..feature
+<span class="cmt"># Commits on feature that are NOT yet on main</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Inspecting one commit: <code class="inline">git show</code></h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git show g7h8i9
+<span class="cmt"># The full detail of one commit: metadata + the diff it introduced</span>
+
+git show HEAD
+git show HEAD~2        <span class="cmt"># two commits before the current tip</span>
+git show HEAD~2:app.js <span class="cmt"># how app.js looked at that commit</span></pre>
+      <div class="callout">Two ways to walk backward: <code class="inline">HEAD~2</code> means "2 first-parents back" (what you want 99% of the time). <code class="inline">HEAD^2</code> means "the 2nd parent" and only matters on merge commits, which have two parents.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> <code class="inline">git commit --amend</code> — fix your last commit</h3>
+      <p>Forgot a file, or made a typo in the message? <code class="inline">--amend</code> replaces the most recent commit with a new one that includes your fix. It does <strong>not</strong> add a second commit — it rewrites the last one.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git commit --amend -m "Corrected message"
+<span class="cmt"># Rewrites the last commit's message</span>
+
+git add forgotten-file.js
+git commit --amend --no-edit
+<span class="cmt"># Adds the file to the last commit, keeps the same message</span></pre>
+      <div class="callout warn">⚠️ <code class="inline">--amend</code> creates a NEW commit with a new hash. Never amend a commit you've already pushed to a shared branch — you'd be rewriting history others may already have. Amend only your own un-pushed work.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Blame &amp; who-changed-what</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git blame app.js
+<span class="cmt"># Annotate every line with the commit, author and date that last touched it</span>
+
+git blame -L 40,60 app.js
+<span class="cmt"># Just lines 40–60 — much easier to read</span></pre>
+      <div class="callout tip">💡 "Blame" sounds accusatory but it's really a time-travel tool: it tells you <em>which commit</em> introduced a line, so you can <code class="inline">git show</code> that commit and read <em>why</em> the change was made.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

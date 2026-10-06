@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labs — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🧪 Hands-on Labs <span class="badge beginner">Beginner → Advanced</span></h2>
+    <p class="page-sub">Do these on a real throwaway repo. Each step is a checkbox — your progress is saved in this browser.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Lab A — Your first repo &amp; push</h3>
+      <ul class="checklist" data-lab="a">
+        <li><input type="checkbox"><label>Create a new public repo called <code class="inline">github-lab</code> on GitHub</label></li>
+        <li><input type="checkbox"><label>Clone it locally and add a <code class="inline">README.md</code> with a title and one paragraph</label></li>
+        <li><input type="checkbox"><label><code class="inline">git add</code>, <code class="inline">git commit -m "Add README"</code>, <code class="inline">git push</code></label></li>
+        <li><input type="checkbox"><label>Confirm the README renders on the repo home page</label></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Lab B — Branch, PR &amp; merge</h3>
+      <ul class="checklist" data-lab="b">
+        <li><input type="checkbox"><label>Create a branch: <code class="inline">git switch -c add-feature</code></label></li>
+        <li><input type="checkbox"><label>Make a change, commit, and <code class="inline">git push -u origin add-feature</code></label></li>
+        <li><input type="checkbox"><label>Open a Pull Request with a clear title and description</label></li>
+        <li><input type="checkbox"><label>Squash-and-merge it, then delete the branch</label></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Lab C — Issues &amp; auto-close</h3>
+      <ul class="checklist" data-lab="c">
+        <li><input type="checkbox"><label>Open an issue describing a small bug; add the <code class="inline">bug</code> label</label></li>
+        <li><input type="checkbox"><label>Branch, fix it, and put <code class="inline">Fixes #1</code> in the PR body</label></li>
+        <li><input type="checkbox"><label>Merge the PR and confirm the issue auto-closed</label></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Lab D — Protect main</h3>
+      <ul class="checklist" data-lab="d">
+        <li><input type="checkbox"><label>Add a branch-protection rule (or ruleset) on <code class="inline">main</code></label></li>
+        <li><input type="checkbox"><label>Require a pull request and 1 approval before merge</label></li>
+        <li><input type="checkbox"><label>Try to push directly to main and watch it get rejected</label></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Lab E — Your first Action</h3>
+      <ul class="checklist" data-lab="e">
+        <li><input type="checkbox"><label>Add <code class="inline">.github/workflows/ci.yml</code> that runs on <code class="inline">push</code></label></li>
+        <li><input type="checkbox"><label>Give it a <code class="inline">build</code> job on <code class="inline">ubuntu-latest</code> with checkout + a <code class="inline">run</code> step</label></li>
+        <li><input type="checkbox"><label>Push and watch the run in the Actions tab</label></li>
+        <li><input type="checkbox"><label>Add a status badge to your README</label></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Lab F — Deploy to GitHub Pages</h3>
+      <ul class="checklist" data-lab="f">
+        <li><input type="checkbox"><label>Set Settings → Pages → Source = GitHub Actions</label></li>
+        <li><input type="checkbox"><label>Add the deploy-pages workflow (build + deploy jobs)</label></li>
+        <li><input type="checkbox"><label>Push to main and open the live <code class="inline">*.github.io</code> URL</label></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">7</span> Lab G — Release &amp; tag</h3>
+      <ul class="checklist" data-lab="g">
+        <li><input type="checkbox"><label>Tag a commit <code class="inline">v1.0.0</code> and push the tag</label></li>
+        <li><input type="checkbox"><label>Create a release with auto-generated notes</label></li>
+        <li><input type="checkbox"><label>Attach a file as a release asset</label></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">8</span> Lab H — Security hygiene</h3>
+      <ul class="checklist" data-lab="h">
+        <li><input type="checkbox"><label>Enable Dependabot alerts and add <code class="inline">dependabot.yml</code></label></li>
+        <li><input type="checkbox"><label>Enable secret scanning + push protection</label></li>
+        <li><input type="checkbox"><label>Add a <code class="inline">SECURITY.md</code> and a LICENSE</label></li>
+        <li><input type="checkbox"><label>Try the <a href="playground.html">Playground</a> challenges end-to-end</label></li>
+      </ul>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="js/labs.js"></script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Local setup — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">💻 Local setup <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">You don't need a cloud account to learn Kubernetes — spin up a real cluster on your laptop in one command.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why a local cluster</h3>
+      <p>A local, single-machine cluster behaves like the real thing: same API, same <code class="inline">kubectl</code>, same YAML. It is free, disposable (delete and recreate in seconds), and offline-friendly. The four common options differ mostly in how heavy they are and whether they run multiple nodes.</p>
+      <table>
+        <tr><th>Tool</th><th>How it runs</th><th>Multi-node</th><th>Best for</th></tr>
+        <tr><td><strong>kind</strong></td><td>Nodes are Docker containers</td><td>Yes</td><td>CI, testing, multi-node practice</td></tr>
+        <tr><td><strong>minikube</strong></td><td>A VM or a container</td><td>Yes (addons)</td><td>Beginners; rich addons (dashboard, ingress)</td></tr>
+        <tr><td><strong>k3d</strong></td><td>k3s (lightweight) in Docker</td><td>Yes</td><td>Fast, low-memory, edge-like</td></tr>
+        <tr><td><strong>Docker Desktop</strong></td><td>Built-in single-node k8s</td><td>No</td><td>One checkbox if you already run Docker Desktop</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> kind — Kubernetes IN Docker</h3>
+      <p>kind runs each cluster node as a Docker container. It is the lightest way to get a genuine multi-node cluster and is what the Kubernetes project itself uses for CI.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># install (macOS/Linux) then:</span>
+kind create cluster --name dev
+kubectl cluster-info --context kind-dev
+kind get clusters
+kind delete cluster --name dev</pre>
+      <p>A multi-node cluster from a config file:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># kind-config.yaml</span>
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+  - role: worker
+  - role: worker</pre>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kind create cluster --config kind-config.yaml</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> minikube — the beginner-friendly all-rounder</h3>
+      <p>minikube spins up a single-node cluster in a VM or container and ships a batch of one-command addons (dashboard, ingress, metrics-server) that are fiddly to install by hand elsewhere.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>minikube start
+minikube status
+minikube addons enable ingress
+minikube addons enable metrics-server
+minikube dashboard          <span class="cmt"># opens the web UI</span>
+minikube service my-svc     <span class="cmt"># opens a NodePort/LB service in the browser</span>
+minikube stop
+minikube delete</pre>
+      <div class="callout tip">💡 <code class="inline">minikube image load myapp:1.0</code> pushes a locally-built image straight into the cluster so you don't need a registry while developing.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> k3d — k3s in Docker, very fast</h3>
+      <p>k3d wraps <strong>k3s</strong> (Rancher's lightweight, &lt;100MB Kubernetes distribution) in Docker. It starts in a few seconds and uses little memory — great on a modest laptop.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>k3d cluster create dev --agents 2
+k3d cluster list
+k3d cluster delete dev</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Docker Desktop — the zero-install option</h3>
+      <p>If you already run Docker Desktop, enable Kubernetes in <em>Settings → Kubernetes → Enable Kubernetes</em>. It installs a single-node cluster and sets up a <code class="inline">docker-desktop</code> kubectl context automatically. No multi-node, but perfect for quick checks.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl config use-context docker-desktop
+kubectl get nodes</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> First smoke test — the same on every tool</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create deployment hello --image=nginx --replicas=2
+kubectl expose deployment hello --port=80 --type=NodePort
+kubectl get pods,svc
+kubectl port-forward deployment/hello 8080:80
+<span class="cmt"># now curl http://localhost:8080</span></pre>
+      <div class="callout warn">⚠️ A fresh cluster has no LoadBalancer provider, so a <code class="inline">type: LoadBalancer</code> Service stays <code class="inline">&lt;pending&gt;</code> for its external IP. Use <code class="inline">NodePort</code>, <code class="inline">port-forward</code>, or minikube's <code class="inline">tunnel</code> locally.</div>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> you need to learn Kubernetes RIGHT NOW!!</span><span class="vcreator">NetworkChuck · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/7bA0gTroJjw" title="you need to learn Kubernetes RIGHT NOW" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Playground — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🎮 SQL Playground</h2>
+    <p class="page-sub">A real SQLite database running entirely in your browser (via WebAssembly). Nothing is sent anywhere — edit, run, break, and reset freely.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> How to use it</h3>
+      <ul>
+        <li>Type SQL in the editor and press <strong>Run</strong> (or <strong>Ctrl/Cmd + Enter</strong>). Multiple statements run in sequence; each result shows as its own table with a row count and timing.</li>
+        <li>Click a <strong>table or column</strong> in the schema browser to insert its name at the cursor.</li>
+        <li>Click an <strong>example</strong> to load and run it. Your past queries live in <strong>History</strong>.</li>
+        <li><strong>Reset DB</strong> restores the original sample data. <strong>Save/Load</strong> persists your database to this browser's local storage. <strong>CSV</strong> on any result downloads it.</li>
+      </ul>
+      <div class="callout tip">💡 The sample database models a small shop + HR system: <code class="inline">customers</code>, <code class="inline">orders</code>, <code class="inline">order_items</code>, <code class="inline">products</code>, <code class="inline">categories</code>, <code class="inline">employees</code> (with a <code class="inline">manager_id</code> self-reference), and <code class="inline">departments</code> — a few hundred rows, deterministic every load.</div>
+    </div>
+
+    <div id="pgTry" class="pg-try" hidden></div>
+
+    <div class="card">
+      <div class="pg-wrap">
+        <aside class="pg-side">
+          <div class="pg-panel">
+            <h4>Schema <span style="font-weight:400;text-transform:none;color:#5c7686">(click to insert)</span></h4>
+            <div id="pgSchema"></div>
+          </div>
+          <div class="pg-panel">
+            <h4>Examples</h4>
+            <div id="pgExamples"></div>
+          </div>
+          <div class="pg-panel">
+            <h4>History</h4>
+            <ul id="pgHistory"></ul>
+          </div>
+        </aside>
+        <div class="pg-main">
+          <textarea id="pgEditor" spellcheck="false" aria-label="SQL editor">SELECT c.name AS category, COUNT(*) AS products, ROUND(AVG(p.price), 2) AS avg_price
+FROM products p
+JOIN categories c ON c.id = p.category_id
+GROUP BY c.name
+ORDER BY products DESC;</textarea>
+          <div class="pg-toolbar">
+            <button type="button" id="pgRun" class="pg-btn-run">▶ Run</button>
+            <button type="button" id="pgReset" class="toggle-btn">↺ Reset DB</button>
+            <button type="button" id="pgSave" class="toggle-btn">💾 Save</button>
+            <button type="button" id="pgLoad" class="toggle-btn">📂 Load</button>
+          </div>
+          <div id="pgStatus" class="pg-status">Loading…</div>
+          <div id="pgResults" class="pg-results"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="js/interview-data.js"></script>
+<script src="vendor/sql-wasm.js"></script>
+<script src="js/playground.js"></script>
+</body>
+</html>

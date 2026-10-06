@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Branch Protection & CODEOWNERS — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🛡️ Branch Protection, Rulesets & CODEOWNERS <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Enforcing "nothing bad reaches main" with settings rather than trust.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why protect a branch</h3>
+      <p>By default anyone with write access can push straight to <code class="inline">main</code>, including force-pushes that rewrite history. <strong>Branch protection</strong> turns the important branches into something you can only change through a reviewed, tested pull request. It converts "we agreed not to push to main" into a rule the server actually enforces.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> What a protection rule can require</h3>
+      <ul>
+        <li><strong>Require a pull request before merging</strong> — no direct pushes; everything goes through a PR.</li>
+        <li><strong>Require approvals</strong> — e.g. at least 1–2 approving reviews.</li>
+        <li><strong>Require status checks to pass</strong> — named CI checks must be green before merge.</li>
+        <li><strong>Require branches to be up to date</strong> — the PR must include the latest base commits.</li>
+        <li><strong>Require conversation resolution</strong> — all review threads resolved.</li>
+        <li><strong>Require signed commits</strong>, <strong>linear history</strong>, and block <strong>force-pushes</strong> / <strong>deletions</strong>.</li>
+        <li><strong>Dismiss stale approvals</strong> when new commits are pushed.</li>
+      </ul>
+      <div class="callout tip">💡 "Require status checks" is only meaningful once the check has run at least once — GitHub lists checks it has seen, so push a PR first, then pick which checks to require.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Rulesets — the modern successor</h3>
+      <p><strong>Rulesets</strong> are the newer, more powerful system that largely supersedes classic branch-protection rules. Advantages:</p>
+      <ul>
+        <li><strong>Layered</strong> — multiple rulesets can apply to the same branch and combine, instead of one rule winning.</li>
+        <li><strong>Target by pattern</strong> — apply to branches <em>and</em> tags via <code class="inline">fnmatch</code> patterns like <code class="inline">release/*</code>.</li>
+        <li><strong>Evaluate mode</strong> — run a ruleset in "report only" to see what it <em>would</em> block before enforcing it.</li>
+        <li><strong>Org-level</strong> — define once and apply across many repos.</li>
+        <li><strong>Bypass lists</strong> — explicitly name who (if anyone) may bypass, with an audit trail.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> CODEOWNERS — automatic reviewers by path</h3>
+      <p>A <code class="inline">CODEOWNERS</code> file maps file-path patterns to the users or teams who own them. When a PR touches a matching path, GitHub <em>automatically requests</em> those owners' review, and (with branch protection's "Require review from Code Owners") their approval becomes mandatory.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .github/CODEOWNERS  (last matching pattern wins)</span>
+*                   @org/maintainers
+/src/payments/      @org/finance-team
+*.tf                @org/infra
+/docs/              @org/docs-team
+/.github/workflows/ @org/devops</pre>
+      <p>Place it in the repo root, <code class="inline">.github/</code>, or <code class="inline">docs/</code>. Patterns follow gitignore-style syntax; the <strong>last</strong> matching line decides ownership.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> A sensible default for a team repo</h3>
+      <div class="svgpanel"><svg viewBox="0 0 620 130" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="20" width="600" height="92" rx="10" fill="#1c142c" stroke="#8957e5" stroke-width="1.6"/>
+        <text x="26" y="44" fill="#eeeaf8" font-size="12" font-weight="700">main branch ruleset:</text>
+        <text x="40" y="64" fill="#3fdd94" font-size="11">✓ require PR  ✓ 1 approval  ✓ CI "build" + "test" green</text>
+        <text x="40" y="82" fill="#3fdd94" font-size="11">✓ require Code Owner review  ✓ resolve conversations</text>
+        <text x="40" y="100" fill="#ff6b6b" font-size="11">✗ no force-push  ✗ no branch deletion</text>
+      </svg></div>
+      <div class="callout warn">⚠️ Protect <code class="inline">main</code> from day one of a shared repo. Adding protection after a messy accident is closing the barn door too late.</div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

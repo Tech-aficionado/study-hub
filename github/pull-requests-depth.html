@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pull Requests In Depth — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔬 Pull Requests In Depth <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Drafts, linked issues, review requests, suggested changes and resolving conversations — the full PR toolkit.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Draft pull requests</h3>
+      <p>Open a PR as a <strong>Draft</strong> when the work is in progress. Drafts run CI and are visible to the team, but cannot be merged and do not send review-request notifications until you click <strong>"Ready for review"</strong>. Use them to get early CI feedback or show direction without consuming a reviewer's time.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>gh pr create --draft --title "WIP: new auth flow" --body "Early look, not ready yet"
+gh pr ready            <span class="cmt"># flip the current PR from draft to ready</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Linking issues and auto-closing</h3>
+      <p>In the PR description, closing keywords create a link <em>and</em> auto-close the issue when the PR merges to the default branch:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Closes #17
+Fixes #42, fixes #43        <span class="cmt"># one keyword per issue</span></pre>
+      <p>You can also link via the <strong>Development</strong> sidebar on the PR. Linked issues show on both sides, so anyone reading the issue sees the PR that will close it.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Requesting reviews</h3>
+      <p>Add reviewers from the <strong>Reviewers</strong> sidebar, or let a <code class="inline">CODEOWNERS</code> file auto-request them. A review ends in one of three states:</p>
+      <table>
+        <tr><th>State</th><th>Meaning</th></tr>
+        <tr><td><strong>Approve</strong></td><td>Looks good — safe to merge</td></tr>
+        <tr><td><strong>Request changes</strong></td><td>Blocks merge until addressed (if required)</td></tr>
+        <tr><td><strong>Comment</strong></td><td>Feedback without a verdict</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Suggested changes</h3>
+      <p>A reviewer can propose an exact code edit inside a comment using a <code class="inline">suggestion</code> block. The author then applies it with one click — no local checkout needed. This is the fastest way to fix typos and small tweaks.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># In a review comment on a specific line:</span>
+```suggestion
+const timeout = 5000; // was 500
+```</pre>
+      <div class="callout tip">💡 You can batch-apply several suggestions into a single commit via "Add suggestion to batch", keeping history tidy.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Resolving conversations</h3>
+      <p>Each review comment thread can be marked <strong>Resolved</strong> once addressed, collapsing it so the PR stays readable. Repos can require that <em>all conversations are resolved</em> before merge — a branch-protection option that stops a comment from being quietly ignored.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Keeping a PR mergeable</h3>
+      <ul>
+        <li><strong>Update branch</strong> — pull the base branch's new commits into your PR branch (merge or rebase) so it is current.</li>
+        <li><strong>Re-request review</strong> after pushing fixes so reviewers get re-notified.</li>
+        <li><strong>Force-push carefully</strong> — rewriting a PR branch's history is fine on your own feature branch, but tell reviewers so stale comments make sense.</li>
+      </ul>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> What is GitHub?</span><span class="vcreator">GitHub · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/pBy1zgt0XPc" title="What is GitHub?" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Install &amp; First-time Config — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">⚙️ Install &amp; First-time Config <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Five minutes of one-time setup so every repository you ever touch behaves correctly — especially on Windows.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Installing Git</h3>
+      <p>Git is a single small program you install once per machine. How you get it depends on your operating system:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Windows — download the installer from git-scm.com, or:</span>
+winget install --id Git.Git -e
+
+<span class="cmt"># macOS — Homebrew (or Xcode Command Line Tools)</span>
+brew install git
+
+<span class="cmt"># Debian / Ubuntu</span>
+sudo apt install git
+
+<span class="cmt"># Fedora</span>
+sudo dnf install git
+
+<span class="cmt"># Confirm it worked — prints something like "git version 2.47.0"</span>
+git --version</pre>
+      <div class="callout tip">💡 On Windows the official installer bundles <strong>Git Bash</strong>, a small Unix-style shell. Many Git tutorials assume a Bash-like shell, so Git Bash is the friendliest place to follow along even though Git works fine from PowerShell and CMD too.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Identity — who made each commit</h3>
+      <p>Every commit records a name and email. Git refuses to let you commit until you set them. These are <strong>not</strong> login credentials — they are just stamped onto your commits as the author, so set them once, globally, right after installing.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git config --global user.name "Ada Lovelace"
+git config --global user.email "ada@example.com"
+
+<span class="cmt"># See everything Git currently has configured, and WHERE each value came from</span>
+git config --list --show-origin</pre>
+      <div class="callout">The <code class="inline">--global</code> flag writes to <code class="inline">~/.gitconfig</code>, applying to every repo for your user. Drop <code class="inline">--global</code> inside a repo to override just that one repo (handy for a work email on work projects).</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Default branch name</h3>
+      <p>Historically <code class="inline">git init</code> created a branch called <code class="inline">master</code>. Modern Git lets you choose the default; most hosting platforms and new projects now use <code class="inline">main</code>.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git config --global init.defaultBranch main
+<span class="cmt"># New repos created with "git init" now start on a branch called "main"</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Your default editor</h3>
+      <p>Some Git operations (writing a commit message without <code class="inline">-m</code>, an interactive rebase) open a text editor. If you don't set one, Git may drop you into Vim, which surprises a lot of beginners.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># VS Code (the --wait is important — Git waits for you to close the tab)</span>
+git config --global core.editor "code --wait"
+
+<span class="cmt"># Nano, if you prefer a simpler terminal editor</span>
+git config --global core.editor "nano"</pre>
+      <div class="callout tip">💡 Stuck in Vim with no idea how to leave? Press <code class="inline">Esc</code>, then type <code class="inline">:wq</code> and <code class="inline">Enter</code> to save and quit, or <code class="inline">:q!</code> to quit without saving.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Line endings — the #1 Windows gotcha</h3>
+      <p>Windows ends lines with two characters (<code class="inline">CRLF</code>, carriage-return + line-feed); macOS and Linux use one (<code class="inline">LF</code>). If a Windows and a Mac developer edit the same file, Git can show the <em>entire file</em> as changed just because of invisible line-ending differences. The <code class="inline">core.autocrlf</code> setting fixes this.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Windows: store LF in the repo, convert to CRLF when checking out</span>
+git config --global core.autocrlf true
+
+<span class="cmt"># macOS / Linux: convert any accidental CRLF to LF on commit</span>
+git config --global core.autocrlf input</pre>
+      <div class="callout warn">⚠️ A warning like <code class="inline">LF will be replaced by CRLF the next time Git touches it</code> is informational, not an error — it's Git telling you it's normalising line endings per your setting. The more robust, team-wide fix is a committed <code class="inline">.gitattributes</code> file (covered on its own page) so the behaviour doesn't depend on each person's local config.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Helpful quality-of-life defaults</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Colourful output in the terminal</span>
+git config --global color.ui auto
+
+<span class="cmt"># On "git pull", rebase instead of creating a merge commit (cleaner history)</span>
+git config --global pull.rebase true
+
+<span class="cmt"># Remember your HTTPS credentials so you don't retype them every push</span>
+git config --global credential.helper manager   <span class="cmt"># Windows</span>
+
+<span class="cmt"># Make "git br / git co / git st" shortcuts</span>
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.st status
+git config --global alias.lg "log --oneline --graph --all"</pre>
+      <div class="callout">Aliases are pure convenience — <code class="inline">git lg</code> now runs your favourite log view. They live in your <code class="inline">.gitconfig</code> and never affect the repository itself.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

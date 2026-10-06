@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indexes & EXPLAIN — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🚀 Indexes & EXPLAIN <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Why one query is instant and another crawls — and how to read the plan the database actually chose.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The B-tree index</h3>
+      <p>Most indexes are <strong>B-trees</strong> — a balanced tree that keeps keys sorted so the engine can binary-search instead of scanning. Finding a row goes from O(n) (read every row) to O(log n) (a few hops down the tree).</p>
+      <div class="svgpanel"><svg viewBox="0 0 560 190" xmlns="http://www.w3.org/2000/svg">
+        <rect x="235" y="20" width="90" height="30" rx="6" fill="#1d2b16" stroke="#3fdd94"/><text x="280" y="40" text-anchor="middle" fill="#3fdd94" font-size="11" font-weight="700">40 | 80</text>
+        <rect x="60" y="80" width="90" height="28" rx="6" fill="#122334" stroke="#336791"/><text x="105" y="99" text-anchor="middle" fill="#d6e5ec" font-size="10.5">10 | 25</text>
+        <rect x="235" y="80" width="90" height="28" rx="6" fill="#122334" stroke="#336791"/><text x="280" y="99" text-anchor="middle" fill="#d6e5ec" font-size="10.5">55 | 70</text>
+        <rect x="410" y="80" width="90" height="28" rx="6" fill="#122334" stroke="#336791"/><text x="455" y="99" text-anchor="middle" fill="#d6e5ec" font-size="10.5">90 | 120</text>
+        <line x1="260" y1="50" x2="105" y2="80" stroke="#5ba3d0"/><line x1="280" y1="50" x2="280" y2="80" stroke="#5ba3d0"/><line x1="300" y1="50" x2="455" y2="80" stroke="#5ba3d0"/>
+        <g font-size="9" fill="#8aa3b3">
+          <rect x="30" y="140" width="150" height="24" rx="5" fill="#050d13" stroke="#1e3a4f"/><text x="105" y="156" text-anchor="middle">5·8·12·18·22 (leaf)</text>
+          <rect x="205" y="140" width="150" height="24" rx="5" fill="#050d13" stroke="#1e3a4f"/><text x="280" y="156" text-anchor="middle">45·52·60·66·75 (leaf)</text>
+          <rect x="380" y="140" width="150" height="24" rx="5" fill="#050d13" stroke="#1e3a4f"/><text x="455" y="156" text-anchor="middle">85·95·110·130 (leaf)</text>
+        </g>
+        <line x1="105" y1="108" x2="105" y2="140" stroke="#5ba3d0"/><line x1="280" y1="108" x2="280" y2="140" stroke="#5ba3d0"/><line x1="455" y1="108" x2="455" y2="140" stroke="#5ba3d0"/>
+        <text x="280" y="184" text-anchor="middle" fill="#5c7686" font-size="9.5">Looking for 60: root → middle child → leaf. 3 hops, not a full scan.</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Creating indexes</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>CREATE INDEX idx_orders_customer ON orders(customer_id);  <span class="cmt">-- speeds WHERE/JOIN on customer_id</span>
+CREATE UNIQUE INDEX idx_users_email ON users(email);       <span class="cmt">-- also enforces uniqueness</span>
+CREATE INDEX idx_orders_cust_date ON orders(customer_id, order_date);  <span class="cmt">-- composite</span></pre>
+      <div class="callout tip">💡 <strong>Composite index column order matters.</strong> An index on <code class="inline">(customer_id, order_date)</code> helps queries filtering on <code class="inline">customer_id</code> alone, or both — but NOT <code class="inline">order_date</code> alone (the "leftmost prefix" rule). Order the most-filtered column first.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The cost side — indexes aren't free</h3>
+      <ul>
+        <li>Every <code class="inline">INSERT</code>/<code class="inline">UPDATE</code>/<code class="inline">DELETE</code> must also update each index on that table — more indexes = slower writes.</li>
+        <li>Indexes take disk space (sometimes as much as the table).</li>
+        <li>A low-selectivity index (e.g. a boolean with 50/50 split) is often ignored by the planner — scanning is cheaper than the index round-trips.</li>
+      </ul>
+      <div class="callout warn">⚠️ Wrapping an indexed column in a function usually disables the index: <code class="inline">WHERE LOWER(email) = 'x'</code> can't use a plain index on <code class="inline">email</code>. Use a functional/expression index (<code class="inline">CREATE INDEX … ON users(LOWER(email))</code>) or store the normalised value.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> EXPLAIN — reading the plan</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- PostgreSQL: estimate only</span>
+EXPLAIN SELECT * FROM orders WHERE customer_id = 42;
+<span class="cmt">-- PostgreSQL: actually run it and show real timings</span>
+EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id = 42;
+
+<span class="cmt">-- MySQL</span>
+EXPLAIN SELECT ...;      <span class="cmt">-- 'type' column: const/ref = good, ALL = full scan</span>
+
+<span class="cmt">-- SQLite (works in this site's playground)</span>
+EXPLAIN QUERY PLAN SELECT * FROM orders WHERE customer_id = 5;</pre>
+      <table>
+        <tr><th>You want to see</th><th>You don't want to see</th></tr>
+        <tr><td>Index Scan / Index Seek / <code class="inline">USING INDEX</code></td><td>Seq Scan / Full Table Scan / <code class="inline">type: ALL</code></td></tr>
+        <tr><td>Low estimated rows + low cost</td><td>Huge row estimates on a filtered query</td></tr>
+        <tr><td>Index-only scan (covers all needed columns)</td><td>Nested loop over an un-indexed join key</td></tr>
+      </table>
+      <div class="callout tip">💡 Workflow: run <code class="inline">EXPLAIN ANALYZE</code>, spot the slow full scan, add the index it needs, re-run, and confirm the plan switched to an index scan with lower cost. Measure — don't guess which index helps.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Other index types (beyond B-tree)</h3>
+      <table>
+        <tr><th>Type</th><th>Good for</th><th>Where</th></tr>
+        <tr><td>Hash</td><td>Exact-equality lookups only</td><td>PostgreSQL, MySQL (memory tables)</td></tr>
+        <tr><td>GIN / GiST</td><td>JSON, arrays, full-text, geo</td><td>PostgreSQL</td></tr>
+        <tr><td>Full-text</td><td>Searching words in text</td><td>PostgreSQL (tsvector), MySQL FULLTEXT, SQLite FTS5</td></tr>
+        <tr><td>Partial</td><td>Index only rows matching a condition</td><td>PostgreSQL, SQLite</td></tr>
+      </table>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

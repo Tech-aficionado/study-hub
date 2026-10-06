@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account, 2FA & Keys — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔐 Account, 2FA & Keys <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Set up your identity properly before you push a single line — the account, two-factor auth, and how your computer proves who it is.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Creating and setting up your account</h3>
+      <p>Sign up at <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a> with an email, username and password. Your <strong>username</strong> becomes part of every URL you own (<code class="inline">github.com/&lt;username&gt;</code>) and is awkward to change later, so pick something professional. After signing up, fill in your public profile: a real name, a photo and a bio make your contributions look trustworthy to maintainers.</p>
+      <div class="callout tip">💡 One e-mail address can only be attached to one account. Use a personal address you will keep for years — not a university or work address you lose access to when you leave.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Two-factor authentication (2FA) is now mandatory</h3>
+      <p>GitHub <strong>requires 2FA</strong> for all accounts that contribute code. 2FA means that even if someone steals your password, they still cannot log in without a second factor. Think of it as a second lock on the door that only your phone (or security key) can open.</p>
+      <ul>
+        <li><strong>Authenticator app (TOTP)</strong> — e.g. Google Authenticator, Authy, 1Password. Scans a QR code and generates a rotating 6-digit code. Recommended default.</li>
+        <li><strong>Passkey / security key</strong> — a hardware key (YubiKey) or a platform passkey (Windows Hello, Touch ID, phone passkey). The strongest option, phishing-resistant.</li>
+        <li><strong>SMS</strong> — supported but the weakest; use it only as a fallback.</li>
+      </ul>
+      <div class="callout danger">🛑 Save your <strong>recovery codes</strong> somewhere offline the moment you enable 2FA. If you lose your phone and have no recovery codes, you can be permanently locked out of your account.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> HTTPS vs SSH — the two ways to talk to GitHub</h3>
+      <p>When you <code class="inline">git push</code> or <code class="inline">git clone</code>, your machine authenticates to GitHub one of two ways:</p>
+      <table>
+        <tr><th>Method</th><th>URL looks like</th><th>Auth uses</th></tr>
+        <tr><td><strong>HTTPS</strong></td><td><code class="inline">https://github.com/user/repo.git</code></td><td>A Personal Access Token (PAT) as the password</td></tr>
+        <tr><td><strong>SSH</strong></td><td><code class="inline">git@github.com:user/repo.git</code></td><td>A key pair on your machine</td></tr>
+      </table>
+      <p>Since 2021, GitHub <strong>no longer accepts your account password</strong> over HTTPS for Git operations — you must use a token or an SSH key. Both are fine; SSH avoids re-entering a token, HTTPS works through corporate firewalls more easily.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Setting up an SSH key</h3>
+      <p>An SSH key is a pair of files: a <strong>private</strong> key that never leaves your computer, and a <strong>public</strong> key you give to GitHub. GitHub proves it is talking to you by checking a signature only the private key could have produced.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># 1. Generate a modern Ed25519 key pair</span>
+ssh-keygen -t ed25519 -C "you@example.com"
+
+<span class="cmt"># 2. Start the agent and add the key</span>
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+
+<span class="cmt"># 3. Copy the PUBLIC key, then paste it at Settings > SSH and GPG keys</span>
+cat ~/.ssh/id_ed25519.pub
+
+<span class="cmt"># 4. Test it</span>
+ssh -T git@github.com</pre>
+      <div class="callout warn">⚠️ Never share, commit, or paste the <code class="inline">id_ed25519</code> file (no <code class="inline">.pub</code>). That is your private key — only ever upload the <code class="inline">.pub</code> file.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Fine-grained Personal Access Tokens (PATs)</h3>
+      <p>For HTTPS and the API you authenticate with a token instead of a password. GitHub now offers <strong>fine-grained PATs</strong>, which are far safer than the old "classic" tokens because you scope each one tightly:</p>
+      <ul>
+        <li><strong>Resource owner & specific repositories</strong> — grant access to only the repos a script needs, not everything you can see.</li>
+        <li><strong>Per-permission scopes</strong> — e.g. "Contents: read" + "Pull requests: write" and nothing else.</li>
+        <li><strong>Mandatory expiry</strong> — tokens expire (max ~1 year), so a leaked token eventually dies on its own.</li>
+      </ul>
+      <p>Create one at <strong>Settings → Developer settings → Personal access tokens → Fine-grained tokens</strong>. When Git prompts for a password over HTTPS, paste the token.</p>
+      <div class="callout tip">💡 Principle of least privilege: a token for a CI script that only reads code needs <em>read</em> on Contents and nothing more. Short expiry + minimal scope limits the blast radius if it leaks.</div>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Git and GitHub for Beginners – Crash Course</span><span class="vcreator">freeCodeCamp.org · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/RGOj5yH7evk" title="Git and GitHub for Beginners" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

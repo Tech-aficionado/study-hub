@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Three Areas &amp; Staging — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🗂️ Three Areas &amp; Staging <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Working directory, staging area, repository — and the surprisingly powerful art of staging only part of your work.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The three areas, and the two commands between them</h3>
+      <p>Think of Git as having three rooms your changes move through. A change starts in your <strong>working directory</strong>, you <code class="inline">git add</code> it into the <strong>staging area</strong> (also called the <em>index</em>), and <code class="inline">git commit</code> seals everything staged into the <strong>repository</strong> as a permanent snapshot.</p>
+      <div class="svgpanel"><svg viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8a68"/></marker>
+        <marker id="a3b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#6dc1ff"/></marker></defs>
+        <rect x="18" y="55" width="178" height="80" rx="10" fill="#271714" stroke="#f05032" stroke-width="2"/>
+        <text x="107" y="85" text-anchor="middle" fill="#f3ece9" font-size="13" font-weight="700">Working Directory</text>
+        <text x="107" y="106" text-anchor="middle" fill="#b0938c" font-size="10.5">Files you edit</text>
+        <text x="107" y="122" text-anchor="middle" fill="#b0938c" font-size="10.5">(modified / untracked)</text>
+        <rect x="231" y="55" width="178" height="80" rx="10" fill="#271714" stroke="#3fdd94" stroke-width="2"/>
+        <text x="320" y="85" text-anchor="middle" fill="#f3ece9" font-size="13" font-weight="700">Staging Area</text>
+        <text x="320" y="106" text-anchor="middle" fill="#b0938c" font-size="10.5">The "index"</text>
+        <text x="320" y="122" text-anchor="middle" fill="#b0938c" font-size="10.5">Next commit, prepared</text>
+        <rect x="444" y="55" width="178" height="80" rx="10" fill="#271714" stroke="#9f7aea" stroke-width="2"/>
+        <text x="533" y="85" text-anchor="middle" fill="#f3ece9" font-size="13" font-weight="700">Repository</text>
+        <text x="533" y="106" text-anchor="middle" fill="#b0938c" font-size="10.5">.git — permanent</text>
+        <text x="533" y="122" text-anchor="middle" fill="#b0938c" font-size="10.5">snapshot history</text>
+        <line x1="198" y1="80" x2="229" y2="80" stroke="#ff8a68" stroke-width="2" marker-end="url(#a3)"/>
+        <text x="213" y="72" text-anchor="middle" fill="#ff8a68" font-size="9.5">add</text>
+        <line x1="411" y1="80" x2="442" y2="80" stroke="#ff8a68" stroke-width="2" marker-end="url(#a3)"/>
+        <text x="427" y="72" text-anchor="middle" fill="#ff8a68" font-size="9.5">commit</text>
+        <line x1="229" y1="118" x2="198" y2="118" stroke="#6dc1ff" stroke-width="2" marker-end="url(#a3b)"/>
+        <text x="213" y="132" text-anchor="middle" fill="#6dc1ff" font-size="9">restore --staged</text>
+        <line x1="442" y1="118" x2="411" y2="118" stroke="#6dc1ff" stroke-width="2" marker-end="url(#a3b)"/>
+        <text x="427" y="132" text-anchor="middle" fill="#6dc1ff" font-size="9">reset / restore -s</text>
+        <text x="320" y="175" text-anchor="middle" fill="#8c93b0" font-size="11.5">Orange = moving changes forward. Blue = pulling them back.</text>
+        <text x="320" y="195" text-anchor="middle" fill="#8c93b0" font-size="11.5">Nothing is permanent until it reaches the repository.</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Reading <code class="inline">git status</code> like a pro</h3>
+      <p><code class="inline">git status</code> is the command you run constantly to see which area each change sits in. Learn to read its three sections:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>$ git status
+On branch main
+<span class="cmt"># Section 1 — STAGED (green): will go into the next commit</span>
+Changes to be committed:
+  modified:   app.js
+
+<span class="cmt"># Section 2 — MODIFIED but not staged (red): tracked, edited, not added yet</span>
+Changes not staged for commit:
+  modified:   style.css
+
+<span class="cmt"># Section 3 — UNTRACKED: brand-new files Git has never seen</span>
+Untracked files:
+  notes.txt</pre>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git status -s
+<span class="cmt"># Short format. Two columns: left = staging area, right = working dir</span>
+<span class="cmt">#  M app.js   -> staged modification</span>
+<span class="cmt"># M  style.css -> modified, not staged</span>
+<span class="cmt"># ?? notes.txt -> untracked</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Why staging exists: crafting clean commits</h3>
+      <p>Beginners often ask "why not just commit everything?" The staging area lets you build a commit <em>deliberately</em>. You might have fixed a bug AND renamed a variable in the same editing session — staging lets you commit each as its own clean, reviewable change.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git add app.js            <span class="cmt"># stage only the bug fix</span>
+git commit -m "Fix off-by-one in pagination"
+
+git add style.css          <span class="cmt"># now stage the unrelated change</span>
+git commit -m "Rename --accent to --brand colour variable"</pre>
+      <div class="callout tip">💡 A reviewer thanks you for two focused commits over one giant "misc changes" commit. Future-you, running <code class="inline">git bisect</code> to find which change broke something, thanks you even more.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> <code class="inline">git add -p</code> — stage by the chunk, not the file</h3>
+      <p>Sometimes two unrelated changes are in the <em>same</em> file. <code class="inline">git add -p</code> (patch mode) walks you through each "hunk" and asks whether to stage it. This is the single biggest upgrade to most people's Git workflow.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git add -p app.js
+<span class="cmt"># Git shows one hunk at a time and asks:</span>
+<span class="cmt"># Stage this hunk [y,n,q,a,d,s,e,?]?</span>
+<span class="cmt">#   y = yes, stage it      n = no, skip it</span>
+<span class="cmt">#   s = split into smaller hunks   e = edit the hunk by hand</span>
+<span class="cmt">#   q = quit                a = stage this and all remaining</span></pre>
+      <div class="callout">The same <code class="inline">-p</code> flag works on <code class="inline">git restore -p</code>, <code class="inline">git stash -p</code>, and <code class="inline">git checkout -p</code> — anywhere you want hunk-level control.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Unstaging and discarding with <code class="inline">git restore</code></h3>
+      <p>Modern Git (2.23+) split the overloaded old <code class="inline">git checkout</code> into two clearer commands: <code class="inline">git switch</code> for branches and <code class="inline">git restore</code> for files. Use <code class="inline">restore</code> to move changes <em>backward</em> through the three areas.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git restore --staged file.txt
+<span class="cmt"># Move file OUT of the staging area, back to "modified" — keeps your edits</span>
+
+git restore file.txt
+<span class="cmt"># ⚠️ Throw away working-directory edits — restores the last committed version</span>
+
+git restore --source=HEAD~2 file.txt
+<span class="cmt"># Restore this file as it was 2 commits ago (into your working dir)</span></pre>
+      <div class="callout danger">🛑 Plain <code class="inline">git restore file.txt</code> permanently discards uncommitted edits. Git never tracked them, so there is nothing to recover. Run <code class="inline">git status</code> and <code class="inline">git diff</code> first to be sure.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

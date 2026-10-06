@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Playground — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+<style>
+  .pg-grid{display:grid; grid-template-columns:1fr; gap:18px;}
+  .pg-term-wrap .term-body{min-height:220px; max-height:360px;}
+  .pg-input-row{display:flex; gap:8px; align-items:center; padding:8px 14px; border-top:1px solid var(--border);}
+  .pg-input-row .pgp{color:var(--green); font-family:monospace; flex-shrink:0;}
+  #pgInput{flex:1; min-width:0; background:transparent; border:none; outline:none; color:var(--text); font-family:monospace; font-size:16px;}
+  .pg-input-row button{flex-shrink:0;}
+  #pgRunBtn{background:var(--accent); color:#fff; border:none; border-radius:7px; padding:7px 16px; font-weight:700; cursor:pointer; font-size:13px;}
+  #pgRunBtn:hover{background:var(--accent2);}
+  #pgResetBtn{background:var(--bg2); color:var(--text); border:1px solid var(--border); border-radius:7px; padding:7px 14px; cursor:pointer; font-size:13px;}
+  .pg-hint, .pg-hint-line{color:#8a736c; font-size:12px;}
+  .term-line.pg-hint-line .term-out{color:#8a736c;}
+  .term-line.term-err .term-out{color:var(--red);}
+  #pgGraph svg{display:block; margin:0 auto; max-width:100%; height:auto;}
+  #pgChallenges{list-style:none; padding:0; margin:0;}
+  #pgChallenges li{padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--muted);}
+  #pgChallenges li:last-child{border-bottom:none;}
+  #pgChallenges li.pg-done{color:var(--text);}
+  #pgChallenges .pg-check{margin-right:8px;}
+  @media(max-width:720px){ #pgInput{font-size:16px;} }
+  .pg-try-panel{border-left:3px solid var(--accent2);}
+  .pg-try-panel a{color:var(--accent2);}
+</style>
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🕹️ Git Playground <span class="badge beginner">Interactive</span></h2>
+    <p class="page-sub">A real-ish Git simulator in your browser. Type commands, watch the commit graph redraw after every one, and clear the guided challenges. Nothing here touches your real machine.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> How to use it</h3>
+      <ul>
+        <li>Type a command and press <strong>Enter</strong> (or tap <strong>Run</strong> on mobile).</li>
+        <li><strong>Shell:</strong> <code class="inline">ls</code>, <code class="inline">cat &lt;file&gt;</code>, <code class="inline">touch &lt;file&gt;</code>, <code class="inline">echo "text" &gt; file</code>, <code class="inline">echo "text" &gt;&gt; file</code>, <code class="inline">rm &lt;file&gt;</code>, <code class="inline">clear</code>.</li>
+        <li><strong>Git:</strong> <code class="inline">init</code>, <code class="inline">status</code>, <code class="inline">add</code>, <code class="inline">restore</code>, <code class="inline">commit</code>, <code class="inline">log</code>, <code class="inline">diff</code>, <code class="inline">branch</code>, <code class="inline">switch/checkout</code>, <code class="inline">merge</code>, <code class="inline">rebase</code>, <code class="inline">reset</code>, <code class="inline">revert</code>, <code class="inline">cherry-pick</code>, <code class="inline">stash</code>, <code class="inline">tag</code>, <code class="inline">reflog</code>.</li>
+        <li><strong>Tab</strong> completes commands; <strong>↑ / ↓</strong> recall history; <code class="inline">help</code> or <code class="inline">help &lt;cmd&gt;</code> for reference.</li>
+      </ul>
+    </div>
+
+    <div class="card pg-term-wrap">
+      <h3><span class="num">2</span> Terminal</h3>
+      <div class="terminal">
+        <div class="term-head"><span class="dot" style="background:#ff5f56"></span><span class="dot" style="background:#ffbd2e"></span><span class="dot" style="background:#27c93f"></span><span style="margin-left:8px;">git-playground — simulated shell</span></div>
+        <div class="term-body" id="pgTerm"></div>
+        <div class="pg-input-row">
+          <span class="pgp">git&gt;</span>
+          <input id="pgInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="git init" aria-label="Playground command input">
+          <button id="pgRunBtn" type="button">Run</button>
+          <button id="pgResetBtn" type="button">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Live commit graph</h3>
+      <div class="svgpanel" id="pgGraph"></div>
+      <p class="pg-hint">Purple = ordinary commit · red outline = HEAD · gold outline = merge commit (two parents). Branch and tag labels sit above the commit they point to.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Guided challenges</h3>
+      <p class="page-sub" style="margin-bottom:12px;">Each ticks itself ✅ automatically when your commands satisfy it.</p>
+      <ul id="pgChallenges"></ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> A worked starter sequence</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git init
+echo "hello world" &gt; readme.txt
+git add .
+git commit -m "first commit"
+git switch -c feature
+echo "feature code" &gt; app.js
+git add .
+git commit -m "add app"
+git switch main
+git merge feature          <span class="cmt"># fast-forward</span>
+git log --oneline --graph --all</pre>
+      <div class="callout tip">💡 Then try breaking things on purpose: make the same line differ on two branches and merge to see a real CONFLICT with markers, resolve it with <code class="inline">add</code> + <code class="inline">commit</code>, or <code class="inline">git reset --soft HEAD~1</code> to undo a commit while keeping the work.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="js/interview-data.js"></script>
+<script src="js/playground.js"></script>
+</body>
+</html>

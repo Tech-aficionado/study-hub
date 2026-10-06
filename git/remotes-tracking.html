@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fetch, Pull &amp; Tracking — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔄 Fetch, Pull &amp; Tracking <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">The exact difference between fetch and pull, remote-tracking branches, and keeping a branch in sync without merge-commit noise.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Remote-tracking branches: your local snapshot of the remote</h3>
+      <p>When you clone or fetch, Git stores read-only pointers like <code class="inline">origin/main</code> — these are <strong>remote-tracking branches</strong>. They record "where <code class="inline">main</code> was on the remote the last time I talked to it." You never commit on them directly; they move only when you fetch.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git branch -a
+<span class="cmt"># -a shows local AND remote-tracking branches:</span>
+<span class="cmt">#   * main                 (your local branch)</span>
+<span class="cmt">#     remotes/origin/main  (snapshot of the remote's main)</span>
+
+git branch -vv
+<span class="cmt"># Each local branch, which remote it tracks, and ahead/behind counts:</span>
+<span class="cmt">#   main  a1b2c3 [origin/main: ahead 2, behind 1] ...</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> fetch vs pull — the crucial distinction</h3>
+      <p><code class="inline">git fetch</code> downloads new commits and updates your remote-tracking branches, but <strong>does not touch your working files or current branch</strong>. <code class="inline">git pull</code> is <code class="inline">fetch</code> + an automatic <code class="inline">merge</code> (or <code class="inline">rebase</code>) of those changes into your branch.</p>
+      <div class="svgpanel"><svg viewBox="0 0 620 190" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="pf" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#6dc1ff"/></marker></defs>
+        <rect x="430" y="30" width="160" height="48" rx="10" fill="#271714" stroke="#3fdd94" stroke-width="2"/><text x="510" y="59" text-anchor="middle" fill="#f3ece9" font-size="12" font-weight="700">Remote (origin)</text>
+        <rect x="30" y="30" width="160" height="48" rx="10" fill="#271714" stroke="#6dc1ff" stroke-width="2"/><text x="110" y="52" text-anchor="middle" fill="#f3ece9" font-size="11" font-weight="700">origin/main</text><text x="110" y="68" text-anchor="middle" fill="#b0938c" font-size="8.5">remote-tracking</text>
+        <rect x="30" y="115" width="160" height="48" rx="10" fill="#271714" stroke="#f05032" stroke-width="2"/><text x="110" y="137" text-anchor="middle" fill="#f3ece9" font-size="11" font-weight="700">main</text><text x="110" y="153" text-anchor="middle" fill="#b0938c" font-size="8.5">your local branch</text>
+        <line x1="428" y1="48" x2="194" y2="52" stroke="#6dc1ff" stroke-width="2" marker-end="url(#pf)"/>
+        <text x="310" y="40" text-anchor="middle" fill="#6dc1ff" font-size="10">1. git fetch — updates origin/main only</text>
+        <line x1="130" y1="80" x2="130" y2="112" stroke="#ff8a68" stroke-width="2" marker-end="url(#pf)"/>
+        <text x="300" y="140" text-anchor="middle" fill="#ff8a68" font-size="10">2. git merge origin/main — into your branch</text>
+        <text x="310" y="178" text-anchor="middle" fill="#8c93b0" font-size="10.5">git pull = step 1 + step 2 in one command</text>
+      </svg></div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git fetch origin
+git log --oneline main..origin/main   <span class="cmt"># see what's new BEFORE merging</span>
+git merge origin/main                 <span class="cmt"># integrate when you're ready</span>
+
+git pull            <span class="cmt"># the shortcut: fetch + merge your tracked branch</span></pre>
+      <div class="callout tip">💡 When a pull does something confusing, slow down: <code class="inline">fetch</code> then <code class="inline">log main..origin/main</code> shows you exactly what came down before you merge it. "Fetch, look, then merge" prevents most pull surprises.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> pull --rebase: a linear shared history</h3>
+      <p>A plain <code class="inline">git pull</code> that needs to combine your local commits with new remote commits creates a merge commit — producing those "Merge branch 'main' of…" commits that clutter history. <code class="inline">pull --rebase</code> replays your local commits on top of the fetched ones instead.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git pull --rebase origin main
+<span class="cmt"># Fetch, then rebase YOUR local commits on top of the remote's — no merge commit</span>
+
+git config --global pull.rebase true
+<span class="cmt"># Make every plain "git pull" rebase by default</span></pre>
+      <div class="callout warn">⚠️ <code class="inline">pull --rebase</code> rewrites <em>your own un-pushed</em> commits, which is safe. It does not rewrite anyone else's — it's replaying your local work, not the shared history.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Setting up tracking (upstream)</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git push -u origin feature-login
+<span class="cmt"># First push of a new branch: -u links local feature-login to origin/feature-login</span>
+<span class="cmt"># After this, plain "git push" and "git pull" just work on this branch</span>
+
+git branch --set-upstream-to=origin/main main
+<span class="cmt"># Link an existing local branch to a remote one after the fact</span>
+
+git push origin --delete old-feature
+<span class="cmt"># Delete a branch on the remote</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Managing remotes</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git remote -v
+<span class="cmt"># List remotes and their fetch/push URLs</span>
+
+git remote add upstream https://github.com/original/repo.git
+<span class="cmt"># Add a 2nd remote — common when working from a fork (origin = your fork)</span>
+
+git fetch upstream
+git merge upstream/main       <span class="cmt"># pull in changes from the original project</span>
+
+git remote rename origin github
+git remote set-url origin git@github.com:user/repo.git  <span class="cmt"># switch HTTPS → SSH</span></pre>
+      <div class="callout">In an open-source fork workflow, <code class="inline">origin</code> is <em>your</em> fork (you push here) and <code class="inline">upstream</code> is the original project (you fetch from here to stay current). Keeping these straight is half the battle of contributing.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Types per Dialect — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔢 Data Types <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Every column has a type. The categories are universal; the exact names differ by dialect — and SQLite is the odd one out.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The universal categories</h3>
+      <ul>
+        <li><strong>Integers</strong> — whole numbers (ids, counts, quantities).</li>
+        <li><strong>Exact decimals</strong> — money and anything where rounding matters (<code class="inline">NUMERIC</code>/<code class="inline">DECIMAL</code>).</li>
+        <li><strong>Floating point</strong> — approximate reals for science/measurements (<code class="inline">REAL</code>, <code class="inline">DOUBLE</code>).</li>
+        <li><strong>Text</strong> — strings, fixed or variable length.</li>
+        <li><strong>Boolean</strong> — true/false.</li>
+        <li><strong>Date &amp; time</strong> — dates, timestamps, intervals.</li>
+        <li><strong>Binary</strong> — raw bytes (<code class="inline">BLOB</code>, <code class="inline">bytea</code>).</li>
+        <li><strong>Structured</strong> — JSON, arrays, UUID, and other modern extras.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The cross-dialect cheat table</h3>
+      <table>
+        <tr><th>Category</th><th>PostgreSQL</th><th>MySQL</th><th>SQLite (affinity)</th></tr>
+        <tr><td>Small int</td><td><code class="inline">smallint</code></td><td><code class="inline">SMALLINT</code></td><td><code class="inline">INTEGER</code></td></tr>
+        <tr><td>Integer</td><td><code class="inline">integer</code> / <code class="inline">int</code></td><td><code class="inline">INT</code></td><td><code class="inline">INTEGER</code></td></tr>
+        <tr><td>Big int</td><td><code class="inline">bigint</code></td><td><code class="inline">BIGINT</code></td><td><code class="inline">INTEGER</code></td></tr>
+        <tr><td>Auto-increment id</td><td><code class="inline">serial</code> / <code class="inline">GENERATED … AS IDENTITY</code></td><td><code class="inline">INT AUTO_INCREMENT</code></td><td><code class="inline">INTEGER PRIMARY KEY</code> (rowid)</td></tr>
+        <tr><td>Exact decimal</td><td><code class="inline">numeric(p,s)</code></td><td><code class="inline">DECIMAL(p,s)</code></td><td><code class="inline">NUMERIC</code></td></tr>
+        <tr><td>Float</td><td><code class="inline">real</code> / <code class="inline">double precision</code></td><td><code class="inline">FLOAT</code> / <code class="inline">DOUBLE</code></td><td><code class="inline">REAL</code></td></tr>
+        <tr><td>Variable text</td><td><code class="inline">varchar(n)</code> / <code class="inline">text</code></td><td><code class="inline">VARCHAR(n)</code> / <code class="inline">TEXT</code></td><td><code class="inline">TEXT</code></td></tr>
+        <tr><td>Boolean</td><td><code class="inline">boolean</code></td><td><code class="inline">BOOLEAN</code> (alias for <code class="inline">TINYINT(1)</code>)</td><td>no bool — stored as <code class="inline">0</code>/<code class="inline">1</code></td></tr>
+        <tr><td>Date</td><td><code class="inline">date</code></td><td><code class="inline">DATE</code></td><td><code class="inline">TEXT</code>/<code class="inline">REAL</code>/<code class="inline">INTEGER</code></td></tr>
+        <tr><td>Timestamp</td><td><code class="inline">timestamptz</code></td><td><code class="inline">DATETIME</code> / <code class="inline">TIMESTAMP</code></td><td><code class="inline">TEXT</code> (ISO-8601)</td></tr>
+        <tr><td>Binary</td><td><code class="inline">bytea</code></td><td><code class="inline">BLOB</code></td><td><code class="inline">BLOB</code></td></tr>
+        <tr><td>JSON</td><td><code class="inline">jsonb</code></td><td><code class="inline">JSON</code></td><td><code class="inline">TEXT</code> + JSON1 functions</td></tr>
+        <tr><td>UUID</td><td><code class="inline">uuid</code></td><td><code class="inline">CHAR(36)</code> / <code class="inline">BINARY(16)</code></td><td><code class="inline">TEXT</code></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> SQLite is dynamically typed — the big surprise</h3>
+      <p>Every other SQL engine is <strong>statically typed</strong>: a column declared <code class="inline">INT</code> only ever holds integers. SQLite is different — the type lives with the <em>value</em>, not the column. A column has a <strong>type affinity</strong> (a <em>preference</em>), but can store any of five storage classes: <code class="inline">NULL</code>, <code class="inline">INTEGER</code>, <code class="inline">REAL</code>, <code class="inline">TEXT</code>, <code class="inline">BLOB</code>.</p>
+      <div class="svgpanel"><svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
+        <text x="300" y="22" text-anchor="middle" fill="#8aa3b3" font-size="11">SQLite affinity rules — declared type → affinity</text>
+        <rect x="20" y="40" width="110" height="46" rx="7" fill="#122334" stroke="#336791"/><text x="75" y="60" text-anchor="middle" fill="#d6e5ec" font-size="10.5">contains "INT"</text><text x="75" y="76" text-anchor="middle" fill="#3fdd94" font-size="11" font-weight="700">INTEGER</text>
+        <rect x="140" y="40" width="150" height="46" rx="7" fill="#122334" stroke="#336791"/><text x="215" y="60" text-anchor="middle" fill="#d6e5ec" font-size="10.5">CHAR / CLOB / TEXT</text><text x="215" y="76" text-anchor="middle" fill="#3fdd94" font-size="11" font-weight="700">TEXT</text>
+        <rect x="300" y="40" width="130" height="46" rx="7" fill="#122334" stroke="#336791"/><text x="365" y="60" text-anchor="middle" fill="#d6e5ec" font-size="10.5">REAL / FLOA / DOUB</text><text x="365" y="76" text-anchor="middle" fill="#3fdd94" font-size="11" font-weight="700">REAL</text>
+        <rect x="440" y="40" width="140" height="46" rx="7" fill="#122334" stroke="#336791"/><text x="510" y="60" text-anchor="middle" fill="#d6e5ec" font-size="10.5">BLOB / (none)</text><text x="510" y="76" text-anchor="middle" fill="#3fdd94" font-size="11" font-weight="700">BLOB</text>
+        <rect x="230" y="100" width="140" height="36" rx="7" fill="#1d2b16" stroke="#f0b429"/><text x="300" y="122" text-anchor="middle" fill="#f0b429" font-size="11" font-weight="700">everything else → NUMERIC</text>
+      </svg></div>
+      <div class="callout warn">⚠️ Rules are checked in order, so <code class="inline">FLOATING POINT</code> gets INTEGER affinity (it contains "INT"!), and <code class="inline">STRING</code> gets NUMERIC (no match). Since v3.37 you can use <code class="inline">CREATE TABLE … STRICT</code> for rigid typing. Source: <a href="https://www.sqlite.org/datatype3.html">sqlite.org/datatype3</a>.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Money: never use floating point</h3>
+      <p>Floating-point types can't represent <code class="inline">0.1</code> exactly, so sums drift by fractions of a cent. For currency, always use the exact decimal type.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- PostgreSQL / MySQL: exact to the cent</span>
+price NUMERIC(10, 2)    <span class="cmt">-- up to 10 digits, 2 after the decimal point</span>
+
+<span class="cmt">-- Wrong for money — rounding errors accumulate:</span>
+price DOUBLE PRECISION  <span class="cmt">-- avoid for currency</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Dates &amp; times: store in UTC, with time zone where you can</h3>
+      <p>In PostgreSQL, prefer <code class="inline">timestamptz</code> (timestamp with time zone) — it stores an absolute point in time. MySQL's <code class="inline">TIMESTAMP</code> is UTC-based (converts on read) while <code class="inline">DATETIME</code> is a wall-clock value with no zone. SQLite stores dates as ISO-8601 text and provides date functions.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- PostgreSQL</span>
+created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+
+<span class="cmt">-- MySQL</span>
+created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+<span class="cmt">-- SQLite (text, ISO-8601)</span>
+created_at TEXT NOT NULL DEFAULT (datetime('now'))</pre>
+      <div class="callout tip">💡 A naive timestamp with no zone marker is parsed as local time by most clients — the classic bug where a UTC value shows up hours off. Store absolute instants and format for display at the edge.</div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

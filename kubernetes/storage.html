@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storage (PV/PVC) — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">💾 Storage (PV / PVC) <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">How data survives beyond a Pod — the claim/volume split, StorageClasses, and the access modes that trip people up.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Ephemeral vs persistent</h3>
+      <p>A container's own filesystem is wiped on restart. An <code class="inline">emptyDir</code> volume lives as long as the <em>Pod</em> (survives a container crash, shared between the Pod's containers) but dies with the Pod. For data that must outlive the Pod — databases, uploads — you need a <strong>PersistentVolume</strong>.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> PV, PVC, StorageClass — the three objects</h3>
+      <div class="svgpanel"><svg viewBox="0 0 620 170" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="sa" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#6a9bf0"/></marker></defs>
+        <rect x="40" y="60" width="130" height="46" rx="8" fill="#0e1830" stroke="#f0b429"/><text x="105" y="80" text-anchor="middle" fill="#eaeef8" font-size="10.5" font-weight="700">Pod</text><text x="105" y="96" text-anchor="middle" fill="#8793b8" font-size="9">mounts a PVC</text>
+        <line x1="170" y1="83" x2="218" y2="83" stroke="#6a9bf0" stroke-width="1.6" marker-end="url(#sa)"/>
+        <rect x="220" y="60" width="140" height="46" rx="8" fill="#0e1830" stroke="#3fdd94"/><text x="290" y="80" text-anchor="middle" fill="#eaeef8" font-size="10.5" font-weight="700">PVC (request)</text><text x="290" y="96" text-anchor="middle" fill="#8793b8" font-size="9">"I want 10Gi RWO"</text>
+        <line x1="360" y1="83" x2="408" y2="83" stroke="#6a9bf0" stroke-width="1.6" marker-end="url(#sa)"/>
+        <rect x="410" y="60" width="140" height="46" rx="8" fill="#0e1830" stroke="#326ce5"/><text x="480" y="80" text-anchor="middle" fill="#eaeef8" font-size="10.5" font-weight="700">PV (real disk)</text><text x="480" y="96" text-anchor="middle" fill="#8793b8" font-size="9">cloud/NFS/local</text>
+        <rect x="410" y="18" width="140" height="30" rx="7" fill="#0e1830" stroke="#9f7aea"/><text x="480" y="38" text-anchor="middle" fill="#eaeef8" font-size="9.5">StorageClass → provisions PV</text>
+        <line x1="480" y1="48" x2="480" y2="58" stroke="#6a9bf0" stroke-width="1.4" marker-end="url(#sa)"/>
+      </svg></div>
+      <ul>
+        <li><strong>PersistentVolume (PV)</strong> — a piece of real cluster storage (a cloud disk, NFS share, local disk). Cluster-scoped.</li>
+        <li><strong>PersistentVolumeClaim (PVC)</strong> — a Pod's <em>request</em> for storage ("10Gi, ReadWriteOnce"). Namespaced. The Pod mounts the PVC, not the PV.</li>
+        <li><strong>StorageClass</strong> — a template describing a <em>kind</em> of storage (which provisioner, which disk type) so PVs are created on demand.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Dynamic provisioning — the normal path</h3>
+      <p>You rarely create PVs by hand. You create a PVC referencing a StorageClass; the StorageClass's provisioner <em>dynamically</em> creates a matching PV (and the real cloud disk) and binds it. Delete the PVC and, depending on the reclaim policy, the disk is deleted too.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: db-data }
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: fast-ssd      <span class="cmt"># omit to use the cluster's default SC</span>
+  resources:
+    requests: { storage: 20Gi }</pre>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># mount it in a Pod</span>
+spec:
+  volumes:
+    - name: data
+      persistentVolumeClaim: { claimName: db-data }
+  containers:
+    - name: db
+      volumeMounts:
+        - { name: data, mountPath: /var/lib/postgresql/data }</pre>
+      <div class="callout tip">💡 A PVC stuck in <code class="inline">Pending</code> usually means: no default StorageClass set, the named StorageClass doesn't exist, or no PV can satisfy the request. <code class="inline">kubectl describe pvc</code> shows the reason.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Access modes — the classic gotcha</h3>
+      <table>
+        <tr><th>Mode</th><th>Short</th><th>Meaning</th></tr>
+        <tr><td>ReadWriteOnce</td><td>RWO</td><td>Mounted read-write by a single <strong>node</strong> (multiple Pods on that node can share it)</td></tr>
+        <tr><td>ReadOnlyMany</td><td>ROX</td><td>Mounted read-only by many nodes</td></tr>
+        <tr><td>ReadWriteMany</td><td>RWX</td><td>Mounted read-write by many nodes (needs NFS/CephFS-type storage)</td></tr>
+        <tr><td>ReadWriteOncePod</td><td>RWOP</td><td>Read-write by exactly one <strong>Pod</strong> (v1.22+)</td></tr>
+      </table>
+      <div class="callout warn">⚠️ Most cloud block disks (EBS, PD) are <strong>RWO only</strong> — one node at a time. Trying to spread a RWO-backed Deployment across nodes leaves Pods stuck <code class="inline">ContainerCreating</code> (volume multi-attach error). Need shared read-write across nodes? You need a file storage class (RWX), not a block disk.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Reclaim policy &amp; volume binding mode</h3>
+      <ul>
+        <li><strong>reclaimPolicy</strong> on the PV/StorageClass: <code class="inline">Delete</code> (default for dynamic — removes the disk when the PVC is deleted) or <code class="inline">Retain</code> (keeps the disk + data for manual recovery). Use <code class="inline">Retain</code> for anything you can't afford to lose.</li>
+        <li><strong>volumeBindingMode</strong>: <code class="inline">Immediate</code> provisions as soon as the PVC is created; <code class="inline">WaitForFirstConsumer</code> waits until a Pod using it is scheduled, so the disk lands in the same zone as the Pod — essential in multi-zone clusters.</li>
+        <li><strong>allowVolumeExpansion: true</strong> lets you grow a PVC later by editing its requested size.</li>
+      </ul>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

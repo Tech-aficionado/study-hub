@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Releases & Tags — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🏷️ Releases & Tags <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Marking a point in history as "a version", attaching binaries, and generating changelogs.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Tags vs releases</h3>
+      <p>A <strong>tag</strong> is a Git concept: a permanent label on a specific commit, usually a version like <code class="inline">v1.2.0</code>. A <strong>release</strong> is a GitHub concept built on top of a tag: it adds release notes, downloadable asset files, and a prominent entry on the repo's Releases page. Every release points at exactly one tag; not every tag has a release.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Semantic versioning</h3>
+      <p>Most projects tag with <strong>SemVer</strong>: <code class="inline">MAJOR.MINOR.PATCH</code>.</p>
+      <table>
+        <tr><th>Bump</th><th>When</th><th>Example</th></tr>
+        <tr><td><strong>MAJOR</strong></td><td>Breaking change</td><td>1.4.2 → 2.0.0</td></tr>
+        <tr><td><strong>MINOR</strong></td><td>New feature, backward-compatible</td><td>1.4.2 → 1.5.0</td></tr>
+        <tr><td><strong>PATCH</strong></td><td>Bug fix only</td><td>1.4.2 → 1.4.3</td></tr>
+      </table>
+      <p>Pre-releases append a suffix: <code class="inline">v2.0.0-beta.1</code>, <code class="inline">v2.0.0-rc.1</code>.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Creating a tag and release</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># annotated tag (recommended — stores author, date, message)</span>
+git tag -a v1.2.0 -m "Release 1.2.0"
+git push origin v1.2.0
+
+<span class="cmt"># create the release from the CLI, with notes and an asset</span>
+gh release create v1.2.0 ./dist/app.zip \
+  --title "v1.2.0" \
+  --notes "Fixes the login bug, adds dark mode"
+
+<span class="cmt"># let GitHub auto-generate notes from merged PRs</span>
+gh release create v1.2.0 --generate-notes</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Auto-generated release notes</h3>
+      <p>GitHub can build release notes automatically from the PRs merged since the last release, grouped by label. A <code class="inline">.github/release.yml</code> file configures the categories and excludes certain labels. This turns "write a changelog" into one click.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .github/release.yml</span>
+changelog:
+  categories:
+    - title: 🚀 Features
+      labels: [enhancement]
+    - title: 🐛 Fixes
+      labels: [bug]
+    - title: Other
+      labels: ["*"]</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Releasing from Actions, and asset tips</h3>
+      <ul>
+        <li>Trigger a release workflow on a tag push: <code class="inline">on: push: tags: ['v*']</code>.</li>
+        <li>Attach build artifacts (binaries per OS, checksums) so users download without building.</li>
+        <li>Mark a <strong>pre-release</strong> or <strong>latest</strong> explicitly; "latest" is what the Releases page and the <code class="inline">/releases/latest</code> URL resolve to.</li>
+      </ul>
+      <div class="callout tip">💡 Publish a <code class="inline">checksums.txt</code> (and ideally a signature) alongside binaries so users can verify what they downloaded.</div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Normalization (1NF–BCNF) — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🧩 Normalization: 1NF → BCNF <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">One messy table, normalised step by step — so the data can never contradict itself.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The problem: one giant table</h3>
+      <p>Imagine tracking course enrollments in a single table. It works until you try to change anything.</p>
+      <table>
+        <tr><th>student</th><th>courses</th><th>instructor</th><th>instructor_office</th></tr>
+        <tr><td>Ana</td><td>SQL, Python</td><td>Dr. Lee</td><td>B-204</td></tr>
+        <tr><td>Ben</td><td>SQL</td><td>Dr. Lee</td><td>B-204</td></tr>
+      </table>
+      <div class="callout danger">🛑 Three anomalies lurk here: <strong>update</strong> — move Dr. Lee's office and you must edit every row; miss one and the data disagrees. <strong>Insertion</strong> — you can't record a new course with no student yet. <strong>Deletion</strong> — remove the last student of a course and the course+instructor info vanishes.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> First Normal Form (1NF) — atomic values</h3>
+      <p><strong>Rule:</strong> each cell holds a single, atomic value; no repeating groups or comma-lists. Split the <code class="inline">courses</code> cell into separate rows.</p>
+      <table>
+        <tr><th>student</th><th>course</th><th>instructor</th><th>instructor_office</th></tr>
+        <tr><td>Ana</td><td>SQL</td><td>Dr. Lee</td><td>B-204</td></tr>
+        <tr><td>Ana</td><td>Python</td><td>Dr. Ng</td><td>C-110</td></tr>
+        <tr><td>Ben</td><td>SQL</td><td>Dr. Lee</td><td>B-204</td></tr>
+      </table>
+      <div class="callout warn">⚠️ A comma-separated list in one column (<code class="inline">'SQL, Python'</code>) is the most common 1NF violation. It makes "find everyone taking Python" a fragile string search instead of a clean <code class="inline">WHERE course = 'Python'</code>.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Second Normal Form (2NF) — no partial dependency</h3>
+      <p><strong>Rule:</strong> (applies when the key is composite) every non-key column must depend on the <em>whole</em> key, not just part of it. Here the key is <code class="inline">(student, course)</code>, but <code class="inline">instructor</code> depends only on <code class="inline">course</code> — a partial dependency. Split it out.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt">-- enrollments: depends on the full key (student, course)</span>
+enrollments(student, course)
+
+<span class="cmt">-- courses: instructor depends on course alone</span>
+courses(course, instructor, instructor_office)</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Third Normal Form (3NF) — no transitive dependency</h3>
+      <p><strong>Rule:</strong> no non-key column depends on another non-key column. In <code class="inline">courses</code>, <code class="inline">instructor_office</code> depends on <code class="inline">instructor</code>, which depends on <code class="inline">course</code> — a transitive chain. Break it into its own table.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>enrollments(student, course)
+courses(course, instructor)             <span class="cmt">-- instructor depends on course (the key)</span>
+instructors(instructor, office)         <span class="cmt">-- office depends on instructor (its own key)</span></pre>
+      <div class="svgpanel"><svg viewBox="0 0 580 110" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="35" width="160" height="44" rx="8" fill="#122334" stroke="#336791"/><text x="100" y="54" text-anchor="middle" fill="#e9f1f5" font-size="11" font-weight="700">enrollments</text><text x="100" y="70" text-anchor="middle" fill="#8aa3b3" font-size="9.5">student · course</text>
+        <rect x="210" y="35" width="160" height="44" rx="8" fill="#122334" stroke="#336791"/><text x="290" y="54" text-anchor="middle" fill="#e9f1f5" font-size="11" font-weight="700">courses</text><text x="290" y="70" text-anchor="middle" fill="#8aa3b3" font-size="9.5">course · instructor</text>
+        <rect x="400" y="35" width="160" height="44" rx="8" fill="#122334" stroke="#336791"/><text x="480" y="54" text-anchor="middle" fill="#e9f1f5" font-size="11" font-weight="700">instructors</text><text x="480" y="70" text-anchor="middle" fill="#8aa3b3" font-size="9.5">instructor · office</text>
+        <line x1="180" y1="57" x2="210" y2="57" stroke="#5ba3d0" stroke-width="2"/>
+        <line x1="370" y1="57" x2="400" y2="57" stroke="#5ba3d0" stroke-width="2"/>
+      </svg></div>
+      <div class="callout tip">💡 Now Dr. Lee's office lives in exactly ONE place. Updating it is a single-row change, and the three anomalies are gone. "3NF" is the practical target for most OLTP schemas.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Boyce-Codd Normal Form (BCNF) — the stricter 3NF</h3>
+      <p>BCNF tightens 3NF: <strong>every</strong> determinant (anything that functionally determines another column) must be a candidate key. It differs from 3NF only in rare cases with overlapping candidate keys.</p>
+      <p>Example: a table <code class="inline">(student, subject, tutor)</code> where each tutor teaches exactly one subject, and a student has one tutor per subject. Here <code class="inline">tutor → subject</code>, but <code class="inline">tutor</code> isn't a key — a BCNF violation. Split into <code class="inline">(student, tutor)</code> and <code class="inline">(tutor, subject)</code>.</p>
+      <div class="callout">The normal forms nest: BCNF ⊂ 3NF ⊂ 2NF ⊂ 1NF. Reaching BCNF means you've satisfied all the lower forms too. Higher forms (4NF for multi-valued dependencies, 5NF) exist but are rarely needed in practice.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Denormalization — breaking the rules on purpose</h3>
+      <p>Normalization optimises for correctness and write-efficiency. Sometimes you deliberately <em>denormalize</em> (duplicate data) for read performance — caching an <code class="inline">order_count</code> on <code class="inline">customers</code>, or a star schema in analytics. The key word is <em>deliberate</em>: a conscious trade of write complexity for read speed, with a plan to keep the copies in sync (triggers, scheduled jobs, or app logic).</p>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

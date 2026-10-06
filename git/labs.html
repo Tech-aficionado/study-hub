@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hands-on Labs — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🧪 Hands-on Labs</h2>
+    <p class="page-sub">Do these in a real terminal (or try the risk-free steps in the <a href="playground.html">Git Playground</a> first). Each lab builds on the last.</p>
+
+    <div class="card">
+      <h3>Lab 1 — <span class="badge beginner">Beginner</span> Your first repository</h3>
+      <ol>
+        <li>Make a folder, <code class="inline">cd</code> into it, run <code class="inline">git init</code>. Confirm with <code class="inline">git status</code>.</li>
+        <li>Create <code class="inline">README.md</code>, then stage and commit it: <code class="inline">git add README.md</code>, <code class="inline">git commit -m "Add README"</code>.</li>
+        <li>Edit the README, run <code class="inline">git diff</code> to see the change, then commit again.</li>
+        <li>Run <code class="inline">git log --oneline --graph</code>. You should see two commits.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 2 — <span class="badge beginner">Beginner</span> Staging precision with <code class="inline">add -p</code></h3>
+      <ol>
+        <li>In one file, make two unrelated edits (e.g. fix a typo near the top, change a value near the bottom).</li>
+        <li>Run <code class="inline">git add -p</code>. Stage only the first hunk (<code class="inline">y</code>), skip the second (<code class="inline">n</code>).</li>
+        <li>Commit the first change, then stage and commit the second separately.</li>
+        <li>Verify with <code class="inline">git log -p</code> that the two changes are in two commits.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 3 — <span class="badge intermediate">Intermediate</span> Branch, diverge, merge</h3>
+      <ol>
+        <li>From <code class="inline">main</code>, create and switch: <code class="inline">git switch -c feature</code>. Commit a change.</li>
+        <li>Switch back to <code class="inline">main</code>, commit a <em>different</em> change (so the branches diverge).</li>
+        <li>Merge: <code class="inline">git switch main &amp;&amp; git merge feature</code>. Since both moved, you get a merge commit.</li>
+        <li>Confirm the two-parent merge with <code class="inline">git log --oneline --graph --all</code>.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 4 — <span class="badge intermediate">Intermediate</span> Create and resolve a conflict</h3>
+      <ol>
+        <li>On <code class="inline">main</code> and on a new <code class="inline">feature</code> branch, change the <em>same line</em> of the same file to different text.</li>
+        <li>Merge <code class="inline">feature</code> into <code class="inline">main</code> — Git reports a CONFLICT.</li>
+        <li>Open the file, read the <code class="inline">&lt;&lt;&lt;&lt;&lt;&lt;&lt; / ======= / &gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> markers, edit to the final content, delete the markers.</li>
+        <li><code class="inline">git add &lt;file&gt;</code> then <code class="inline">git commit</code> to complete the merge. Try <code class="inline">git merge --abort</code> on a fresh attempt to see the escape hatch.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 5 — <span class="badge intermediate">Intermediate</span> Undo three ways</h3>
+      <ol>
+        <li>Make and commit a change. Undo it with <code class="inline">git revert HEAD</code> — note it creates a <em>new</em> commit.</li>
+        <li>Make another commit, then <code class="inline">git reset --soft HEAD~1</code> — the change returns to staging.</li>
+        <li>Commit again, then <code class="inline">git reset --mixed HEAD~1</code> — now it's unstaged but kept in your files.</li>
+        <li>Run <code class="inline">git reflog</code> and recover any state you passed through with <code class="inline">git switch -c rescue &lt;hash&gt;</code>.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 6 — <span class="badge advanced">Advanced</span> Squash with interactive rebase</h3>
+      <ol>
+        <li>Make 4 messy commits on a branch ("wip", "fix", "typo", "actually works").</li>
+        <li>Run <code class="inline">git rebase -i HEAD~4</code>. Keep the first as <code class="inline">pick</code>, mark the rest <code class="inline">squash</code> (or <code class="inline">fixup</code>).</li>
+        <li>Write one clean combined message. Confirm with <code class="inline">git log --oneline</code> that 4 commits became 1.</li>
+        <li>Reflect: why is this safe to do <em>before</em> pushing but dangerous after?</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 7 — <span class="badge advanced">Advanced</span> Find a bug with bisect</h3>
+      <ol>
+        <li>In a repo with ~10+ commits, pick a "feature" that's now broken but worked earlier.</li>
+        <li><code class="inline">git bisect start</code>, mark the current commit <code class="inline">git bisect bad</code>, an old good one <code class="inline">git bisect good &lt;hash&gt;</code>.</li>
+        <li>Git checks out midpoints — test each, answer <code class="inline">good</code>/<code class="inline">bad</code> until it names the first bad commit.</li>
+        <li><code class="inline">git bisect reset</code> to finish. Appreciate that ~1000 commits take only ~10 steps.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Lab 8 — <span class="badge advanced">Advanced</span> Tag a release &amp; push it</h3>
+      <ol>
+        <li>Annotate a release: <code class="inline">git tag -a v1.0.0 -m "First release"</code>.</li>
+        <li>Inspect it: <code class="inline">git show v1.0.0</code>. Note the tagger and message.</li>
+        <li>Push it explicitly: <code class="inline">git push origin v1.0.0</code> (prove to yourself a plain push doesn't send tags).</li>
+        <li>Run <code class="inline">git describe --tags</code> after a couple more commits and read the output format.</li>
+      </ol>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deploy with Actions — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🚀 Deploying with Actions <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">A complete, modern CI → build → deploy pipeline that ships a site to GitHub Pages on every push to main.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The modern Pages deploy model</h3>
+      <p>GitHub Pages used to require pushing built files to a <code class="inline">gh-pages</code> branch. The current, recommended approach deploys <strong>straight from an Actions workflow</strong> using the official Pages actions — no extra branch, with the deploy gated by a <code class="inline">github-pages</code> environment you can protect.</p>
+      <div class="svgpanel"><svg viewBox="0 0 620 110" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="dp" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b794f6"/></marker></defs>
+        <rect x="14" y="36" width="100" height="46" rx="9" fill="#1c142c" stroke="#8957e5" stroke-width="2"/><text x="64" y="63" text-anchor="middle" fill="#eeeaf8" font-size="11" font-weight="700">push to main</text>
+        <line x1="116" y1="59" x2="146" y2="59" stroke="#b794f6" stroke-width="2" marker-end="url(#dp)"/>
+        <rect x="148" y="36" width="100" height="46" rx="9" fill="#1c142c" stroke="#f0b429" stroke-width="2"/><text x="198" y="63" text-anchor="middle" fill="#eeeaf8" font-size="11" font-weight="700">build job</text>
+        <line x1="250" y1="59" x2="280" y2="59" stroke="#b794f6" stroke-width="2" marker-end="url(#dp)"/>
+        <rect x="282" y="36" width="120" height="46" rx="9" fill="#1c142c" stroke="#6dc1ff" stroke-width="2"/><text x="342" y="57" text-anchor="middle" fill="#eeeaf8" font-size="10.5" font-weight="700">upload-pages-</text><text x="342" y="71" text-anchor="middle" fill="#eeeaf8" font-size="10.5" font-weight="700">artifact</text>
+        <line x1="404" y1="59" x2="434" y2="59" stroke="#b794f6" stroke-width="2" marker-end="url(#dp)"/>
+        <rect x="436" y="36" width="120" height="46" rx="9" fill="#1c142c" stroke="#3fdd94" stroke-width="2"/><text x="496" y="57" text-anchor="middle" fill="#eeeaf8" font-size="10.5" font-weight="700">deploy-pages</text><text x="496" y="71" text-anchor="middle" fill="#9b8fb0" font-size="9.5">live site</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Enabling Pages for Actions</h3>
+      <p>In <strong>Settings → Pages → Build and deployment</strong>, set <strong>Source = GitHub Actions</strong>. That switches Pages from "serve a branch" to "accept a deploy from a workflow".</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The full workflow</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .github/workflows/deploy-pages.yml</span>
+name: Deploy to Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Why each piece is there</h3>
+      <ul>
+        <li><strong>permissions</strong> — <code class="inline">pages: write</code> and <code class="inline">id-token: write</code> are mandatory for the deploy action; <code class="inline">contents: read</code> keeps everything else least-privilege.</li>
+        <li><strong>Two jobs</strong> — build produces the artifact, deploy publishes it. <code class="inline">needs: build</code> enforces order.</li>
+        <li><strong>environment: github-pages</strong> — surfaces the live URL and can require approval for public sites.</li>
+        <li><strong>concurrency</strong> — stops two pushes from deploying over each other.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Deploying elsewhere</h3>
+      <p>The same shape deploys anywhere — swap the deploy job's action: <code class="inline">aws-actions/configure-aws-credentials</code> (via OIDC) + an S3 sync, a Vercel/Netlify CLI, SSH to a server, or a container push to GHCR. The pattern is always: build job → artifact or image → deploy job gated by an environment.</p>
+      <div class="callout tip">💡 Keep the cloud credential out of secrets entirely by using OIDC (<code class="inline">id-token: write</code>) wherever the provider supports it.</div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

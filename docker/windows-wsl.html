@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desktop vs Engine & Windows/WSL2 — Docker Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🪟 Desktop vs Engine & Windows/WSL2 <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">What you're actually installing, and the Linux kernel hiding under Docker on a Mac or Windows PC.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Containers need a Linux kernel</h3>
+      <p>The single fact that explains everything on this page: Linux containers are built from Linux kernel features — <strong>namespaces</strong> and <strong>cgroups</strong>. There is no such thing as a container without a kernel to isolate against. On a Linux server that kernel is right there. On a Mac or a Windows PC it isn't — so Docker quietly runs a small Linux virtual machine and puts the containers inside <em>that</em>.</p>
+      <div class="callout tip">💡 When you run <code class="inline">docker run ubuntu</code> on your Mac, "ubuntu" isn't running on macOS — it's running on a lightweight Linux VM that Docker manages for you, and the CLI on your Mac just talks to it.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Docker Engine vs Docker Desktop</h3>
+      <table>
+        <tr><th></th><th>Docker Engine</th><th>Docker Desktop</th></tr>
+        <tr><td>What it is</td><td>The core: <code class="inline">dockerd</code> daemon + containerd + runc + CLI</td><td>A developer app wrapping the Engine + GUI + extras</td></tr>
+        <tr><td>Platforms</td><td>Native on Linux</td><td>macOS, Windows, Linux</td></tr>
+        <tr><td>How it runs containers</td><td>Directly on the host kernel</td><td>Inside a managed Linux VM (WSL2 on Windows)</td></tr>
+        <tr><td>Extras</td><td>None — just the engine</td><td>GUI dashboard, one-click Kubernetes, volume sharing, networking, extensions, update manager</td></tr>
+        <tr><td>Licence</td><td>Open source (Apache 2.0)</td><td>Free for small use; paid for larger companies</td></tr>
+        <tr><td>Typical user</td><td>Servers, CI runners</td><td>Developers on laptops</td></tr>
+      </table>
+      <p>In short: Desktop is Engine plus a friendly box around it and the plumbing to run on a non-Linux OS. On a Linux server you usually just install Engine.</p>
+      <div class="svgpanel">
+        <svg viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg">
+          <rect x="30" y="20" width="250" height="140" rx="12" fill="none" stroke="#2496ED" stroke-dasharray="5 4"/><text x="155" y="40" text-anchor="middle" fill="#58b9ff" font-size="11" font-weight="700">Linux host (Engine)</text>
+          <rect x="60" y="55" width="190" height="30" rx="6" fill="#1c2129" stroke="#3fdd94"/><text x="155" y="75" text-anchor="middle" fill="#e6edf3" font-size="10">containers</text>
+          <rect x="60" y="95" width="190" height="28" rx="6" fill="#121728" stroke="#454e5f"/><text x="155" y="113" text-anchor="middle" fill="#8c93b0" font-size="10">host Linux kernel</text>
+
+          <rect x="320" y="20" width="250" height="140" rx="12" fill="none" stroke="#9f7aea" stroke-dasharray="5 4"/><text x="445" y="40" text-anchor="middle" fill="#bc8cff" font-size="11" font-weight="700">Windows/Mac (Desktop)</text>
+          <rect x="350" y="52" width="190" height="78" rx="8" fill="none" stroke="#f0b429"/><text x="445" y="68" text-anchor="middle" fill="#f0b429" font-size="10">Linux VM (WSL2 on Windows)</text>
+          <rect x="365" y="78" width="160" height="24" rx="5" fill="#1c2129" stroke="#3fdd94"/><text x="445" y="94" text-anchor="middle" fill="#e6edf3" font-size="9">containers</text>
+          <rect x="365" y="104" width="160" height="20" rx="5" fill="#121728" stroke="#454e5f"/><text x="445" y="118" text-anchor="middle" fill="#8c93b0" font-size="9">VM Linux kernel</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> WSL2 — the Linux backend on Windows</h3>
+      <p>On Windows, the Linux VM is provided by <strong>WSL2</strong> (Windows Subsystem for Linux, version 2). WSL2 runs a real Linux kernel in a lightweight, tightly-integrated VM. Docker Desktop installs its daemon into WSL2, and the Windows <code class="inline">docker</code> CLI talks to it. You also get Docker automatically available inside your WSL2 Linux distros (Ubuntu, etc.).</p>
+      <p>Why WSL2 and not the older Hyper-V backend: it starts faster, uses memory dynamically (gives RAM back when idle), and has far better filesystem performance for files kept inside the Linux side.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> The #1 Windows performance gotcha: where your files live</h3>
+      <p>WSL2 has two filesystems, and crossing between them is slow. Your Windows drive (<code class="inline">C:\Users\you\project</code>) is reachable from Linux as <code class="inline">/mnt/c/Users/you/project</code>, but that path crosses the Windows↔Linux boundary on every file access. A bind-mounted project there — especially with <code class="inline">node_modules</code> or hot-reload — can be <strong>painfully</strong> slow.</p>
+      <div class="callout warn">⚠️ Keep your code <em>inside</em> the WSL2 filesystem (e.g. <code class="inline">\\wsl$\Ubuntu\home\you\project</code> or just work from the Linux home dir). Bind mounts and file-watching there run at native Linux speed. Editing from <code class="inline">/mnt/c</code> is the usual cause of "Docker on Windows is so slow".</div>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># in a WSL2 terminal — fast</span>
+cd ~/projects/myapp          <span class="cmt"># lives in the Linux filesystem</span>
+docker compose up
+
+<span class="cmt"># slow: project under /mnt/c/... bind-mounted into a container</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Windows containers vs Linux containers</h3>
+      <p>One more wrinkle: Docker Desktop on Windows can also run <strong>native Windows containers</strong> (which share the Windows kernel and run Windows binaries), switched via "Switch to Windows containers". These are a separate world from Linux containers — a Linux image won't run as a Windows container and vice-versa. The overwhelming majority of images (and everything else in this course) are Linux containers; reach for Windows containers only when you must run a Windows-only app like a .NET Framework service.</p>
+      <div class="callout tip">💡 Rule of thumb: unless you specifically need Windows binaries, stay in Linux-container mode — it's the default and where the whole ecosystem lives.</div>
+    </div>
+
+    <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

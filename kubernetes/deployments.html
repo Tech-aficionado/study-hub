@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deployments in depth — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🚀 Deployments in depth <span class="badge intermediate">Intermediate → Advanced</span></h2>
+    <p class="page-sub">The object you'll use most — how its rolling update actually moves, how to tune it, undo it, and layer blue-green/canary on top.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Deployment → ReplicaSet → Pods</h3>
+      <p>A <strong>Deployment</strong> manages <strong>ReplicaSets</strong>, each of which keeps N identical Pods running. You almost never touch a ReplicaSet directly — the Deployment creates a new one for each template change and scales the old one down, which is exactly what gives you rollouts and rollback.</p>
+      <div class="svgpanel"><svg viewBox="0 0 620 210" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="da" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#6a9bf0"/></marker></defs>
+        <rect x="220" y="16" width="180" height="40" rx="8" fill="#0e1830" stroke="#326ce5" stroke-width="2"/><text x="310" y="41" text-anchor="middle" fill="#eaeef8" font-size="12" font-weight="700">Deployment</text>
+        <line x1="310" y1="56" x2="310" y2="80" stroke="#6a9bf0" stroke-width="2" marker-end="url(#da)"/>
+        <rect x="130" y="82" width="160" height="40" rx="8" fill="#0e1830" stroke="#3fdd94" stroke-width="2"/><text x="210" y="107" text-anchor="middle" fill="#eaeef8" font-size="11" font-weight="700">ReplicaSet v2 (new)</text>
+        <rect x="330" y="82" width="160" height="40" rx="8" fill="#0e1830" stroke="#5e6c90" stroke-width="2"/><text x="410" y="107" text-anchor="middle" fill="#8793b8" font-size="11" font-weight="700">ReplicaSet v1 (old)</text>
+        <line x1="210" y1="122" x2="210" y2="150" stroke="#6a9bf0" stroke-width="1.5" marker-end="url(#da)"/>
+        <line x1="410" y1="122" x2="410" y2="150" stroke="#6a9bf0" stroke-width="1.5" marker-end="url(#da)"/>
+        <rect x="150" y="152" width="120" height="34" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="210" y="173" text-anchor="middle" fill="#eaeef8" font-size="10">new Pods ↑</text>
+        <rect x="350" y="152" width="120" height="34" rx="6" fill="#0e1830" stroke="#5e6c90"/><text x="410" y="173" text-anchor="middle" fill="#8793b8" font-size="10">old Pods ↓</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> RollingUpdate — maxSurge &amp; maxUnavailable</h3>
+      <p>The default strategy is <code class="inline">RollingUpdate</code>, tuned by two knobs (each a count or a percentage of <code class="inline">replicas</code>):</p>
+      <ul>
+        <li><strong>maxSurge</strong> (default 25%) — how many <em>extra</em> Pods above the desired count may exist during the update. Higher = faster rollout, more peak resource use.</li>
+        <li><strong>maxUnavailable</strong> (default 25%) — how many Pods may be <em>missing</em> below the desired count during the update. <code class="inline">0</code> = never drop below full capacity.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button>spec:
+  replicas: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2            <span class="cmt"># up to 12 Pods briefly</span>
+      maxUnavailable: 0       <span class="cmt"># never below 10 ready → zero-downtime</span>
+  minReadySeconds: 10         <span class="cmt"># a new Pod must stay ready 10s before counting</span></pre>
+      <p>The other strategy is <code class="inline">Recreate</code>: kill all old Pods, then start new ones — a downtime gap, but necessary when two versions can't run at once (e.g. an incompatible schema migration or a <code class="inline">ReadWriteOnce</code> volume).</p>
+      <div class="callout warn">⚠️ <code class="inline">maxSurge</code> and <code class="inline">maxUnavailable</code> can't both be 0 — the rollout would have no room to make progress. Kubernetes rejects that combination.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Driving and watching a rollout</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl set image deployment/web app=myapp:2.0
+kubectl rollout status deployment/web        <span class="cmt"># blocks until done or failed</span>
+kubectl rollout pause deployment/web         <span class="cmt"># freeze mid-rollout (for canary)</span>
+kubectl rollout resume deployment/web
+kubectl annotate deployment/web kubernetes.io/change-cause="bump to 2.0"</pre>
+      <p>A new rollout only triggers when the <strong>Pod template</strong> changes (image, env, labels…). Changing just <code class="inline">replicas</code> scales in place and does not create a new ReplicaSet.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> History &amp; rollback</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl rollout history deployment/web
+kubectl rollout history deployment/web --revision=3   <span class="cmt"># detail of one revision</span>
+kubectl rollout undo deployment/web                   <span class="cmt"># back to previous</span>
+kubectl rollout undo deployment/web --to-revision=2   <span class="cmt"># to a specific one</span></pre>
+      <p>Each revision is an old ReplicaSet kept around (scaled to 0). <code class="inline">spec.revisionHistoryLimit</code> (default 10) controls how many are retained. The <code class="inline">CHANGE-CAUSE</code> column comes from the <code class="inline">kubernetes.io/change-cause</code> annotation — set it on every deploy so history is readable.</p>
+      <div class="callout tip">💡 Rollback is near-instant because the old ReplicaSet still exists — undo just scales the old one back up and the new one down. That's why you don't delete old ReplicaSets by hand.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Blue-green and canary</h3>
+      <p>A plain Deployment does <em>rolling</em> updates. Two richer release patterns are built from Deployments + Services + labels:</p>
+      <ul>
+        <li><strong>Blue-green</strong> — run two full Deployments (<code class="inline">blue</code> = current, <code class="inline">green</code> = new). Both are up; the Service selector points at blue. Flip the selector to green to cut over instantly, flip back to roll back. Costs double capacity during the switch.</li>
+        <li><strong>Canary</strong> — send a small slice of traffic to the new version first. Simplest form: one Service selecting a shared label (<code class="inline">app=web</code>) across a large stable Deployment and a tiny canary Deployment, so the canary gets replicas-proportional traffic. For percentage-precise splits, an Ingress controller or a service mesh (Istio/Linkerd) or Argo Rollouts does weighted routing.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># blue-green cutover: just change which version the Service selects</span>
+kubectl patch service web -p '{"spec":{"selector":{"app":"web","version":"green"}}}'</pre>
+      <div class="callout warn">⚠️ Blue-green and precise canary are patterns you assemble, not a Deployment field. If an interviewer asks "how do you do canary in Kubernetes", the honest answer names the building blocks (labels + Service, or Ingress/mesh weights, or Argo Rollouts) — a bare Deployment can't weight traffic by percentage.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>
