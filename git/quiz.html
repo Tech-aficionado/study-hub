@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🧠 Knowledge Check</h2>
+    <p class="page-sub">Click an answer — instant feedback, score tracked at the bottom.</p>
+    <div class="card" id="quizContainer"></div>
+    <div class="card">
+      <h3>Your score: <span id="quizScore">0</span> / <span id="quizTotal">0</span></h3>
+      <button class="toggle-btn" id="resetQuizBtn">Reset Quiz</button>
+    </div>
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="js/quiz.js"></script>
+</body>
+</html>

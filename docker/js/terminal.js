@@ -14,6 +14,16 @@
   function randId() {
     return Math.random().toString(16).slice(2, 14);
   }
+  // Images are stored once with a stable ID/size so repeated "docker images" calls agree.
+  function normImage(name) { return name.indexOf(':') === -1 ? name + ':latest' : name; }
+  function hasImage(name) {
+    var n = normImage(name);
+    return simImages.some(function (im) { return im.name === n; });
+  }
+  function addImage(name) {
+    if (hasImage(name)) return;
+    simImages.push({ name: normImage(name), id: randId().slice(0, 12), size: (20 + Math.floor(Math.random() * 180)) + 'MB' });
+  }
   function termPrint(cmd, output) {
     var cmdLine = document.createElement('div');
     cmdLine.className = 'term-line';
@@ -42,21 +52,44 @@
     var sub = parts[1];
 
     if (sub === 'run') {
-      var detached = cmd.indexOf('-d') !== -1;
-      var nameMatch = cmd.match(/--name\s+(\S+)/);
-      var portMatch = cmd.match(/-p\s+(\S+)/);
-      var imageGuess = parts[parts.length - 1];
-      var name = nameMatch ? nameMatch[1] : 'container_' + randId().slice(0, 6);
+      // Real argument parsing: the image is the FIRST non-flag token after "run";
+      // anything after it is the command to run inside the container (e.g. "ubuntu bash").
+      var flagsWithValue = ['-p', '--publish', '--name', '-e', '--env', '-v', '--volume', '--network', '--memory', '-m', '--cpus', '-w', '--workdir', '--user', '-u', '--mount', '--restart', '--tmpfs'];
+      var detached = false, name = null, port = null, imageGuess = null;
+      for (var i = 2; i < parts.length; i++) {
+        var t = parts[i];
+        if (t === '--detach' || /^-[a-z]+$/.test(t) && t.indexOf('d') !== -1) detached = true;
+        if (t.indexOf('=') !== -1 && t.indexOf('-') === 0) continue;
+        if (flagsWithValue.indexOf(t) !== -1) {
+          var v = parts[i + 1];
+          if (t === '--name') name = v;
+          if (t === '-p' || t === '--publish') port = v;
+          i++;
+          continue;
+        }
+        if (t.indexOf('-') === 0) continue;
+        imageGuess = t;
+        break;
+      }
+      if (!imageGuess) return termPrint(cmd, "\"docker run\" requires at least 1 argument: an image name.");
+      if (name && simContainers.some(function (c) { return c.name === name; })) {
+        return termPrint(cmd, 'docker: Error response from daemon: Conflict. The container name "/' + name + '" is already in use.');
+      }
+      if (!name) name = 'container_' + randId().slice(0, 6);
       var id = randId();
-      simContainers.push({ id: id, name: name, image: imageGuess, status: 'Up', port: portMatch ? portMatch[1] : null });
-      if (simImages.indexOf(imageGuess) === -1) simImages.push(imageGuess);
-      if (detached) return termPrint(cmd, id);
-      return termPrint(cmd, "Pulling " + imageGuess + "...\nStatus: Downloaded newer image for " + imageGuess + "\n(running in foreground — press Ctrl+C to simulate stop)");
+      var alreadyLocal = hasImage(imageGuess);
+      simContainers.push({ id: id, name: name, image: imageGuess, status: 'Up', port: port });
+      addImage(imageGuess);
+      var pullMsg = alreadyLocal ? '' : "Unable to find image '" + imageGuess + "' locally\nPulling " + imageGuess + "...\nStatus: Downloaded newer image for " + imageGuess + "\n";
+      if (detached) return termPrint(cmd, pullMsg + id);
+      return termPrint(cmd, pullMsg + "(running in foreground — in a real terminal press Ctrl+C to stop)");
     }
     if (sub === 'ps') {
-      if (simContainers.length === 0) return termPrint(cmd, "CONTAINER ID   IMAGE   COMMAND   STATUS   PORTS   NAMES\n(no containers running)");
+      var showAll = parts.indexOf('-a') !== -1 || parts.indexOf('--all') !== -1;
+      var visible = simContainers.filter(function (c) { return showAll || c.status === 'Up'; });
+      if (visible.length === 0) return termPrint(cmd, "CONTAINER ID   IMAGE   STATUS   PORTS   NAMES\n(" + (showAll ? 'no containers' : 'no running containers — try docker ps -a') + ")");
       var out = "CONTAINER ID   IMAGE          STATUS      PORTS                  NAMES\n";
-      simContainers.forEach(function (c) {
+      visible.forEach(function (c) {
         out += c.id.slice(0, 12) + "   " + c.image.padEnd(13) + "  " + (c.status === 'Up' ? 'Up 2 minutes' : 'Exited (0)') + "  " + ((c.port ? ('0.0.0.0:' + c.port) : '')).padEnd(22) + " " + c.name + "\n";
       });
       return termPrint(cmd, out.trim());
@@ -65,41 +98,57 @@
       if (simImages.length === 0) return termPrint(cmd, "REPOSITORY   TAG       IMAGE ID       SIZE\n(no images)");
       var out2 = "REPOSITORY        TAG       IMAGE ID       SIZE\n";
       simImages.forEach(function (img) {
-        var p2 = img.split(':');
-        out2 += (p2[0] || img).padEnd(18) + (p2[1] || 'latest').padEnd(10) + randId().slice(0, 12) + "   " + (20 + Math.floor(Math.random() * 180)) + "MB\n";
+        var p2 = img.name.split(':');
+        out2 += p2[0].padEnd(18) + p2[1].padEnd(10) + img.id + "   " + img.size + "\n";
       });
       return termPrint(cmd, out2.trim());
     }
     if (sub === 'pull') {
-      var img = parts[2] || 'image';
-      simImages.push(img);
-      return termPrint(cmd, img + ": Pulling from library\nDigest: sha256:" + randId() + randId() + "\nStatus: Downloaded newer image for " + img);
+      var img = parts[2];
+      if (!img) return termPrint(cmd, "\"docker pull\" requires exactly 1 argument: an image name.");
+      var had = hasImage(img);
+      addImage(img);
+      if (had) return termPrint(cmd, normImage(img).split(':')[1] + ": Pulling from library/" + img.split(':')[0] + "\nStatus: Image is up to date for " + normImage(img));
+      return termPrint(cmd, normImage(img).split(':')[1] + ": Pulling from library/" + img.split(':')[0] + "\nDigest: sha256:" + randId() + randId() + "\nStatus: Downloaded newer image for " + normImage(img));
     }
     if (sub === 'build') {
       var tagMatch = cmd.match(/-t\s+(\S+)/);
-      var tag = tagMatch ? tagMatch[1] : 'myimage:latest';
-      simImages.push(tag);
-      return termPrint(cmd, "[+] Building 4.2s (10/10) FINISHED\n => [1/4] FROM base-image\n => [2/4] WORKDIR /app\n => [3/4] COPY . .\n => [4/4] RUN build steps\n => exporting to image\nSuccessfully tagged " + tag);
+      var tag = tagMatch ? tagMatch[1] : null;
+      if (tag) addImage(tag);
+      return termPrint(cmd, "[+] Building 4.2s (10/10) FINISHED\n => [1/4] FROM base-image\n => [2/4] WORKDIR /app\n => [3/4] COPY . .\n => [4/4] RUN build steps\n => exporting to image\n" + (tag ? " => naming to " + normImage(tag) : " => writing image (untagged — use -t name:tag to name it)"));
     }
-    if (sub === 'stop') {
-      var target = parts[2];
-      var c = simContainers.filter(function (c) { return c.name === target || c.id.indexOf(target || '') === 0; })[0];
-      if (c) { c.status = 'Exited'; return termPrint(cmd, target); }
-      return termPrint(cmd, "Error: No such container: " + target);
+    function findContainer(t) {
+      return simContainers.filter(function (c) { return t && (c.name === t || c.id.indexOf(t) === 0); })[0];
+    }
+    if (sub === 'stop' || sub === 'start') {
+      var target = parts[parts.length - 1];
+      var c = parts.length > 2 ? findContainer(target) : null;
+      if (!c) return termPrint(cmd, "Error response from daemon: No such container: " + (parts.length > 2 ? target : '(missing name)'));
+      c.status = sub === 'stop' ? 'Exited' : 'Up';
+      return termPrint(cmd, target);
     }
     if (sub === 'rm') {
-      var target2 = parts[2];
-      var idx = -1;
-      simContainers.forEach(function (c, i) { if (c.name === target2 || c.id.indexOf(target2 || '') === 0) idx = i; });
-      if (idx >= 0) { simContainers.splice(idx, 1); return termPrint(cmd, target2); }
-      return termPrint(cmd, "Error: No such container: " + target2);
+      var force = parts.indexOf('-f') !== -1 || parts.indexOf('--force') !== -1;
+      var target2 = parts[parts.length - 1];
+      var c2 = parts.length > 2 ? findContainer(target2) : null;
+      if (!c2) return termPrint(cmd, "Error response from daemon: No such container: " + target2);
+      if (c2.status === 'Up' && !force) {
+        return termPrint(cmd, "Error response from daemon: cannot remove container \"/" + c2.name + "\": container is running: stop the container before removing or force remove");
+      }
+      simContainers.splice(simContainers.indexOf(c2), 1);
+      return termPrint(cmd, target2);
     }
     if (sub === 'rmi') {
-      var target3 = parts[2];
-      var idx2 = -1;
-      simImages.forEach(function (i, k) { if (i === target3 || i.indexOf(target3 || '') === 0) idx2 = k; });
-      if (idx2 >= 0) { simImages.splice(idx2, 1); return termPrint(cmd, "Deleted: " + target3); }
-      return termPrint(cmd, "Error: No such image: " + target3);
+      var target3 = parts[parts.length - 1];
+      var n3 = normImage(target3);
+      var im3 = simImages.filter(function (im) { return im.name === n3 || im.id.indexOf(target3) === 0; })[0];
+      if (!im3) return termPrint(cmd, "Error response from daemon: No such image: " + target3);
+      var inUse = simContainers.some(function (c) { return normImage(c.image) === im3.name; });
+      if (inUse && parts.indexOf('-f') === -1) {
+        return termPrint(cmd, "Error response from daemon: conflict: unable to remove repository reference \"" + im3.name + "\" - container is using its referenced image");
+      }
+      simImages.splice(simImages.indexOf(im3), 1);
+      return termPrint(cmd, "Untagged: " + im3.name + "\nDeleted: sha256:" + im3.id);
     }
     if (sub === 'exec') {
       return termPrint(cmd, "root@" + randId().slice(0, 12) + ":/# (simulated shell — type exit to leave in a real terminal)");
@@ -129,7 +178,7 @@
     if (sub === '--version') {
       return termPrint(cmd, "Docker version 27.3.1, build simulated");
     }
-    return termPrint(cmd, "docker: '" + sub + "' is not recognized by this simulator. Try: run, ps, images, pull, build, stop, rm, rmi, exec, logs, volume ls, network ls, compose up/down/ps, stats, --help");
+    return termPrint(cmd, "docker: '" + sub + "' is not recognized by this simulator. Try: run, ps, ps -a, images, pull, build, start, stop, rm, rmi, exec, logs, volume ls, network ls, compose up/down/ps, stats, --help");
   }
 
   termInput.addEventListener('keydown', function (e) {

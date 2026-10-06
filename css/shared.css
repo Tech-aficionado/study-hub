@@ -1,0 +1,189 @@
+/* Shared Study Hub extras: manual bookmarks + cheat sheet posters.
+   Uses each page's own theme variables (--bg2, --bg3, --border, --text, --muted, --accent)
+   so it picks up the Docker/Git/GitHub/SQL/Kubernetes/hub colour scheme automatically. */
+
+/* ---------- hub-bar layout: keep long page names from pushing buttons off-screen ---------- */
+.hub-bar .cur{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
+.hub-bar > span{flex-shrink:1; min-width:0;}
+.main .card{scroll-margin-top:64px;}
+
+/* ---------- buttons ---------- */
+.bm-bar{margin-left:auto; display:flex; gap:8px; align-items:center; flex-shrink:0;}
+.bm-toggle, .bm-open{
+  display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
+  background:transparent; color:var(--muted); border:1px solid var(--border);
+  border-radius:8px; padding:4px 10px; font:inherit; font-size:12px; font-weight:600; cursor:pointer;
+  line-height:1.4;
+}
+.bm-toggle:hover, .bm-open:hover{color:var(--text); border-color:var(--accent);}
+.bm-toggle:focus-visible, .bm-open:focus-visible, .bm-remove:focus-visible, .bm-link:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px;
+}
+.bm-toggle[aria-pressed="true"]{background:var(--yellow,#f0b429); border-color:var(--yellow,#f0b429); color:#1a1200;}
+.card h3 .bm-section{margin-left:auto;}
+.bm-open{color:var(--text);}
+.bm-count{background:var(--accent); color:#fff; border-radius:10px; padding:0 7px; font-size:11px; min-width:20px; text-align:center;}
+.bm-floating{position:fixed; right:16px; bottom:16px; z-index:250; background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:6px;}
+@media(max-width:600px){ .bm-bar .bm-label, .card h3 .bm-label{display:none;} }
+
+/* ---------- drawer ---------- */
+.bm-overlay{position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:400; display:none;}
+.bm-overlay.show{display:block;}
+.bm-drawer{
+  position:fixed; top:0; right:0; bottom:0; width:min(400px,92vw); z-index:401;
+  background:var(--bg2); color:var(--text); border-left:1px solid var(--border);
+  display:flex; flex-direction:column; transform:translateX(100%); transition:transform .22s ease;
+  visibility:hidden;
+}
+.bm-drawer.open{transform:none; visibility:visible;}
+@media (prefers-reduced-motion: reduce){ .bm-drawer{transition:none;} }
+.bm-head{display:flex; align-items:center; justify-content:space-between; padding:18px 20px 6px;}
+.bm-head h2{margin:0; font-size:17px;}
+.bm-close{background:transparent; border:1px solid var(--border); color:var(--text); border-radius:8px; width:32px; height:32px; cursor:pointer; font-size:15px;}
+.bm-close:hover{border-color:var(--accent);}
+.bm-hint{margin:0; padding:0 20px 12px; color:var(--muted); font-size:12px;}
+.bm-search{margin:0 20px 12px; padding:9px 12px; border-radius:9px; border:1px solid var(--border); background:var(--bg); color:var(--text); font:inherit; font-size:13px;}
+.bm-search:focus{outline:none; border-color:var(--accent);}
+.bm-body{flex:1; overflow-y:auto; padding:0 20px 12px;}
+.bm-foot{padding:12px 20px 18px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12px; color:var(--muted);}
+.bm-clear{background:transparent; border:1px solid var(--red,#ff6b6b); color:var(--red,#ff6b6b); border-radius:8px; padding:5px 12px; font:inherit; font-size:12px; font-weight:600; cursor:pointer;}
+.bm-clear:disabled{opacity:.4; cursor:default;}
+
+/* ---------- bookmark list (drawer + hub page) ---------- */
+.bm-group{margin-bottom:16px;}
+.bm-group-title{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:0 0 8px; font-weight:700;}
+.bm-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;}
+.bm-item{display:flex; align-items:flex-start; gap:8px; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:9px 10px;}
+.bm-link{flex:1; min-width:0; color:var(--text); text-decoration:none; display:flex; flex-direction:column; gap:2px;}
+.bm-link:hover{text-decoration:none;}
+.bm-link:hover .bm-item-title{color:var(--accent2,var(--accent));}
+.bm-item-title{font-size:13.3px; font-weight:600; overflow-wrap:anywhere;}
+.bm-item-meta{font-size:11.5px; color:var(--muted); overflow-wrap:anywhere;}
+.bm-remove{background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:14px; padding:2px 6px; border-radius:6px;}
+.bm-remove:hover{color:var(--red,#ff6b6b);}
+.bm-empty{color:var(--muted); font-size:13px; margin:6px 0;}
+.bm-hub{background:var(--bg3); border:1px solid var(--border); border-radius:16px; padding:18px 20px 6px; margin-bottom:40px;}
+.bm-hub .bm-list{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}
+
+/* flash the section you jumped to */
+.bm-flash{outline:2px solid var(--accent); outline-offset:4px;}
+
+/* ---------- toast ---------- */
+.bm-toast{
+  position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:500;
+  background:var(--bg3); color:var(--text); border:1px solid var(--border); border-radius:10px;
+  padding:9px 16px; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,.35);
+  opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.bm-toast.show{opacity:1;}
+
+/* ---------- cheat sheet poster ---------- */
+.poster-frame{display:block; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#fff; line-height:0;}
+.poster-frame img{width:100%; height:auto; display:block;}
+.poster-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+.poster-actions a{
+  display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:20px;
+  border:1px solid var(--border); background:var(--bg2); color:var(--text); font-size:12.5px; font-weight:600;
+}
+.poster-actions a:hover{border-color:var(--accent); text-decoration:none;}
+.poster-errata{margin:14px 0 0;}
+.poster-errata ul{margin:6px 0 0; padding-left:20px;}
+
+
+/* =====================================================================
+   MOBILE / SMALL-SCREEN LAYER
+   Loaded after each module's style.css and the hub's hub.css, so these win.
+   ===================================================================== */
+
+/* Never let anything push the page sideways. */
+html, body{max-width:100%; overflow-x:hidden;}
+/* .main is a flex child of .layout: without min-width:0 it grows to fit its widest
+   <pre>/table/diagram, which pushes ALL text off the right edge on phones. */
+.layout{min-width:0;}
+.main{min-width:0; max-width:100%;}
+@media (min-width: 901px){ .main{max-width:1140px;} }
+.card, pre.code-block, .svgpanel, .terminal{max-width:100%;}
+/* Grid columns default to min-width:auto, so a long code line widens the column past the card. */
+.grid-2 > *, .topic-grid > *{min-width:0;}
+img, video, iframe{max-width:100%;}
+code.inline{overflow-wrap:anywhere;}
+.card p, .card li, .callout{overflow-wrap:break-word;}
+
+/* Hub topic grid + hub bookmark grid: don't force a 300px/260px minimum on tiny phones. */
+.topic-grid{grid-template-columns:repeat(auto-fill, minmax(min(300px, 100%), 1fr));}
+.bm-hub .bm-list{grid-template-columns:repeat(auto-fill, minmax(min(260px, 100%), 1fr));}
+
+@media (max-width: 900px){
+  /* Hamburger sits INSIDE the 44px top bar instead of hanging below it. */
+  .menu-toggle{top:4px; left:8px; width:36px; height:36px; font-size:16px; border-radius:9px; z-index:210;}
+  .hub-bar{padding-left:54px; padding-right:10px; gap:8px;}
+  .main{padding:64px 16px 56px;}
+  .sidebar{width:min(272px, 84vw); z-index:220;}
+  .overlay.show{z-index:215;}
+}
+
+@media (max-width: 720px){
+  /* Breadcrumb: keep "← Study Hub" + bookmark buttons; drop the middle crumbs that overflow. */
+  .hub-bar > span{display:none;}
+  .hub-bar > a{white-space:nowrap;}
+
+  /* Readable headings that wrap instead of overflowing. */
+  h2.page-title{font-size:22px; flex-wrap:wrap; gap:8px; line-height:1.3;}
+  .page-sub{font-size:14px; margin-bottom:18px;}
+  .module-hero{padding:18px; gap:14px; border-radius:14px;}
+  .module-hero .emoji{font-size:34px;}
+  .module-hero h1{font-size:20px;}
+
+  /* Cards: less padding, headings wrap with the Save button. */
+  .card{padding:16px 15px; border-radius:12px; margin-bottom:14px;}
+  .card h3{font-size:15.5px; flex-wrap:wrap; row-gap:6px; line-height:1.35;}
+  .card ul, .card ol{padding-left:18px;}
+
+  /* Wide tables scroll inside their own box instead of widening the page. */
+  .main table{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; font-size:13px;}
+  .main th, .main td{padding:8px 9px;}
+  .main td code.inline{white-space:normal;}
+
+  /* Code blocks: smaller font so typical lines fit, still swipeable. */
+  pre.code-block{font-size:12.3px; padding:14px 12px; padding-top:34px;}
+  .copy-btn{top:6px; right:6px;}
+
+  /* Diagrams: wide ones (viewBox 500-699 units) would shrink their text to ~6px on a phone,
+     so they keep a readable width and scroll sideways. Narrow ones (Venn, layer stack) just fit. */
+  .svgpanel{padding:10px; -webkit-overflow-scrolling:touch;}
+  .svgpanel svg[viewBox^="0 0 5"], .svgpanel svg[viewBox^="0 0 6"]{min-width:520px;}
+  .svgpanel:has(svg[viewBox^="0 0 5"])::before, .svgpanel:has(svg[viewBox^="0 0 6"])::before{
+    content:'\2194  Swipe sideways to see the whole diagram'; display:block; font-size:11px; color:var(--muted); margin:0 0 6px 2px;
+  }
+
+  /* Grid-2 already collapses in style.css; make sure gaps are tight. */
+  .grid-2{gap:10px;}
+
+  /* Quiz + terminal: comfortable thumb targets. */
+  .quiz-opt{padding:12px 14px; font-size:14px;}
+  .term-body{max-height:300px; font-size:12.5px;}
+
+  /* iOS zooms in on focus when an input is under 16px — prevent that. */
+  .cmd-ref-search, .term-input-row input, .bm-search, input[type="search"], input[type="text"]{font-size:16px;}
+
+  /* Bookmark buttons: bigger touch targets. */
+  .bm-toggle, .bm-open{min-height:32px; padding:4px 9px;}
+  .card h3 .bm-section{min-width:36px; justify-content:center;}
+
+  /* Poster: full width, actions stack. */
+  .poster-actions a{flex:1 1 140px; justify-content:center;}
+
+  footer{font-size:11px; margin-top:30px;}
+
+  /* Hub page header: let the bookmarks button sit on its own line. */
+  .hub-header{gap:14px;}
+  .hub-header .bm-open{margin-left:auto;}
+  .hero h2{font-size:23px;}
+  .bm-hub{padding:14px 14px 4px;}
+}
+
+@media (max-width: 380px){
+  .main{padding-left:12px; padding-right:12px;}
+  h2.page-title{font-size:20px;}
+  pre.code-block{font-size:11.6px;}
+}

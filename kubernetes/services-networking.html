@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Services & Networking — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🌐 Services & Networking <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Pods come and go, with new random IPs each time — Services give them a stable address.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why you need a Service</h3>
+      <p>Pods are disposable — every time one restarts or a Deployment scales, it gets a brand new internal IP. If other Pods tried to talk to a Pod directly by IP, that connection breaks constantly. A <strong>Service</strong> gives a STABLE address (a name + virtual IP) that automatically routes to whichever healthy Pods currently match a label selector.</p>
+      <div class="svgpanel"><svg viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg">
+        <rect x="250" y="20" width="140" height="50" rx="8" fill="#0e1830" stroke="#326ce5" stroke-width="2"/><text x="320" y="50" text-anchor="middle" fill="#eaeef8" font-size="12" font-weight="700">Service (stable)</text>
+        <line x1="285" y1="70" x2="150" y2="110" stroke="#6a9bf0" stroke-width="1.5"/>
+        <line x1="320" y1="70" x2="320" y2="110" stroke="#6a9bf0" stroke-width="1.5"/>
+        <line x1="355" y1="70" x2="490" y2="110" stroke="#6a9bf0" stroke-width="1.5"/>
+        <rect x="90" y="110" width="120" height="40" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="150" y="134" text-anchor="middle" fill="#eaeef8" font-size="10.5">Pod (changing IP)</text>
+        <rect x="260" y="110" width="120" height="40" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="320" y="134" text-anchor="middle" fill="#eaeef8" font-size="10.5">Pod (changing IP)</text>
+        <rect x="430" y="110" width="120" height="40" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="490" y="134" text-anchor="middle" fill="#eaeef8" font-size="10.5">Pod (changing IP)</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The three Service types</h3>
+      <table>
+        <tr><th>Type</th><th>Reachable from</th><th>Typical use</th></tr>
+        <tr><td><strong>ClusterIP</strong> (default)</td><td>Only inside the cluster</td><td>Internal service-to-service communication</td></tr>
+        <tr><td><strong>NodePort</strong></td><td>Any node's IP, on a fixed port</td><td>Simple external access, mostly dev/testing</td></tr>
+        <tr><td><strong>LoadBalancer</strong></td><td>A real external IP (via cloud provider)</td><td>Production internet-facing traffic</td></tr>
+      </table>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># service.yaml</span>
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+spec:
+  type: ClusterIP
+  selector:
+    app: my-app
+  ports:
+    - port: 80
+      targetPort: 8080</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> DNS — calling a Service by name</h3>
+      <p>Kubernetes runs an internal DNS server. Any Pod can reach a Service just by its name (<code class="inline">my-app-service</code>, or fully qualified <code class="inline">my-app-service.default.svc.cluster.local</code>) — no need to hunt down IP addresses manually.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Ingress — routing HTTP(S) traffic by hostname/path</h3>
+      <p>A LoadBalancer Service gives ONE Service a public IP. If you have many services behind one domain (<code class="inline">api.example.com</code>, <code class="inline">app.example.com/admin</code>), an <strong>Ingress</strong> sits in front and routes by hostname/path to the right internal Service — like a single smart reverse-proxy for the whole cluster.</p>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

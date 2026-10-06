@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pods & Deployments — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📦 Pods & Deployments <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">The smallest unit Kubernetes schedules, and the object that keeps the right number of them running.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What a Pod is — the smallest deployable unit</h3>
+      <p>Kubernetes never schedules a bare container directly — the smallest unit is a <strong>Pod</strong>, which wraps one or more tightly-coupled containers that always run together on the same node, sharing network and storage. Usually a Pod has exactly one container; multiple containers in a Pod are for genuine helper patterns (e.g. a logging sidecar).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># pod.yaml</span>
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app-pod
+spec:
+  containers:
+    - name: app
+      image: myapp:1.0
+      ports:
+        - containerPort: 8080</pre>
+      <div class="callout warn">⚠️ A bare Pod created directly has NO self-healing — if it dies, nothing restarts it. In practice you almost always create Pods indirectly, through a Deployment.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The hierarchy: Deployment → ReplicaSet → Pods</h3>
+      <div class="svgpanel"><svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="ka" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#6a9bf0"/></marker></defs>
+        <rect x="230" y="20" width="180" height="46" rx="8" fill="#0e1830" stroke="#326ce5" stroke-width="2"/><text x="320" y="48" text-anchor="middle" fill="#eaeef8" font-size="12" font-weight="700">Deployment</text>
+        <line x1="320" y1="66" x2="320" y2="94" stroke="#6a9bf0" stroke-width="2" marker-end="url(#ka)"/>
+        <rect x="230" y="97" width="180" height="46" rx="8" fill="#0e1830" stroke="#3fdd94" stroke-width="2"/><text x="320" y="125" text-anchor="middle" fill="#eaeef8" font-size="12" font-weight="700">ReplicaSet</text>
+        <line x1="280" y1="143" x2="150" y2="178" stroke="#6a9bf0" stroke-width="1.5" marker-end="url(#ka)"/>
+        <line x1="320" y1="143" x2="320" y2="178" stroke="#6a9bf0" stroke-width="1.5" marker-end="url(#ka)"/>
+        <line x1="360" y1="143" x2="490" y2="178" stroke="#6a9bf0" stroke-width="1.5" marker-end="url(#ka)"/>
+        <rect x="90" y="178" width="120" height="36" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="150" y="200" text-anchor="middle" fill="#eaeef8" font-size="11">Pod 1</text>
+        <rect x="260" y="178" width="120" height="36" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="320" y="200" text-anchor="middle" fill="#eaeef8" font-size="11">Pod 2</text>
+        <rect x="430" y="178" width="120" height="36" rx="6" fill="#0e1830" stroke="#f0b429"/><text x="490" y="200" text-anchor="middle" fill="#eaeef8" font-size="11">Pod 3</text>
+      </svg></div>
+      <ul>
+        <li><strong>ReplicaSet</strong> — ensures exactly N copies (replicas) of a Pod template are always running.</li>
+        <li><strong>Deployment</strong> — manages ReplicaSets for you, adding rolling updates and rollback. You almost never create a ReplicaSet directly — a Deployment creates and manages it.</li>
+      </ul>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># deployment.yaml</span>
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: my-app }
+  template:
+    metadata:
+      labels: { app: my-app }
+    spec:
+      containers:
+        - name: app
+          image: myapp:1.0</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Rolling updates — zero-downtime deploys</h3>
+      <p>Change the image in a Deployment and apply it — Kubernetes gradually replaces old Pods with new ones, keeping some old Pods running until enough new ones are healthy, so there's never a moment with zero capacity.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl set image deployment/my-app app=myapp:2.0
+kubectl rollout status deployment/my-app
+kubectl rollout undo deployment/my-app
+<span class="cmt"># Instantly roll back to the previous version if the new one is broken</span></pre>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

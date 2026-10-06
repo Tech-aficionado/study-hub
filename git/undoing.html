@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Undoing Mistakes — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">↩️ Undoing Mistakes <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">reset, revert, checkout, stash, reflog — know which one is safe and which one rewrites history.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Unstaging and discarding — before you commit</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git restore --staged file.txt
+<span class="cmt"># Unstages a file (keeps your edits, just removes it from "next commit")</span>
+
+git restore file.txt
+<span class="cmt"># ⚠️ DISCARDS uncommitted changes to this file — permanent, no undo</span></pre>
+      <div class="callout danger">🛑 <code class="inline">git restore file.txt</code> (and the older <code class="inline">git checkout -- file.txt</code>) permanently throws away uncommitted edits. There is no recovering them — Git never tracked them in the first place.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> git revert — the SAFE undo for shared history</h3>
+      <p><code class="inline">git revert</code> creates a NEW commit that undoes a previous one. History isn't rewritten — the "bad" commit is still there, plus a new commit cancelling it out. This is safe to use on a branch others are already working from.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git revert &lt;commit-hash&gt;
+<span class="cmt"># Creates a new commit that undoes the changes from that commit</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> git reset — the DANGEROUS undo that rewrites history</h3>
+      <p><code class="inline">git reset</code> moves your branch pointer backward. Depending on the flag, it also changes your staging area and working files. Never use <code class="inline">reset</code> on commits you've already pushed and shared — use <code class="inline">revert</code> instead.</p>
+      <table>
+        <tr><th>Command</th><th>What moves</th><th>Risk</th></tr>
+        <tr><td><code class="inline">git reset --soft HEAD~1</code></td><td>Branch pointer only</td><td>Low — your changes stay staged</td></tr>
+        <tr><td><code class="inline">git reset --mixed HEAD~1</code></td><td>Pointer + staging area</td><td>Medium — changes unstaged, but kept in your files</td></tr>
+        <tr><td><code class="inline">git reset --hard HEAD~1</code></td><td>Pointer + staging + working files</td><td>🛑 High — your actual file edits are GONE</td></tr>
+      </table>
+      <div class="callout danger">🛑 <code class="inline">git reset --hard</code> permanently discards uncommitted work in your files. There is no confirmation prompt. Double-check <code class="inline">git status</code> before running it.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> git stash — a shelf for unfinished work</h3>
+      <p>Need to switch branches but your current changes aren't ready to commit? Stash tucks them away temporarily.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git stash
+<span class="cmt"># Saves uncommitted changes, resets your working directory to clean</span>
+
+git stash list
+git stash pop
+<span class="cmt"># Reapplies the most recent stash and removes it from the stash list</span>
+
+git stash apply
+<span class="cmt"># Reapplies but KEEPS it in the stash list (useful to apply to multiple branches)</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> git reflog — your safety net</h3>
+      <p>Git almost never truly deletes a commit immediately. <code class="inline">reflog</code> is a log of everywhere HEAD has pointed recently — including commits a <code class="inline">reset --hard</code> seemed to "lose." This has rescued countless people from a bad reset.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git reflog
+<span class="cmt"># Shows recent HEAD movements with their commit hashes</span>
+
+git reset --hard &lt;hash-from-reflog&gt;
+<span class="cmt"># Recovers to that exact point</span></pre>
+      <div class="callout tip">💡 If you ever "lose" commits after a reset, don't panic — run <code class="inline">git reflog</code> first. The commit is very likely still there, just not pointed to by any branch.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

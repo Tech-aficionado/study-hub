@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Volumes & Storage — Docker Study</title>
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
 </head>
 <body>
 <button class="menu-toggle" id="menuToggle">☰</button>
@@ -35,6 +36,7 @@ docker run -d -v dbdata:/var/lib/postgresql/data postgres
 
 <span class="cmt"># bind mount (host path : container path)</span>
 docker run -d -v $(pwd)/src:/app/src myapp
+<span class="cmt"># on Windows PowerShell use ${PWD} instead of $(pwd)</span>
 
 <span class="cmt"># tmpfs</span>
 docker run -d --tmpfs /app/cache myapp
@@ -53,5 +55,6 @@ docker volume prune   <span class="cmt"># remove all unused volumes</span></pre>
 </div>
 <script src="js/nav.js"></script>
 <script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
 </body>
 </html>

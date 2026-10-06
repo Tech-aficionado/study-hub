@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Command Cheatsheet — Docker Study</title>
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
 </head>
 <body>
 <button class="menu-toggle" id="menuToggle">☰</button>
@@ -14,6 +15,25 @@
   <main class="main">
 
     <h2 class="page-title">📋 Command Cheatsheet</h2>
+    <p class="page-sub">A one-page visual poster, plus a searchable list of every command below it.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Docker cheat sheet poster</h3>
+      <p>The essentials on one page. Click the poster to open it full size, or download the high-resolution PNG to print it or keep it on your phone.</p>
+      <a class="poster-frame" href="img/cheatsheet-poster.png" target="_blank" rel="noopener"><img src="img/cheatsheet-poster.webp" width="1312" height="1199" alt="Docker cheat sheet poster covering basics, images, containers, Dockerfile, run options, volumes, networks, Docker Compose, clean-up commands, shortcuts and common images"></a>
+      <div class="poster-actions">
+        <a href="img/cheatsheet-poster.png" target="_blank" rel="noopener">🔍 Open full size</a>
+        <a href="img/cheatsheet-poster.png" download="docker-cheat-sheet.png">⬇️ Download PNG</a>
+      </div>
+      <div class="callout warn poster-errata">⚠️ Two small notes on the poster:
+        <ul>
+          <li>Section 1 reads "Dasics" — it means <strong>Basics</strong>.</li>
+          <li>The Compose example starts with <code class="inline">version: '3.8'</code>. Current Docker Compose ignores that line and prints a warning, so you can leave it out.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>🔍 Search every command</h3>
     <input type="text" class="cmd-ref-search" id="cmdSearch" placeholder="🔍 Search commands (e.g. 'volume', 'network', 'build')...">
     <div class="card">
       <table>
@@ -27,6 +47,7 @@
 </div>
 <script src="js/nav.js"></script>
 <script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
 <script src="js/cheatsheet.js"></script>
 </body>
 </html>

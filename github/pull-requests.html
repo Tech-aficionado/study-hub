@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pull Requests — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔀 Pull Requests <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">The structured, reviewable way to propose a change — the heart of GitHub collaboration.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The fork → branch → PR → merge flow</h3>
+      <div class="svgpanel"><svg viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="pra" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b794f6"/></marker></defs>
+        <rect x="20" y="70" width="120" height="60" rx="10" fill="#1c142c" stroke="#8957e5" stroke-width="2"/><text x="80" y="105" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">Fork / Clone</text>
+        <line x1="142" y1="100" x2="192" y2="100" stroke="#b794f6" stroke-width="2" marker-end="url(#pra)"/>
+        <rect x="195" y="70" width="120" height="60" rx="10" fill="#1c142c" stroke="#f0b429" stroke-width="2"/><text x="255" y="95" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">New Branch</text><text x="255" y="112" text-anchor="middle" fill="#9b8fb0" font-size="10">feature-x</text>
+        <line x1="317" y1="100" x2="367" y2="100" stroke="#b794f6" stroke-width="2" marker-end="url(#pra)"/>
+        <rect x="370" y="70" width="120" height="60" rx="10" fill="#1c142c" stroke="#6dc1ff" stroke-width="2"/><text x="430" y="95" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">Pull Request</text><text x="430" y="112" text-anchor="middle" fill="#9b8fb0" font-size="10">review + CI checks</text>
+        <line x1="492" y1="100" x2="542" y2="100" stroke="#b794f6" stroke-width="2" marker-end="url(#pra)"/>
+        <rect x="545" y="70" width="75" height="60" rx="10" fill="#1c142c" stroke="#3fdd94" stroke-width="2"/><text x="582" y="105" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">Merge</text>
+        <text x="320" y="170" text-anchor="middle" fill="#9b8fb0" font-size="11.5">A PR is a diff plus a conversation — reviewers comment inline, CI runs automatically, and nothing lands until it's approved.</text>
+      </svg></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Opening a PR</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git switch -c feature-login
+<span class="cmt"># ...make changes, commit...</span>
+git push -u origin feature-login
+<span class="cmt"># Then on GitHub: click "Compare & pull request" — write a clear title and description</span></pre>
+      <div class="callout tip">💡 A good PR description answers: WHAT changed, WHY it was needed, and HOW to test it. Link the issue it fixes with "Fixes #42" — GitHub auto-closes that issue when the PR merges.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Draft PRs and code review</h3>
+      <p>A <strong>Draft PR</strong> signals "work in progress, not ready for review yet" — useful for getting early CI feedback or showing direction without requesting review time. Reviewers leave inline comments on specific lines, suggest changes, and formally Approve or Request Changes.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Merge strategies — the three options</h3>
+      <table>
+        <tr><th>Strategy</th><th>Result</th><th>When to use</th></tr>
+        <tr><td><strong>Merge commit</strong></td><td>Keeps every individual commit + adds a merge commit</td><td>When commit-level history matters</td></tr>
+        <tr><td><strong>Squash and merge</strong></td><td>Combines ALL PR commits into one clean commit</td><td>Most common — keeps main branch history tidy</td></tr>
+        <tr><td><strong>Rebase and merge</strong></td><td>Replays commits individually, no merge commit</td><td>When you want linear history but keep each commit separate</td></tr>
+      </table>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

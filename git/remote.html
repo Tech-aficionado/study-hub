@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remotes & Collaboration — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">☁️ Remotes & Collaboration <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Your local repo plus a copy living somewhere else (usually GitHub) — how they stay in sync.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What a "remote" is</h3>
+      <p>A remote is just a nickname for a URL pointing at another copy of your repository — usually on GitHub, GitLab, or a company server. The default remote name is <code class="inline">origin</code>, but it's just a convention, not a special keyword.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git remote -v
+<span class="cmt"># Lists all remotes and their URLs</span>
+
+git remote add origin https://github.com/user/repo.git
+<span class="cmt"># Registers a remote named "origin"</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> push, pull, fetch — what's the actual difference</h3>
+      <div class="svgpanel"><svg viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="rarrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8a68"/></marker></defs>
+        <rect x="40" y="60" width="160" height="60" rx="10" fill="#271714" stroke="#f05032" stroke-width="2"/>
+        <text x="120" y="95" text-anchor="middle" fill="#f3ece9" font-size="13" font-weight="700">Your Local Repo</text>
+        <rect x="440" y="60" width="160" height="60" rx="10" fill="#271714" stroke="#3fdd94" stroke-width="2"/>
+        <text x="520" y="95" text-anchor="middle" fill="#f3ece9" font-size="13" font-weight="700">Remote (GitHub)</text>
+        <line x1="202" y1="78" x2="438" y2="78" stroke="#ff8a68" stroke-width="2" marker-end="url(#rarrow)"/>
+        <text x="320" y="68" text-anchor="middle" fill="#ff8a68" font-size="11">git push — send your commits up</text>
+        <line x1="438" y1="105" x2="202" y2="105" stroke="#6dc1ff" stroke-width="2" marker-end="url(#rarrow)"/>
+        <text x="320" y="135" text-anchor="middle" fill="#6dc1ff" font-size="11">git fetch — download their commits (doesn't touch your files)</text>
+      </svg></div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git fetch origin
+<span class="cmt"># Downloads new commits from the remote, but does NOT merge them into your branch</span>
+
+git merge origin/master
+<span class="cmt"># The second half: merges what you just fetched into your current branch</span>
+
+git pull
+<span class="cmt"># Shorthand for fetch + merge in one step (this is the one most people use daily)</span>
+
+git push origin feature-login
+<span class="cmt"># Uploads your branch's new commits to the remote</span></pre>
+      <div class="callout tip">💡 <code class="inline">git pull</code> is convenient but hides what's happening. When something feels confusing after a pull, <code class="inline">fetch</code> then <code class="inline">log</code> to see exactly what came down before merging.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Tracking branches</h3>
+      <p>When you push a new branch for the first time, you link your local branch to its remote counterpart with <code class="inline">-u</code> (upstream). After that, plain <code class="inline">git push</code>/<code class="inline">git pull</code> know where to go automatically.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git push -u origin feature-login
+<span class="cmt"># First push: sets up tracking. After this, just "git push" works.</span>
+
+git branch -vv
+<span class="cmt"># Shows each local branch and which remote branch it tracks, plus ahead/behind count</span></pre>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What is Git? — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <div class="module-hero">
+      <div class="emoji">🌿</div>
+      <div>
+        <h1>Git Study</h1>
+        <p>Part of your Study Hub — version control from first commit to interactive rebase.</p>
+      </div>
+    </div>
+    <h2 class="page-title">🌿 What is Git? <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">The tool that remembers every version of your code, forever.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The problem Git solves</h3>
+      <p>Without version control, "final_v2_REAL_fixed.docx" is a real folder you've probably seen. The moment more than one person touches a project — or you just want to try something risky without breaking what works — you need a system that remembers every change, who made it, and lets you go back in time if needed.</p>
+      <p>Git is a <strong>distributed version control system</strong>. "Distributed" is the key word: every clone of a Git repository has the FULL history, not just a pointer to a central server. You can commit, branch, and view history completely offline — syncing with others (like on GitHub) is a separate, later step.</p>
+      <div class="callout tip">💡 Git doesn't store "files" the way you think — it stores snapshots. Every commit is a complete picture of your whole project at that moment, not a diff. Git is just extremely good at storing those snapshots efficiently (unchanged files are stored once, re-linked by reference).</div>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Git Explained in 100 Seconds</span><span class="vcreator">Fireship · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/hwP7WQkmECE" title="Git Explained in 100 Seconds" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The three trees: Working Directory, Staging Area, Repository</h3>
+      <p>This is the single most confusing part of Git for beginners, and once it clicks, everything else makes sense. Git tracks your project through three distinct areas:</p>
+      <div class="svgpanel"><svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="gitarrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8a68"/></marker></defs>
+        <rect x="20" y="60" width="170" height="90" rx="10" fill="#271714" stroke="#f05032" stroke-width="2"/>
+        <text x="105" y="90" text-anchor="middle" fill="#f3ece9" font-size="13" font-weight="700">Working Directory</text>
+        <text x="105" y="110" text-anchor="middle" fill="#b0938c" font-size="10.5">Your actual files</text>
+        <text x="105" y="128" text-anchor="middle" fill="#b0938c" font-size="10.5">on disk right now</text>
+        <line x1="195" y1="105" x2="245" y2="105" stroke="#ff8a68" stroke-width="2" marker-end="url(#gitarrow)"/>
+        <text x="220" y="95" text-anchor="middle" fill="#b0938c" font-size="10">git add</text>
+        <rect x="248" y="60" width="170" height="90" rx="10" fill="#271714" stroke="#3fdd94" stroke-width="2"/>
+        <text x="333" y="90" text-anchor="middle" fill="#f3ece9" font-size="13" font-weight="700">Staging Area</text>
+        <text x="333" y="110" text-anchor="middle" fill="#b0938c" font-size="10.5">(the "index")</text>
+        <text x="333" y="128" text-anchor="middle" fill="#b0938c" font-size="10.5">Changes marked "next commit"</text>
+        <line x1="423" y1="105" x2="473" y2="105" stroke="#ff8a68" stroke-width="2" marker-end="url(#gitarrow)"/>
+        <text x="448" y="95" text-anchor="middle" fill="#b0938c" font-size="10">git commit</text>
+        <rect x="476" y="60" width="150" height="90" rx="10" fill="#271714" stroke="#9f7aea" stroke-width="2"/>
+        <text x="551" y="90" text-anchor="middle" fill="#f3ece9" font-size="13" font-weight="700">Repository</text>
+        <text x="551" y="110" text-anchor="middle" fill="#b0938c" font-size="10.5">(.git folder)</text>
+        <text x="551" y="128" text-anchor="middle" fill="#b0938c" font-size="10.5">Permanent snapshot history</text>
+        <text x="320" y="190" text-anchor="middle" fill="#8c93b0" font-size="11.5">Edit a file -> stage it -> commit it. Each arrow is one Git command.</text>
+      </svg></div>
+      <ul>
+        <li><strong>Working Directory</strong> — the files you see and edit in your editor right now.</li>
+        <li><strong>Staging Area (index)</strong> — a holding pen. <code class="inline">git add</code> moves a change here, saying "include this in the next commit."</li>
+        <li><strong>Repository</strong> — the permanent, committed history, stored in the hidden <code class="inline">.git</code> folder. <code class="inline">git commit</code> takes everything staged and seals it as a permanent snapshot.</li>
+      </ul>
+      <div class="callout">Why a separate staging step? It lets you commit only PART of what you changed — e.g. you fixed two unrelated bugs in one editing session, but want two clean, separate commits.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Why Git over "just using folders" or Google Docs-style history</h3>
+      <ul>
+        <li><strong>Branching is cheap</strong> — you can try a risky idea in seconds, and throw it away with zero cost if it doesn't work.</li>
+        <li><strong>Full history, always local</strong> — no internet needed to see who changed what and when.</li>
+        <li><strong>Merging is a first-class operation</strong> — Git is built to combine two people's parallel work automatically, not just prevent them from touching the same file.</li>
+        <li><strong>It's the industry standard</strong> — GitHub, GitLab, Bitbucket, and nearly every CI/CD pipeline assume Git underneath.</li>
+      </ul>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

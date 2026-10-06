@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joins — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔗 Joins <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">How you combine rows from two related tables into one result.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> INNER JOIN — only matching rows</h3>
+      <div class="svgpanel"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="110" cy="75" r="60" fill="#336791" opacity="0.35"/>
+        <circle cx="190" cy="75" r="60" fill="#5ba3d0" opacity="0.35"/>
+        <circle cx="110" cy="75" r="60" fill="none" stroke="#5ba3d0" stroke-width="2"/>
+        <circle cx="190" cy="75" r="60" fill="none" stroke="#336791" stroke-width="2"/>
+        <text x="150" y="80" text-anchor="middle" fill="#e9f1f5" font-size="12" font-weight="700">INNER</text>
+        <text x="150" y="20" text-anchor="middle" fill="#8aa3b3" font-size="11">users ⋈ orders — only rows present in BOTH</text>
+      </svg></div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT users.name, orders.total
+FROM users
+INNER JOIN orders ON orders.user_id = users.id;
+<span class="cmt">-- Only users who have at least one order appear in the result</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> LEFT JOIN — everything on the left, matched or not</h3>
+      <div class="svgpanel"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="110" cy="75" r="60" fill="#336791" opacity="0.55"/>
+        <circle cx="190" cy="75" r="60" fill="#5ba3d0" opacity="0.2"/>
+        <circle cx="110" cy="75" r="60" fill="none" stroke="#5ba3d0" stroke-width="2"/>
+        <circle cx="190" cy="75" r="60" fill="none" stroke="#336791" stroke-width="2"/>
+        <text x="100" y="80" text-anchor="middle" fill="#e9f1f5" font-size="12" font-weight="700">LEFT</text>
+        <text x="150" y="20" text-anchor="middle" fill="#8aa3b3" font-size="11">ALL users, with their orders where they exist (else NULL)</text>
+      </svg></div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT users.name, orders.total
+FROM users
+LEFT JOIN orders ON orders.user_id = users.id;
+<span class="cmt">-- EVERY user appears, even ones with zero orders — orders.total is NULL for them</span></pre>
+      <div class="callout tip">💡 "Find all users who have NEVER placed an order" is a classic LEFT JOIN use case: <code class="inline">LEFT JOIN orders ... WHERE orders.id IS NULL</code> — the rows that didn't match on the right side.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> RIGHT JOIN and FULL JOIN</h3>
+      <p><strong>RIGHT JOIN</strong> is the mirror of LEFT JOIN — everything from the right table, matched or not. In practice, most people just swap table order and use LEFT JOIN instead, since it's more intuitive to read.</p>
+      <p><strong>FULL JOIN</strong> (or FULL OUTER JOIN) returns everything from BOTH tables, matched where possible, NULL-filled where not. Less common day-to-day, but essential for finding mismatches between two datasets.</p>
+      <div class="svgpanel"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="110" cy="75" r="60" fill="#336791" opacity="0.5"/>
+        <circle cx="190" cy="75" r="60" fill="#5ba3d0" opacity="0.5"/>
+        <circle cx="110" cy="75" r="60" fill="none" stroke="#5ba3d0" stroke-width="2"/>
+        <circle cx="190" cy="75" r="60" fill="none" stroke="#336791" stroke-width="2"/>
+        <text x="150" y="80" text-anchor="middle" fill="#e9f1f5" font-size="12" font-weight="700">FULL</text>
+        <text x="150" y="20" text-anchor="middle" fill="#8aa3b3" font-size="11">EVERYTHING from both sides, matched where possible</text>
+      </svg></div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

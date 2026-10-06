@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kubectl Cheatsheet — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📋 kubectl Cheatsheet</h2>
+    <p class="page-sub">A one-page visual poster, plus a searchable list of kubectl commands below it.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Kubernetes cheat sheet poster</h3>
+      <p>Everyday kubectl on one page. Click the poster to open it full size, or download the high-resolution PNG to print it or keep it on your phone.</p>
+      <a class="poster-frame" href="img/cheatsheet-poster.png" target="_blank" rel="noopener"><img src="img/cheatsheet-poster.webp" width="1312" height="1199" alt="Kubernetes cheat sheet poster covering cluster info, pod management, deployments, example pod YAML, services, ConfigMaps and Secrets, volumes and persistent storage, namespaces, scaling and rollbacks, debugging, shortcuts and common resource types"></a>
+      <div class="poster-actions">
+        <a href="img/cheatsheet-poster.png" target="_blank" rel="noopener">🔍 Open full size</a>
+        <a href="img/cheatsheet-poster.png" download="kubernetes-cheat-sheet.png">⬇️ Download PNG</a>
+      </div>
+      <div class="callout warn poster-errata">⚠️ Two small notes on the poster:
+        <ul>
+          <li>The box at the top right reads "Kubermetes" — it means <strong>Kubernetes</strong>.</li>
+          <li><code class="inline">kubectl get all</code> doesn't really list every resource. It shows the common ones (pods, services, deployments, replicasets…) but skips ConfigMaps, Secrets, PVCs and Ingresses. Ask for those by name, e.g. <code class="inline">kubectl get configmaps,secrets,pvc</code>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>🔍 Search every command</h3>
+    <input type="text" class="cmd-ref-search" id="cmdSearch" placeholder="🔍 Search commands (e.g. 'rollout', 'secret', 'scale')...">
+    <div class="card">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody id="cmdTableBody"></tbody>
+      </table>
+    </div>
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="js/cheatsheet.js"></script>
+</body>
+</html>

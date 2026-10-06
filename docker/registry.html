@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Registries & Docker Hub — Docker Study</title>
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
 </head>
 <body>
 <button class="menu-toggle" id="menuToggle">☰</button>
@@ -36,12 +37,13 @@ docker pull yourusername/myapp:1.0</pre>
       </table>
     </div>
 
-    <div class="callout warn">⚠️ Never bake secrets/API keys into an image layer — anyone with the image can extract them with <code class="inline">docker history</code>. Use build secrets or runtime env injection instead.</div>
+    <div class="callout warn">⚠️ Never bake secrets/API keys into an image — anyone who can pull the image can recover them. Values passed via <code class="inline">ENV</code>/<code class="inline">ARG</code> show up in <code class="inline">docker history</code>, and copied-in files can be pulled straight out of the layers with <code class="inline">docker save</code> — even if a later step deletes them. Use BuildKit build secrets (<code class="inline">RUN --mount=type=secret</code>) or inject them at runtime instead.</div>
 
     <footer>Docker Study Dashboard · multi-page static site · served locally</footer>
   </main>
 </div>
 <script src="js/nav.js"></script>
 <script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
 </body>
 </html>

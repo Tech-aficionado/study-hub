@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Security Hardening — Docker Study</title>
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
 </head>
 <body>
 <button class="menu-toggle" id="menuToggle">☰</button>
@@ -40,8 +41,9 @@ docker scout cves myapp:1.0
 <span class="cmt"># run with hardened flags</span>
 docker run --read-only --cap-drop=ALL --security-opt=no-new-privileges \
   --memory=256m --cpus=0.5 myapp:1.0</pre>
-      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Dockerfile: create and switch to a non-root user</span>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># Dockerfile: create and switch to a non-root user (Alpine syntax)</span>
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+<span class="cmt"># Debian/Ubuntu equivalent: RUN groupadd -r appgroup && useradd -r -g appgroup appuser</span>
 USER appuser</pre>
     </div>
 
@@ -52,5 +54,6 @@ USER appuser</pre>
 </div>
 <script src="js/nav.js"></script>
 <script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
 </body>
 </html>

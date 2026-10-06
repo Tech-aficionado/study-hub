@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Git — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🚀 Advanced Git <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">cherry-pick, interactive rebase, bisect, submodules, hooks.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Cherry-pick: grab one specific commit</h3>
+      <p>Sometimes you need just ONE commit from another branch, not the whole thing. <code class="inline">cherry-pick</code> replays a single commit onto your current branch.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git cherry-pick &lt;commit-hash&gt;
+<span class="cmt"># Applies just that one commit's changes onto your current branch</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Interactive rebase: rewriting your own history</h3>
+      <p><code class="inline">rebase -i</code> opens an editable list of your recent commits, letting you squash messy "wip" commits into one clean commit, reorder them, edit messages, or drop ones you don't want — before you ever push.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git rebase -i HEAD~5
+<span class="cmt"># Opens an editor listing your last 5 commits, each with a word in front: pick</span>
+
+<span class="cmt"># Change the word in front of a commit:</span>
+pick    <span class="cmt"># keep as-is</span>
+squash  <span class="cmt"># combine into the commit above</span>
+reword  <span class="cmt"># keep the changes, edit the message</span>
+drop    <span class="cmt"># remove this commit entirely</span></pre>
+      <div class="callout tip">💡 "Squash your WIP commits before opening a PR" means exactly this — turning 12 messy "fix typo", "wip", "actually fix it" commits into one clean, reviewable commit.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> git bisect: binary-search for the commit that broke something</h3>
+      <p>A bug appeared somewhere in the last 200 commits and you have no idea which one. <code class="inline">bisect</code> does a binary search: Git checks out a commit, you test it and say good/bad, and it narrows down to the exact culprit in log₂(200) ≈ 8 steps.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git bisect start
+git bisect bad                 <span class="cmt"># current commit is broken</span>
+git bisect good &lt;old-hash&gt;     <span class="cmt"># this older commit was fine</span>
+<span class="cmt"># Git checks out a commit in between — you test it, then:</span>
+git bisect good   <span class="cmt"># or</span>
+git bisect bad
+<span class="cmt"># Repeat until Git names the exact first-bad commit</span>
+git bisect reset               <span class="cmt"># return to where you started</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Submodules: a repo inside a repo</h3>
+      <p>A submodule links another Git repository as a subfolder, pinned to a specific commit. Common for shared libraries that need to stay independently versioned.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git submodule add https://github.com/user/lib.git libs/lib
+git submodule update --init --recursive
+<span class="cmt"># When cloning a repo WITH submodules, use:</span>
+git clone --recurse-submodules &lt;url&gt;</pre>
+      <div class="callout warn">⚠️ Submodules are notoriously fiddly — many teams prefer a package manager (npm, pip) or a monorepo instead, unless there's a strong reason for a true separate-repo link.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Git hooks: automation on events</h3>
+      <p>Scripts in <code class="inline">.git/hooks/</code> that run automatically on events like committing or pushing — e.g. running a linter before every commit so broken code never gets committed.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .git/hooks/pre-commit  (make it executable: chmod +x)</span>
+#!/bin/sh
+npm run lint || exit 1
+<span class="cmt"># If lint fails (non-zero exit), the commit is blocked</span></pre>
+      <div class="callout">Hooks live in <code class="inline">.git/hooks/</code>, which is NOT committed to the repo by default — tools like Husky exist to make hooks shareable across a team.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>
