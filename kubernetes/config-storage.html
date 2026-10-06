@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Config & Storage — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔐 Config & Storage <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Keeping config and secrets OUT of your container image, and persisting data beyond a Pod's lifetime.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> ConfigMaps — non-secret configuration</h3>
+      <p>A ConfigMap stores config values (URLs, feature flags, settings) separately from your image, so the SAME image can run in dev/staging/prod with different config, injected at runtime instead of baked in at build time.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create configmap app-config --from-literal=LOG_LEVEL=debug
+
+<span class="cmt"># Reference it in a Pod spec:</span>
+envFrom:
+  - configMapRef:
+      name: app-config</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Secrets — the same idea, for sensitive data</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create secret generic db-creds --from-literal=password=supersecret
+
+<span class="cmt"># Referenced the same way as a ConfigMap. Values are only base64-ENCODED, not encrypted.</span>
+envFrom:
+  - secretRef:
+      name: db-creds</pre>
+      <div class="callout warn">⚠️ Base64 is encoding, not encryption — a Secret is NOT secure by default against anyone with cluster read access. Production clusters need encryption-at-rest for etcd and tight RBAC on who can read Secrets.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Volumes — storage inside a Pod's lifetime</h3>
+      <p>By default, anything a container writes to its own filesystem is lost as soon as that container restarts — containers are meant to be disposable. A basic Volume (such as <code class="inline">emptyDir</code>) lives as long as the POD does, so data survives a container crash-and-restart inside that Pod and can be shared between containers in it. Delete the Pod, though, and an <code class="inline">emptyDir</code> is deleted with it.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> PersistentVolumes — storage that outlives the Pod entirely</h3>
+      <p>A <strong>PersistentVolume (PV)</strong> is cluster storage (a disk, a cloud volume) that exists independently of any Pod. A <strong>PersistentVolumeClaim (PVC)</strong> is how a Pod requests some of that storage. When the Pod dies and a replacement starts, it can reclaim the SAME PVC and pick up right where the data left off — essential for databases running in Kubernetes.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># pvc.yaml</span>
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-storage
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 10Gi</pre>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

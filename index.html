@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Study Hub</title>
 <link rel="stylesheet" href="css/hub.css">
+<link rel="stylesheet" href="css/shared.css">
 </head>
 <body>
 <div class="wrap">
@@ -18,17 +19,17 @@
       </div>
     </div>
     <div class="hub-stats">
-      <div class="hub-stat"><div class="n">1</div><div class="l">Topic live</div></div>
-      <div class="hub-stat"><div class="n">19</div><div class="l">Modules</div></div>
-      <div class="hub-stat"><div class="n">4</div><div class="l">Videos</div></div>
+      <div class="hub-stat"><div class="n">5</div><div class="l">Topics live</div></div>
+      <div class="hub-stat"><div class="n">47</div><div class="l">Modules</div></div>
+      <div class="hub-stat"><div class="n">14</div><div class="l">Videos</div></div>
     </div>
   </div>
 
   <div class="hero">
     <div>
-      <div class="pill">🟢 New topic added</div>
+      <div class="pill">🟢 5 topics live</div>
       <h2>Pick a topic, start studying</h2>
-      <p>Each topic below is a full self-paced course: diagrams, real video lessons from trusted creators, a command cheatsheet, a CLI playground, and a quiz to check yourself.</p>
+      <p>Each topic below is a full self-paced course: diagrams, real video lessons from trusted creators, a command cheatsheet, and a quiz to check yourself.</p>
     </div>
   </div>
 
@@ -49,31 +50,69 @@
       </div>
     </a>
 
-    <div class="topic-card disabled">
+    <a class="topic-card" href="git/index.html" style="color:inherit;">
       <div class="glow" style="background:#f05032;"></div>
       <div class="top-row">
-        <div class="icon">🧬</div>
-        <div class="status soon">Coming soon</div>
+        <div class="icon">🌿</div>
+        <div class="status ready">Ready</div>
       </div>
-      <h3>Git &amp; GitHub</h3>
-      <p>Branching, rebasing, pull requests, and the workflows real teams use day to day.</p>
-      <div class="meta"><span>Not started</span><span></span></div>
-    </div>
+      <h3>Git</h3>
+      <p>Version control fundamentals: commits, branching, merging, rebasing, undoing mistakes, and advanced tricks like cherry-pick and bisect.</p>
+      <div class="meta">
+        <span>8 modules</span>
+        <span class="cta">Start studying →</span>
+      </div>
+    </a>
 
-    <div class="topic-card disabled">
+    <a class="topic-card" href="github/index.html" style="color:inherit;">
+      <div class="glow" style="background:#8957e5;"></div>
+      <div class="top-row">
+        <div class="icon">🐙</div>
+        <div class="status ready">Ready</div>
+      </div>
+      <h3>GitHub</h3>
+      <p>Repos, forking, pull requests, code review, GitHub Actions CI/CD, issues, teams, and the CLI.</p>
+      <div class="meta">
+        <span>8 modules</span>
+        <span class="cta">Start studying →</span>
+      </div>
+    </a>
+
+    <a class="topic-card" href="sql/index.html" style="color:inherit;">
       <div class="glow" style="background:#336791;"></div>
       <div class="top-row">
         <div class="icon">🗄️</div>
-        <div class="status soon">Coming soon</div>
+        <div class="status ready">Ready</div>
       </div>
-      <h3>SQL &amp; Databases</h3>
-      <p>Querying, indexing, normalization, and designing schemas that hold up in production.</p>
-      <div class="meta"><span>Not started</span><span></span></div>
-    </div>
+      <h3>SQL Databases</h3>
+      <p>Queries, joins, aggregation, schema design and normalization, indexes, transactions, and views.</p>
+      <div class="meta">
+        <span>8 modules</span>
+        <span class="cta">Start studying →</span>
+      </div>
+    </a>
+
+    <a class="topic-card" href="kubernetes/index.html" style="color:inherit;">
+      <div class="glow" style="background:#326ce5;"></div>
+      <div class="top-row">
+        <div class="icon">☸️</div>
+        <div class="status ready">Ready</div>
+      </div>
+      <h3>Kubernetes</h3>
+      <p>Architecture, Pods & Deployments, Services & networking, config/storage, Helm, RBAC, and autoscaling.</p>
+      <div class="meta">
+        <span>8 modules</span>
+        <span class="cta">Start studying →</span>
+      </div>
+    </a>
 
   </div>
 
+  <div class="section-title">🔖 Your Bookmarks</div>
+  <div class="bm-hub" id="hubBookmarks" aria-live="polite"></div>
+
   <footer class="hub-footer">Study Hub — add a new topic any time by asking for it.</footer>
 </div>
+<script src="js/bookmarks.js"></script>
 </body>
 </html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What is GitHub? — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <div class="module-hero">
+      <div class="emoji">🐙</div>
+      <div>
+        <h1>GitHub Study</h1>
+        <p>Part of your Study Hub — hosting, collaboration, and CI/CD built on top of Git.</p>
+      </div>
+    </div>
+    <h2 class="page-title">🐙 What is GitHub? <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Git is the tool. GitHub is where you host it and work with other people.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Git vs GitHub — the distinction people mix up</h3>
+      <p>This trips up almost every beginner: <strong>Git</strong> is the version control software itself — it works entirely on your own computer, with no internet required. <strong>GitHub</strong> is a website/service built around Git: it hosts your repositories in the cloud and adds an entire social and collaborative layer on top — pull requests, issue tracking, code review, CI/CD, and more.</p>
+      <div class="callout tip">💡 You could use Git your whole career without ever touching GitHub. But GitHub (and competitors like GitLab/Bitbucket) is where nearly all real-world team collaboration happens, which is why it matters so much in practice.</div>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Git and GitHub for Beginners – Crash Course</span><span class="vcreator">freeCodeCamp.org · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/RGOj5yH7evk" title="Git and GitHub for Beginners" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> What GitHub adds on top of plain Git</h3>
+      <ul>
+        <li><strong>Remote hosting</strong> — a durable, always-online copy of your repo, reachable by anyone with access.</li>
+        <li><strong>Pull Requests</strong> — a structured way to propose, discuss, and review changes before they merge.</li>
+        <li><strong>Issues</strong> — bug tracking and task management tied directly to the code.</li>
+        <li><strong>Actions</strong> — automated workflows: run tests, build, deploy, all triggered by Git events.</li>
+        <li><strong>Social layer</strong> — stars, forks, followers, the open-source discovery ecosystem.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The typical GitHub-based team workflow</h3>
+      <p>Almost every professional team using GitHub follows a version of this loop: branch → commit → push → open a Pull Request → get it reviewed → merge. The sections ahead walk through each piece in depth.</p>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basic Queries — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🔍 Basic Queries <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">SELECT, WHERE, ORDER BY, LIMIT — the core four you'll write constantly.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> SELECT — choosing what to see</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT * FROM users;
+<span class="cmt">-- Every column, every row — fine for exploring, avoid in production code</span>
+
+SELECT name, email FROM users;
+<span class="cmt">-- Only the columns you actually need — faster, clearer</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> WHERE — filtering rows</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT * FROM users WHERE age &gt;= 18;
+
+SELECT * FROM orders WHERE status = 'shipped' AND total &gt; 100;
+
+SELECT * FROM users WHERE email LIKE '%@gmail.com';
+<span class="cmt">-- % is a wildcard: matches any characters</span>
+
+SELECT * FROM products WHERE category IN ('books', 'electronics');
+
+SELECT * FROM users WHERE deleted_at IS NULL;
+<span class="cmt">-- NULL means "no value" — you can't compare it with = , must use IS NULL</span></pre>
+      <div class="callout warn">⚠️ <code class="inline">NULL = NULL</code> evaluates to NULL (not true!) in SQL — NULL means "unknown," and unknown compared to unknown is still unknown. Always use <code class="inline">IS NULL</code> / <code class="inline">IS NOT NULL</code>.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> ORDER BY and LIMIT</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT * FROM products ORDER BY price DESC;
+<span class="cmt">-- Highest price first. ASC is the default if omitted.</span>
+
+SELECT * FROM products ORDER BY price DESC LIMIT 10;
+<span class="cmt">-- Top 10 most expensive products</span>
+
+SELECT * FROM products ORDER BY price DESC LIMIT 10 OFFSET 20;
+<span class="cmt">-- Skip the first 20, then take the next 10 — classic pagination</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Modifying data: INSERT, UPDATE, DELETE</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>INSERT INTO users (name, email) VALUES ('Ana', 'ana@example.com');
+
+UPDATE users SET email = 'new@example.com' WHERE id = 42;
+
+DELETE FROM users WHERE id = 42;</pre>
+      <div class="callout danger">🛑 UPDATE and DELETE without a WHERE clause affect EVERY row in the table. This is the single most common catastrophic SQL mistake — always double-check your WHERE before running these in production.</div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

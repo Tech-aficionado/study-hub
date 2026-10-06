@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repos & Forking — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📦 Repos & Forking <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Creating repos, forking someone else's, and the files every good repo has.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Creating a repository</h3>
+      <p>On GitHub, click "New repository," give it a name, choose Public or Private, and optionally initialize it with a README, .gitignore, and license. Then connect it to your local Git repo:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git remote add origin https://github.com/user/repo.git
+git branch -M main
+git push -u origin main</pre>
+      <div class="callout">Public repos are visible and clonable by anyone — great for open source. Private repos are visible only to you and people you explicitly invite.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Forking: your own copy of someone else's repo</h3>
+      <p>A <strong>fork</strong> creates a full copy of a repository under YOUR account on GitHub. This is the standard way to contribute to a project you don't have write access to — you fork it, make changes in your copy, then open a Pull Request asking the original project to pull your changes in.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># After clicking "Fork" on GitHub, clone YOUR fork:</span>
+git clone https://github.com/your-username/repo.git
+
+<span class="cmt"># Add the original repo as a second remote, conventionally named "upstream"</span>
+git remote add upstream https://github.com/original-owner/repo.git
+
+<span class="cmt"># Periodically sync your fork with the original project's new changes</span>
+git fetch upstream
+git merge upstream/main</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The files every good repo has</h3>
+      <ul>
+        <li><strong>README.md</strong> — the front door. What the project does, how to install/run it, how to contribute.</li>
+        <li><strong>.gitignore</strong> — files Git should never track (build output, secrets, dependencies).</li>
+        <li><strong>LICENSE</strong> — legally defines what others are allowed to do with your code. No license = all rights reserved by default.</li>
+        <li><strong>CONTRIBUTING.md</strong> — rules and process for outside contributors on bigger projects.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Repo visibility and topics</h3>
+      <p>Repository Settings let you control visibility (public/private/internal for orgs), add topics (tags that help discovery, e.g. "machine-learning", "cli-tool"), and set a description that shows up in search results.</p>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

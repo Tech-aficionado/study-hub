@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helm, RBAC & Scaling — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🎛️ Helm, RBAC & Scaling <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Templating your YAML, locking down who can do what, and scaling automatically with load.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Namespaces — virtual clusters inside a cluster</h3>
+      <p>A Namespace partitions one physical cluster into isolated virtual sections — e.g. <code class="inline">dev</code>, <code class="inline">staging</code>, <code class="inline">prod</code> — each with its own set of resources, names that don't collide across namespaces, and separate RBAC rules.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl create namespace staging
+kubectl get pods -n staging
+kubectl config set-context --current --namespace=staging</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Helm — a package manager for Kubernetes</h3>
+      <p>Writing raw YAML for every app, every environment, gets repetitive fast. Helm packages a set of Kubernetes manifests into a reusable "Chart" with templated values — install the same app with different config per environment in one command.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>helm install my-release ./my-chart --set replicaCount=3
+helm upgrade my-release ./my-chart --set image.tag=2.0
+helm rollback my-release 1</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> RBAC — Role-Based Access Control</h3>
+      <p>RBAC defines WHO can do WHAT inside the cluster. A <strong>Role</strong> lists allowed actions (get, list, create, delete) on specific resource types; a <strong>RoleBinding</strong> grants that Role to a specific user or service account.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># role.yaml — can only read Pods in this namespace</span>
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]</pre>
+      <div class="callout tip">💡 Principle of least privilege applies here exactly like file permissions — grant only the specific verbs/resources a user or service account actually needs.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Autoscaling — HPA</h3>
+      <p>A <strong>HorizontalPodAutoscaler</strong> watches a metric (usually CPU%) and automatically adjusts the number of Pod replicas to match real load — scaling up during traffic spikes, back down when it's quiet.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>kubectl autoscale deployment my-app --cpu-percent=70 --min=2 --max=10
+<span class="cmt"># Keeps between 2 and 10 replicas, targeting 70% average CPU utilization</span></pre>
+      <div class="callout warn">⚠️ HPA needs the <strong>metrics-server</strong> add-on installed to read CPU usage, and your containers need CPU <code class="inline">requests</code> set — without both, the autoscaler shows <code class="inline">&lt;unknown&gt;</code> and never scales.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Readiness & liveness probes</h3>
+      <p>A <strong>liveness probe</strong> checks "is this container still alive?" — a failure triggers an automatic restart. A <strong>readiness probe</strong> checks "is this container ready to receive traffic yet?" — until it passes, the Service won't route requests to that Pod. This is what prevents sending live traffic to a Pod that's still starting up.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>livenessProbe:
+  httpGet: { path: /healthz, port: 8080 }
+  periodSeconds: 10
+readinessProbe:
+  httpGet: { path: /ready, port: 8080 }
+  periodSeconds: 5</pre>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

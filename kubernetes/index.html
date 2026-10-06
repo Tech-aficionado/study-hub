@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Kubernetes? — Kubernetes Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <div class="module-hero">
+      <div class="emoji">☸️</div>
+      <div>
+        <h1>Kubernetes Study</h1>
+        <p>Part of your Study Hub — running hundreds of containers reliably, automatically.</p>
+      </div>
+    </div>
+    <h2 class="page-title">☸️ Why Kubernetes? <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Docker runs one container. Kubernetes runs — and babysits — thousands of them, across many machines.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The problem beyond "docker run"</h3>
+      <p>Docker alone answers "how do I package and run one container." It doesn't answer: What happens when that container crashes at 3am? What if you need 50 copies of it to handle traffic? What if one of your 20 physical servers dies — where do its containers go? What if you need to update the app with zero downtime?</p>
+      <p>Kubernetes (often shortened "k8s") is a <strong>container orchestrator</strong> — it answers all of those questions automatically. You describe the END STATE you want ("5 copies of this app, always running"), and Kubernetes continuously works to make reality match that description.</p>
+      <div class="callout tip">💡 Think of it like an orchestra conductor: a conductor doesn't play any instrument themselves, but ensures every musician (container) is playing the right part, replaces one who falls ill mid-performance, and keeps overall tempo (the desired state) no matter what.</div>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> Kubernetes Explained in 100 Seconds</span><span class="vcreator">Fireship · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/PziYflu8cB8" title="Kubernetes Explained in 100 Seconds" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Self-healing — the core idea</h3>
+      <p>You never tell Kubernetes "start this container." You tell it "I want 5 of these running, always" (a <strong>desired state</strong>). A background control loop constantly checks: is reality matching the desired state? If a container crashes, that's now 4 running when 5 were wanted — Kubernetes notices and starts a replacement automatically, with no human involved.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> When you actually need it</h3>
+      <ul>
+        <li>Running the same app across many physical/virtual machines, needing automatic failover.</li>
+        <li>Scaling up/down based on real traffic, automatically.</li>
+        <li>Zero-downtime deployments — rolling out a new version without dropping requests.</li>
+        <li>Managing dozens/hundreds of interconnected services (a "microservices" architecture).</li>
+      </ul>
+      <div class="callout warn">⚠️ Kubernetes is genuinely complex. A single app on a single server almost never needs it — plain Docker (or Docker Compose) is the right tool there. k8s earns its complexity at scale, not before.</div>
+    </div>
+
+    <footer>Kubernetes Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What is SQL? — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <div class="module-hero">
+      <div class="emoji">🗄️</div>
+      <div>
+        <h1>SQL Study</h1>
+        <p>Part of your Study Hub — the language nearly every application uses to talk to its data.</p>
+      </div>
+    </div>
+    <h2 class="page-title">🗄️ What is SQL? <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Structured Query Language — how you ask a relational database for exactly the data you need.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What a relational database actually is</h3>
+      <p>A relational database stores data in <strong>tables</strong> — think spreadsheets, but connected to each other. A "users" table and an "orders" table can be linked: each order row points to which user placed it. "Relational" refers to those links (relationships) between tables, not just the tables themselves.</p>
+      <div class="callout tip">💡 SQL is DECLARATIVE — you describe WHAT result you want ("all users who signed up this month"), not HOW to compute it (looping through rows yourself). The database engine figures out the fastest way to get there.</div>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> SQL Explained in 100 Seconds</span><span class="vcreator">Fireship · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/zsjvFFKOm3c" title="SQL Explained in 100 Seconds" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Why SQL has survived 50 years</h3>
+      <ul>
+        <li><strong>ACID guarantees</strong> — transactions either fully happen or fully don't, even if the power dies mid-write. Critical for money, inventory, anything that can't be "sort of" correct.</li>
+        <li><strong>Mature, battle-tested engines</strong> — PostgreSQL, MySQL, SQLite, SQL Server have decades of optimization behind every query you write.</li>
+        <li><strong>One language, every major database</strong> — the dialect varies slightly, but the core (SELECT, JOIN, WHERE) is near-universal.</li>
+      </ul>
+      <div class="callout">A "NoSQL" database (MongoDB, DynamoDB) trades some of SQL's structure/guarantees for flexibility or horizontal scale — it's a different tool for a different shape of problem, not a strict upgrade.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The five categories of SQL commands</h3>
+      <table>
+        <tr><th>Category</th><th>Examples</th><th>Purpose</th></tr>
+        <tr><td>DQL</td><td>SELECT</td><td>Querying/reading data</td></tr>
+        <tr><td>DML</td><td>INSERT, UPDATE, DELETE</td><td>Modifying data</td></tr>
+        <tr><td>DDL</td><td>CREATE, ALTER, DROP</td><td>Defining table/schema structure</td></tr>
+        <tr><td>DCL</td><td>GRANT, REVOKE</td><td>Controlling access permissions</td></tr>
+        <tr><td>TCL</td><td>COMMIT, ROLLBACK</td><td>Managing transactions</td></tr>
+      </table>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

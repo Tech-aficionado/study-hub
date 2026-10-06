@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Multi-stage Builds — Docker Study</title>
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
 </head>
 <body>
 <button class="menu-toggle" id="menuToggle">☰</button>
@@ -63,6 +64,7 @@ COPY . .
 RUN npm run build
 
 FROM nginx:1.27-alpine
+<span class="cmt"># Vite outputs to dist/ — Create React App outputs to build/ instead</span>
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]</pre>
@@ -73,5 +75,6 @@ CMD ["nginx", "-g", "daemon off;"]</pre>
 </div>
 <script src="js/nav.js"></script>
 <script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
 </body>
 </html>

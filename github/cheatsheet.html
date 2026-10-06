@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reference Cheatsheet — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📋 Reference Cheatsheet</h2>
+    <p class="page-sub">A one-page visual poster, plus a searchable list of commands and syntax below it.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> GitHub cheat sheet poster</h3>
+      <p>Git and GitHub essentials on one page. Click the poster to open it full size, or download the high-resolution PNG to print it or keep it on your phone.</p>
+      <a class="poster-frame" href="img/cheatsheet-poster.png" target="_blank" rel="noopener"><img src="img/cheatsheet-poster.webp" width="1312" height="1199" alt="GitHub cheat sheet poster covering setup, creating a repository, basic workflow, branching, remotes, undoing changes, GitHub CLI, pull requests, .gitignore, README markdown, useful git commands and common scenarios"></a>
+      <div class="poster-actions">
+        <a href="img/cheatsheet-poster.png" target="_blank" rel="noopener">🔍 Open full size</a>
+        <a href="img/cheatsheet-poster.png" download="github-cheat-sheet.png">⬇️ Download PNG</a>
+      </div>
+      <div class="callout warn poster-errata">⚠️ Two small notes on the poster:
+        <ul>
+          <li>The .gitignore example says <code class="inline">.DS_Btore</code> — it should be <code class="inline">.DS_Store</code>.</li>
+          <li><code class="inline">git clean -fd</code> permanently deletes untracked files and folders with no undo. Run <code class="inline">git clean -nd</code> first to preview what would go.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>🔍 Search every command</h3>
+    <input type="text" class="cmd-ref-search" id="cmdSearch" placeholder="🔍 Search commands (e.g. 'pr', 'secret', 'workflow')...">
+    <div class="card">
+      <table>
+        <thead><tr><th>Command / Syntax</th><th>Description</th></tr></thead>
+        <tbody id="cmdTableBody"></tbody>
+      </table>
+    </div>
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="js/cheatsheet.js"></script>
+</body>
+</html>

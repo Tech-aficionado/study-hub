@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dockerfile — Docker Study</title>
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
 </head>
 <body>
 <button class="menu-toggle" id="menuToggle">☰</button>
@@ -30,7 +31,7 @@ WORKDIR /app
 
 <span class="cmt"># 4. Copy dependency manifests FIRST (layer caching!)</span>
 COPY package*.json ./
-RUN npm ci --production
+RUN npm ci --omit=dev
 
 <span class="cmt"># 5. Copy the rest of the source</span>
 COPY . .
@@ -43,7 +44,7 @@ USER node
 
 <span class="cmt"># 8. The command that runs when the container starts</span>
 CMD ["node", "server.js"]</pre>
-      <div class="callout tip">💡 Each line that actually does something (<code class="inline">RUN</code>, <code class="inline">COPY</code>...) becomes its own cached layer. Change line 7 and Docker only re-does steps from line 7 onward — everything above it is reused instantly from cache. That's why the order of your Dockerfile matters for build speed.</div>
+      <div class="callout tip">💡 Each instruction is cached, and the ones that change files (<code class="inline">RUN</code>, <code class="inline">COPY</code>, <code class="inline">ADD</code>) each add a filesystem layer. When something changes, Docker rebuilds from that step downward and reuses everything above it from cache. Edit your source code and only step 5 onward reruns — the slow <code class="inline">npm ci</code> in step 4 is reused, because <code class="inline">package.json</code> didn't change. That's why the order of your Dockerfile matters for build speed.</div>
       <div class="videopanel">
         <div class="vhead">
           <span class="vtitle"><span class="ytdot">▶</span> Docker Tutorial for Beginners [FULL COURSE]</span>
@@ -117,5 +118,6 @@ Dockerfile
 </div>
 <script src="js/nav.js"></script>
 <script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
 </body>
 </html>

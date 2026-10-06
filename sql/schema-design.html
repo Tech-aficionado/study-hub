@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schema Design — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🏗️ Schema Design <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Primary keys, foreign keys, and normalization — designing tables that don't contradict themselves.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Primary and foreign keys</h3>
+      <p>A <strong>primary key</strong> uniquely identifies each row in a table (usually an auto-incrementing <code class="inline">id</code>). A <strong>foreign key</strong> is a column in one table that references a primary key in another — this is literally what makes a database "relational."</p>
+      <div class="svgpanel"><svg viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="fka" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5ba3d0"/></marker></defs>
+        <rect x="40" y="30" width="180" height="110" rx="8" fill="#122334" stroke="#336791" stroke-width="2"/>
+        <text x="130" y="52" text-anchor="middle" fill="#e9f1f5" font-size="13" font-weight="700">users</text>
+        <text x="55" y="75" fill="#f0b429" font-size="11">🔑 id (PK)</text>
+        <text x="55" y="93" fill="#8aa3b3" font-size="11">name</text>
+        <text x="55" y="111" fill="#8aa3b3" font-size="11">email</text>
+        <rect x="420" y="30" width="180" height="110" rx="8" fill="#122334" stroke="#336791" stroke-width="2"/>
+        <text x="510" y="52" text-anchor="middle" fill="#e9f1f5" font-size="13" font-weight="700">orders</text>
+        <text x="435" y="75" fill="#f0b429" font-size="11">🔑 id (PK)</text>
+        <text x="435" y="93" fill="#5ba3d0" font-size="11">🔗 user_id (FK)</text>
+        <text x="435" y="111" fill="#8aa3b3" font-size="11">total</text>
+        <line x1="220" y1="75" x2="433" y2="88" stroke="#5ba3d0" stroke-width="2" marker-end="url(#fka)"/>
+        <text x="320" y="65" text-anchor="middle" fill="#8aa3b3" font-size="10.5">orders.user_id → users.id</text>
+      </svg></div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>CREATE TABLE orders (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  total NUMERIC(10,2)
+);</pre>
+      <div class="callout warn">⚠️ A foreign key constraint PREVENTS inserting an order with a user_id that doesn't exist in users — the database enforces this automatically, catching bugs that would otherwise create "orphan" rows.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Normalization — why not just put everything in one giant table</h3>
+      <p>Normalization is the process of splitting data to avoid storing the same fact in multiple places, which prevents data from contradicting itself.</p>
+      <table>
+        <tr><th>Form</th><th>Rule</th></tr>
+        <tr><td>1NF</td><td>Each column holds one atomic value — no comma-separated lists in a single cell</td></tr>
+        <tr><td>2NF</td><td>Every non-key column depends on the WHOLE primary key, not just part of it</td></tr>
+        <tr><td>3NF</td><td>No column depends on another NON-key column (no transitive dependency)</td></tr>
+      </table>
+      <div class="callout">Example of the problem normalization solves: if a customer's address is stored in every single order row, updating their address means updating 50 rows — miss one, and now your data disagrees with itself.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> When to deliberately break normalization</h3>
+      <p>Sometimes a <strong>denormalized</strong> design (duplicating some data) is a deliberate tradeoff for read performance — e.g. storing a cached <code class="inline">order_count</code> on the users table instead of counting orders every time. This trades write complexity for read speed, and should be a conscious choice, not an accident.</p>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

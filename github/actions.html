@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Actions — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">⚙️ GitHub Actions <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Run code automatically whenever something happens in your repo — tests, builds, deployments.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What Actions actually is</h3>
+      <p>GitHub Actions is CI/CD built directly into GitHub: you write a workflow file in YAML, GitHub watches for the events you specify (push, pull request, a schedule), and when one fires, it spins up a fresh virtual machine (a "runner") to execute your steps.</p>
+      <div class="videopanel">
+        <div class="vhead"><span class="vtitle"><span class="ytdot">▶</span> 5 Ways to DevOps-ify your App - GitHub Actions Tutorial</span><span class="vcreator">Fireship · USA</span></div>
+        <div class="video-frame-wrap"><iframe src="https://www.youtube.com/embed/eB0nUzAI7M8" title="GitHub Actions Tutorial" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Anatomy of a workflow file</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .github/workflows/ci.yml</span>
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm test</pre>
+      <ul>
+        <li><strong>on</strong> — the trigger: push, pull_request, schedule (cron), or manual (workflow_dispatch).</li>
+        <li><strong>jobs</strong> — one or more independent units of work, each running on its own fresh runner by default.</li>
+        <li><strong>runs-on</strong> — which OS/runner image: ubuntu-latest, windows-latest, macos-latest.</li>
+        <li><strong>steps</strong> — the sequence inside a job: either a reusable <code class="inline">uses:</code> action from the Marketplace, or a raw <code class="inline">run:</code> shell command.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Pipeline flow</h3>
+      <div class="svgpanel"><svg viewBox="0 0 640 160" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="aa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b794f6"/></marker></defs>
+        <rect x="20" y="50" width="110" height="56" rx="9" fill="#1c142c" stroke="#8957e5" stroke-width="2"/><text x="75" y="82" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">git push</text>
+        <line x1="132" y1="78" x2="177" y2="78" stroke="#b794f6" stroke-width="2" marker-end="url(#aa)"/>
+        <rect x="180" y="50" width="110" height="56" rx="9" fill="#1c142c" stroke="#f0b429" stroke-width="2"/><text x="235" y="82" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">Trigger fires</text>
+        <line x1="292" y1="78" x2="337" y2="78" stroke="#b794f6" stroke-width="2" marker-end="url(#aa)"/>
+        <rect x="340" y="50" width="110" height="56" rx="9" fill="#1c142c" stroke="#6dc1ff" stroke-width="2"/><text x="395" y="82" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">Runner VM boots</text>
+        <line x1="452" y1="78" x2="497" y2="78" stroke="#b794f6" stroke-width="2" marker-end="url(#aa)"/>
+        <rect x="500" y="50" width="120" height="56" rx="9" fill="#1c142c" stroke="#3fdd94" stroke-width="2"/><text x="560" y="82" text-anchor="middle" fill="#eeeaf8" font-size="12" font-weight="700">Steps run</text>
+      </svg></div>
+      <div class="callout warn">⚠️ Each job runs on a brand-new, clean VM by default. Nothing persists between jobs unless you explicitly use <code class="inline">actions/cache</code> or upload/download artifacts.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Secrets</h3>
+      <p>Never hardcode credentials in a workflow file (it's committed, public if the repo is public). Store them in Settings → Secrets and Variables → Actions, then reference as <code class="inline">${{ secrets.MY_API_KEY }}</code>.</p>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

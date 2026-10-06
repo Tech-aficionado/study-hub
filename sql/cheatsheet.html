@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Syntax Cheatsheet — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📋 Syntax Cheatsheet</h2>
+    <p class="page-sub">A one-page visual poster, plus a searchable list of SQL syntax below it.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> SQL cheat sheet poster</h3>
+      <p>The core of SQL on one page. Click the poster to open it full size, or download the high-resolution PNG to print it or keep it on your phone.</p>
+      <a class="poster-frame" href="img/cheatsheet-poster.png" target="_blank" rel="noopener"><img src="img/cheatsheet-poster.webp" width="1312" height="1199" alt="SQL database cheat sheet poster covering basic commands, CRUD, data types, SELECT queries, WHERE clause, functions, joins, GROUP BY and HAVING, constraints, ALTER and DROP, indexes, transactions and useful commands"></a>
+      <div class="poster-actions">
+        <a href="img/cheatsheet-poster.png" target="_blank" rel="noopener">🔍 Open full size</a>
+        <a href="img/cheatsheet-poster.png" download="sql-cheat-sheet.png">⬇️ Download PNG</a>
+      </div>
+      <div class="callout warn poster-errata">⚠️ Three notes on the poster:
+        <ul>
+          <li>In section 2, "Insert data" reads <code class="inline">CREATE INTG users (...)</code>. The correct statement is <code class="inline">INSERT INTO users (name, email, age) VALUES (...);</code></li>
+          <li>The join examples select <code class="inline">o.order_date</code>, but the sample <code class="inline">orders</code> table has no such column (it has <code class="inline">id, user_id, product</code>). Use <code class="inline">o.product</code> to run them against that table.</li>
+          <li>The poster uses MySQL commands (<code class="inline">SHOW DATABASES</code>, <code class="inline">mysqldump</code>), but MySQL has no <code class="inline">FULL JOIN</code>. That example works in PostgreSQL and SQL Server; in MySQL you combine a LEFT and a RIGHT JOIN with <code class="inline">UNION</code>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>🔍 Search every command</h3>
+    <input type="text" class="cmd-ref-search" id="cmdSearch" placeholder="🔍 Search syntax (e.g. 'join', 'index', 'group')...">
+    <div class="card">
+      <table>
+        <thead><tr><th>Syntax</th><th>Description</th></tr></thead>
+        <tbody id="cmdTableBody"></tbody>
+      </table>
+    </div>
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="js/cheatsheet.js"></script>
+</body>
+</html>

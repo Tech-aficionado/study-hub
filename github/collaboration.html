@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Issues & Teams — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">👥 Issues, Projects & Teams <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">The tools for tracking work and managing who can do what.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Issues — bug tracking tied to code</h3>
+      <p>An Issue is a trackable unit of work: a bug report, a feature request, a question. Issues support labels (bug, enhancement, good-first-issue), assignees, and milestones. Reference an issue from a commit or PR with <code class="inline">#42</code> to auto-link them, and <code class="inline">Fixes #42</code> in a PR description auto-closes it on merge.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Projects (boards)</h3>
+      <p>A Kanban-style board (To Do / In Progress / Done) that organizes Issues and PRs visually. Can be scoped to one repo or span an entire organization's repos.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Discussions</h3>
+      <p>A forum-style space for Q&A, announcements, and open-ended conversation that doesn't belong in a specific Issue — useful for "how do I..." questions that aren't bugs.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Teams and branch protection</h3>
+      <p>Organizations group members into Teams with specific repo permissions (read/write/admin). <strong>Branch protection rules</strong> on an important branch like <code class="inline">main</code> can require: passing CI checks before merge, at least N approving reviews, no force-pushes, and up-to-date branches before merging.</p>
+      <div class="callout tip">💡 Branch protection is how teams enforce "nothing merges to main without review and green CI" — it's a setting, not a social agreement that people might forget.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> CODEOWNERS — automatic review assignment</h3>
+      <p>A <code class="inline">CODEOWNERS</code> file at the repo root maps file paths to usernames/teams who must review changes to those paths — GitHub auto-requests their review when a matching PR opens.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .github/CODEOWNERS</span>
+/src/payments/   @finance-team
+*.yml            @devops-lead
+/docs/           @docs-team</pre>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

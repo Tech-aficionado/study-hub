@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basic Workflow — Git Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📜 Basic Workflow <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">init, clone, status, add, commit, log — the five commands you'll type a hundred times a day.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Starting a repository</h3>
+      <p>Two ways to get a Git repo: start a brand new one, or copy an existing one from somewhere else (like GitHub).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git init
+<span class="cmt"># Turns the current folder into a Git repo (creates a hidden .git folder)</span>
+
+git clone https://github.com/user/repo.git
+<span class="cmt"># Downloads a FULL copy of an existing repo, including its entire history</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The daily loop: status, add, commit</h3>
+      <p>This loop is the heartbeat of using Git. You'll run some version of this dozens of times a day:</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git status
+<span class="cmt"># Shows what changed: modified files, new (untracked) files, staged files</span>
+
+git add file.txt
+git add .          <span class="cmt"># stage EVERYTHING changed in this folder — use carefully</span>
+git add -p         <span class="cmt"># interactively choose which CHUNKS of a file to stage</span>
+
+git commit -m "Fix login validation bug"
+<span class="cmt"># Seals everything staged into a permanent snapshot with a message</span></pre>
+      <div class="callout tip">💡 Write commit messages for your future self 6 months from now, not for right now. "fix bug" tells you nothing later. "Fix login validation rejecting valid emails with + symbol" does.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Looking at history</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>git log
+<span class="cmt"># Full commit history: hash, author, date, message</span>
+
+git log --oneline --graph --all
+<span class="cmt"># Compact, visual, shows branches — this is the one you'll actually use</span>
+
+git diff
+<span class="cmt"># Shows exactly what changed, line by line, before you stage it</span>
+
+git diff --staged
+<span class="cmt"># Shows what's staged and about to be committed</span>
+
+git show <commit-hash>
+<span class="cmt"># Full detail of one specific commit</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> .gitignore — telling Git what to ignore</h3>
+      <p>Not everything belongs in version control: build output, dependency folders (<code class="inline">node_modules/</code>), secrets, OS files like <code class="inline">.DS_Store</code>. A <code class="inline">.gitignore</code> file at your repo root lists patterns Git will never track.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button><span class="cmt"># .gitignore</span>
+node_modules/
+*.log
+.env
+dist/
+.DS_Store</pre>
+      <div class="callout warn">⚠️ Adding a pattern to .gitignore does NOT remove a file that's already tracked. If you accidentally committed a secret, you need <code class="inline">git rm --cached</code> plus rotating that secret — .gitignore only prevents FUTURE accidents.</div>
+    </div>
+
+    <footer>Git Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

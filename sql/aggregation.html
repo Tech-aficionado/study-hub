@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aggregation & Subqueries — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">📊 Aggregation & Subqueries <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Turning many rows into summary numbers, and queries nested inside other queries.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Aggregate functions</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT COUNT(*) FROM orders;                 <span class="cmt">-- how many rows total</span>
+SELECT SUM(total) FROM orders;                <span class="cmt">-- add up a column</span>
+SELECT AVG(total) FROM orders;                <span class="cmt">-- average value</span>
+SELECT MIN(total), MAX(total) FROM orders;    <span class="cmt">-- smallest / largest</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> GROUP BY — aggregating per category</h3>
+      <p>Without GROUP BY, an aggregate collapses the WHOLE table into one number. GROUP BY computes that aggregate separately FOR EACH distinct value in a column.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT user_id, COUNT(*) AS order_count
+FROM orders
+GROUP BY user_id;
+<span class="cmt">-- One row per user, showing how many orders EACH of them placed</span>
+
+SELECT category, AVG(price) AS avg_price
+FROM products
+GROUP BY category
+ORDER BY avg_price DESC;</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> HAVING — filtering AFTER grouping</h3>
+      <p>WHERE filters individual rows BEFORE grouping happens. HAVING filters the GROUPS themselves, after aggregation — this is why you can't put an aggregate function inside WHERE.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT user_id, COUNT(*) AS order_count
+FROM orders
+GROUP BY user_id
+HAVING COUNT(*) &gt; 5;
+<span class="cmt">-- Only users with MORE THAN 5 orders — this is impossible to express with WHERE</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Subqueries — a query inside a query</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT name FROM users
+WHERE id IN (
+  SELECT user_id FROM orders WHERE total &gt; 1000
+);
+<span class="cmt">-- The inner query runs first, producing a list of user_ids,</span>
+<span class="cmt">-- the outer query then finds users matching that list</span>
+
+SELECT name, (
+  SELECT COUNT(*) FROM orders WHERE orders.user_id = users.id
+) AS order_count
+FROM users;
+<span class="cmt">-- A "correlated" subquery — runs once PER outer row, referencing it</span></pre>
+      <div class="callout tip">💡 A correlated subquery can be slow on large tables because it re-runs for every outer row. A JOIN with GROUP BY often achieves the same result faster — worth comparing both when performance matters.</div>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

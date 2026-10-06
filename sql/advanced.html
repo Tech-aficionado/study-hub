@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indexes, Transactions & Views — SQL Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">⚡ Indexes, Transactions & Views <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">The tools that make queries fast and keep multi-step operations safe.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Indexes — why some queries are instant and others crawl</h3>
+      <p>Without an index, finding a row means scanning EVERY row in the table (a "full table scan") — fine for 100 rows, catastrophic for 100 million. An index is a separate, sorted data structure (usually a B-tree) that lets the database jump straight to matching rows, similar to a book's index pointing you to the right page instead of reading cover to cover.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>CREATE INDEX idx_orders_user_id ON orders(user_id);
+<span class="cmt">-- Speeds up: WHERE user_id = ... and JOIN ... ON orders.user_id = ...</span>
+
+EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42;
+<span class="cmt">-- Shows the actual execution plan — reveals whether an index was used</span></pre>
+      <div class="callout warn">⚠️ Indexes aren't free — they speed up reads but slow down writes (every INSERT/UPDATE must also update the index) and take disk space. Index columns you actually filter/join on, not every column reflexively.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Transactions and ACID</h3>
+      <p>A transaction groups multiple statements so they succeed or fail as ONE unit — critical for "transfer $100 from account A to B," which is really two writes that must both happen or both not happen.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT;
+<span class="cmt">-- If anything fails between BEGIN and COMMIT, run ROLLBACK instead to undo everything</span></pre>
+      <table>
+        <tr><th>ACID letter</th><th>Guarantee</th></tr>
+        <tr><td><strong>A</strong>tomicity</td><td>All statements in the transaction succeed, or none do</td></tr>
+        <tr><td><strong>C</strong>onsistency</td><td>The database never ends up in an invalid state</td></tr>
+        <tr><td><strong>I</strong>solation</td><td>Concurrent transactions don't see each other's half-finished work</td></tr>
+        <tr><td><strong>D</strong>urability</td><td>Once committed, data survives even a crash immediately after</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Views — a saved query that looks like a table</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>CREATE VIEW active_customers AS
+SELECT * FROM users WHERE deleted_at IS NULL AND last_login &gt; NOW() - INTERVAL '30 days';
+
+SELECT * FROM active_customers WHERE country = 'US';
+<span class="cmt">-- Query the view just like a normal table — it re-runs the underlying query each time</span></pre>
+      <div class="callout tip">💡 Views are great for hiding complexity (a messy multi-join query becomes a simple SELECT) and for access control (grant permission on a view that excludes sensitive columns, not the raw table).</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Window functions — aggregates without collapsing rows</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>SELECT id, user_id, total,
+  RANK() OVER (ORDER BY total DESC) AS rank_overall,
+  AVG(total) OVER (PARTITION BY user_id) AS avg_for_this_user
+FROM orders;
+<span class="cmt">-- Unlike GROUP BY, every original row still appears — you get the aggregate</span>
+<span class="cmt">-- ALONGSIDE the row's own data, not instead of it</span></pre>
+    </div>
+
+    <footer>SQL Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>

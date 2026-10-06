@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLI, Pages & Security — GitHub Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <h2 class="page-title">🛠️ CLI, Pages & Security <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">GitHub CLI, webhooks, static hosting, and the built-in security scanners.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> GitHub CLI (gh)</h3>
+      <p>The <code class="inline">gh</code> command-line tool lets you do most GitHub actions without leaving your terminal — create PRs, review them, manage issues, trigger workflows.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>gh auth login
+gh repo create my-project --public --source=. --push
+gh pr create --title "Add feature" --body "Description here"
+gh pr list
+gh pr merge 42 --squash
+gh issue create --title "Bug: login fails"
+gh run list                     <span class="cmt"># recent Actions workflow runs</span>
+gh run watch                    <span class="cmt"># live-tail a running workflow</span></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Webhooks</h3>
+      <p>A webhook is a URL you register that GitHub POSTs an event payload to whenever something happens (push, PR opened, issue commented). This is how external tools (Slack notifications, deploy triggers, custom bots) react to repo activity in real time, without polling.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> GitHub Pages</h3>
+      <p>Free static site hosting directly from a repo. Point it at a branch (commonly <code class="inline">gh-pages</code> or <code class="inline">main</code>'s <code class="inline">/docs</code> folder) in Settings → Pages, and GitHub serves it at <code class="inline">username.github.io/repo</code>.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Packages</h3>
+      <p>GitHub Packages hosts your own package registry (npm, Docker images, Maven, NuGet) tied to your repos and permissions — useful for private packages shared within an org without a separate registry service.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Built-in security features</h3>
+      <ul>
+        <li><strong>Dependabot</strong> — automatically opens PRs to bump dependencies with known vulnerabilities.</li>
+        <li><strong>Secret scanning</strong> — detects accidentally committed API keys/tokens and alerts you (and can block the push).</li>
+        <li><strong>Code scanning (CodeQL)</strong> — static analysis that finds security vulnerabilities in your code itself, not just dependencies.</li>
+      </ul>
+      <div class="callout danger">🛑 If secret scanning flags a leaked credential, treat it as compromised immediately — rotate/revoke it. Removing it from Git history later does NOT undo the exposure; it may already be cached/scraped.</div>
+    </div>
+
+    <footer>GitHub Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+</body>
+</html>
