@@ -380,7 +380,9 @@ a, button, summary, .quiz-opt, .nav-item{-webkit-tap-highlight-color:transparent
 }
 
 /* =====================================================================
-   FOCUS MODE (button in the top bar, js/mobile.js) — remembered per browser
+   FOCUS MODE — full-screen, distraction-free reading (js/mobile.js)
+   Hides the sidebar AND the top bar; a small "Exit focus" pill is the way back.
+   Remembered per browser.
    ===================================================================== */
 .focus-toggle{
   display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
@@ -394,14 +396,30 @@ a, button, summary, .quiz-opt, .nav-item{-webkit-tap-highlight-color:transparent
 .hub-bar > .focus-toggle{margin-left:auto;}
 .hub-bar > .focus-toggle + .bm-bar{margin-left:0;}
 
-body.focus-mode .sidebar, body.focus-mode .menu-toggle, body.focus-mode .overlay{display:none !important;}
-body.focus-mode .hub-bar{left:0; padding-left:24px;}
-body.focus-mode .main{margin-left:auto; margin-right:auto; max-width:820px;}
-body.focus-mode .card{box-shadow:none;}
+.focus-exit{
+  display:none; align-items:center; gap:7px; position:fixed; top:14px; right:14px; z-index:260;
+  background:var(--bg2); color:var(--text); border:1px solid var(--border); border-radius:20px;
+  padding:7px 14px 7px 12px; font:inherit; font-size:12.5px; font-weight:600; cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.35); opacity:.55; transition:opacity .15s;
+}
+.focus-exit:hover, .focus-exit:focus-visible{opacity:1; border-color:var(--accent);}
+.focus-exit:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 
+body.focus-mode .sidebar, body.focus-mode .menu-toggle, body.focus-mode .overlay,
+body.focus-mode .hub-bar{display:none !important;}
+body.focus-mode .focus-exit{display:inline-flex;}
+body.focus-mode .main{margin:0 auto; max-width:760px; padding:48px 24px 70px !important;}
+body.focus-mode .card{box-shadow:none;}
+body.focus-mode .to-top{bottom:16px;}
+
+@media (max-width: 900px){
+  body.focus-mode .main{padding-top:56px !important;}
+}
 @media (max-width: 720px){
   .focus-toggle{min-height:32px; padding:4px 9px;}
   .focus-toggle .focus-label{display:none;}
-  body.focus-mode .hub-bar{padding-left:10px;}
-  body.focus-mode .main{padding-left:18px; padding-right:18px;}
+  body.focus-mode .main{padding:52px 18px 60px !important;}
+  .focus-exit{top:calc(10px + env(safe-area-inset-top, 0px)); right:10px; padding:6px 11px 6px 10px;}
+  .focus-exit span:last-child{display:none;} /* icon-only chip on phones, label still read by screen readers via aria-label */
 }
+@media (prefers-reduced-motion: reduce){ .focus-exit{transition:none;} }
