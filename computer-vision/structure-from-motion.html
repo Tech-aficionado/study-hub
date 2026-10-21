@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Structure from Motion — Computer Vision Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🧱 Structure from Motion <span class="badge advanced">Unit 5</span></h2>
+    <p class="page-sub">Recovering 3D structure AND camera motion simultaneously, from a sequence of images.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Camera self-calibration</h3>
+      <p><strong>Self-calibration</strong> is the process of recovering a camera's intrinsic parameters (focal length, principal point, distortion) directly from a sequence of uncalibrated images of an unknown scene — without a calibration object like a checkerboard. It exploits constraints that must hold across multiple views of a rigid scene (e.g. that the same intrinsic matrix applies to every frame from the same camera, or specific algebraic relationships like the Kruppa equations derived from the fundamental matrices between view pairs) to solve for intrinsics purely from point correspondences and apparent camera motion. This matters enormously for real-world footage (archive video, phone photos, drone footage) where no calibration pattern was ever photographed.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Euclidean structure and motion recovery</h3>
+      <p>Given a set of 2D point correspondences tracked across many images, <strong>structure from motion (SfM)</strong> jointly recovers two things: the 3D positions of the tracked scene points (<strong>structure</strong>) and each camera's pose — rotation and translation — at the moment it captured each image (<strong>motion</strong>). Without known camera intrinsics, this recovery is only possible up to a <strong>projective</strong> ambiguity (an arbitrary 3D projective transform could explain the same 2D observations equally well). Recovering the true <strong>Euclidean</strong> structure (with correct angles, parallelism and a meaningful, metric scale) requires either known/self-calibrated intrinsics or additional metric constraints (e.g. a known reference length in the scene), which upgrade the ambiguous projective reconstruction to a proper Euclidean one.</p>
+      <div class="callout">A reconstruction without any metric reference is always correct only "up to scale" — SfM alone cannot tell a tabletop model from an actual building without some real-world measurement to anchor it.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The standard SfM pipeline (supplementary context)</h3>
+      <p>The syllabus for this unit is intentionally compact — self-calibration and Euclidean recovery are the two named topics above. The following is standard, widely-taught computer vision background that fleshes out <em>how</em> those two pieces fit into a working system, included here as supplementary context beyond the syllabus itself:</p>
+      <ul>
+        <li><strong>Feature tracking / matching</strong> — detect local features (e.g. SIFT, as covered in Unit 2) in every frame and match or track them across the image sequence, building chains of 2D observations of the same physical 3D point.</li>
+        <li><strong>Initial pairwise reconstruction</strong> — pick a well-matched image pair, estimate their relative pose (via the essential/fundamental matrix, Unit 3), and triangulate an initial sparse 3D point cloud.</li>
+        <li><strong>Incremental registration</strong> — add one new image at a time: estimate its pose from its 2D correspondences to already-reconstructed 3D points (a Perspective-n-Point problem), then triangulate any new points it reveals.</li>
+        <li><strong>Bundle adjustment</strong> — periodically (and at the end) jointly refine <em>all</em> camera poses and all 3D point positions together, by minimizing the total reprojection error across every observation in every image. This non-linear least-squares optimization is what keeps accumulated drift from an incremental pipeline in check.</li>
+        <li><strong>3D reconstruction / densification</strong> — the sparse point cloud from feature matches can optionally be densified (e.g. via multi-view stereo) into a dense point cloud or mesh for visualization and measurement.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Applications</h3>
+      <ul>
+        <li><strong>3D reconstruction from photo collections</strong> — turning unordered sets of tourist photos of a landmark into a 3D model (the classic "Building Rome in a Day" style pipelines).</li>
+        <li><strong>Visual SLAM (Simultaneous Localization and Mapping)</strong> — the real-time, incremental version of SfM used by robots, drones and AR/VR headsets to build a map of their surroundings while simultaneously tracking their own position within it.</li>
+        <li><strong>Autonomous driving and robotics</strong> — recovering a vehicle's own motion (visual odometry) and the 3D structure of its environment from onboard cameras.</li>
+        <li><strong>Cultural heritage and surveying</strong> — reconstructing accurate 3D models of buildings, archaeological sites and terrain from drone or handheld photography, often cross-checked against GPS/survey data for metric scale.</li>
+        <li><strong>Special effects and virtual production</strong> — recovering a film camera's real-world motion so that CGI elements can be composited into live-action footage with matching perspective.</li>
+      </ul>
+    </div>
+
+    <footer>Computer Vision Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

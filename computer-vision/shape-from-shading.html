@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shape from Shading — Computer Vision Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">💡 Shape from Shading <span class="badge advanced">Unit 4</span></h2>
+    <p class="page-sub">Recovering 3D surface shape from the way light falls on it — with a single camera, no stereo pair needed.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Modeling pixel brightness</h3>
+      <p><strong>Shape from shading</strong> recovers a surface's 3D shape from the pattern of brightness (shading) in a single 2D image, exploiting the fact that how bright a surface patch appears depends systematically on its orientation relative to the light source and the camera. The core relationship is the <strong>image irradiance equation</strong>: <code class="inline">I(x,y) = R(N(x,y), L, V)</code> — the measured image brightness I at pixel (x,y) equals a <strong>reflectance function</strong> R depending on the surface normal N, the light direction L, and the viewer direction V. Solving this equation backward (recovering N from the observed I) is the central challenge, because it is normally under-constrained — many surface orientations can produce the same brightness.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Reflection at surfaces</h3>
+      <p>Two idealized reflection models describe how surfaces scatter incoming light:</p>
+      <ul>
+        <li><strong>Lambertian (diffuse) reflection</strong> — light scatters equally in all directions, so brightness depends only on the angle between the surface normal and the light direction, not on the viewing angle: <code class="inline">I = ρ · (N · L)</code>, where ρ is the surface albedo (reflectance). Matte, non-shiny surfaces (chalk, paper, matte paint) are well approximated as Lambertian.</li>
+        <li><strong>Specular reflection</strong> — light reflects sharply around the mirror direction, producing bright highlights that shift with viewing angle. Modeled by terms like the Phong or Torrance–Sparrow model, which depend on the angle between the viewing direction and the mirror-reflection direction of the light.</li>
+      </ul>
+      <p>Most real surfaces are a mix of both (a diffuse base plus a specular highlight), but classical shape-from-shading algorithms typically assume pure Lambertian reflectance to keep the math tractable.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Area sources</h3>
+      <p>Most shape-from-shading theory assumes a <strong>point light source</strong> (all rays from one direction) or parallel/distant lighting (like sunlight). An <strong>area source</strong> — light coming from an extended region (e.g. an overcast sky, a softbox) rather than a single point — produces softer shading with less sharply defined shadows, since every surface point receives light integrated over a whole range of incoming directions rather than one. This is a closer model of many real-world lighting conditions but makes the reflectance equation considerably harder to invert.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Photometric stereo</h3>
+      <p><strong>Photometric stereo</strong> sidesteps shape-from-shading's fundamental under-constraint by taking <em>multiple</em> images of the same static scene from the <em>same</em> viewpoint, but each lit from a different, known light direction. For a Lambertian surface, each image gives one linear equation <code class="inline">I<sub>k</sub> = ρ · (N · L<sub>k</sub>)</code>; with three or more known, non-coplanar light directions, the system is fully determined and can be solved directly (by least squares) for both the surface normal N and the albedo ρ at every pixel — no iterative shape-from-shading optimization required.</p>
+      <div class="callout tip">💡 Photometric stereo turns a hard, ambiguous single-image inverse problem into a simple, well-posed linear system — the price is needing a controlled multi-light setup rather than one arbitrary photograph.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Shape from multiple shaded images</h3>
+      <p>Once per-pixel surface normals are recovered (e.g. via photometric stereo), the actual 3D surface (a depth or height map) is reconstructed by <strong>integrating the normal field</strong>: since the normal direction constrains the local surface gradient (how depth changes in x and y), the full depth map can be recovered by integrating these gradients across the image, typically solving a Poisson equation for consistency (because, with real noisy normals, path-dependent integration can disagree — a global least-squares integration reconciles that). This step converts an orientation field into an actual height map, suitable for 3D rendering or further geometric analysis.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Modeling inter-reflection</h3>
+      <p>Simple shading models assume each surface point is lit only by the direct light source. In real concave scenes (e.g. the inside of a bowl, a room corner), surfaces also receive <strong>indirect light bounced off other nearby surfaces</strong> — inter-reflection. This extra indirect illumination brightens shadowed/concave regions beyond what a direct-lighting-only model predicts, biasing naive shape-from-shading or photometric stereo results (concavities are systematically underestimated in depth). Modeling inter-reflection requires solving for the mutual illumination between all visible surface patches simultaneously (similar to radiosity in computer graphics), which is why most practical shape-recovery methods either assume convex scenes or explicitly correct for an estimated inter-reflection contribution.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">7</span> Shape from one shaded image</h3>
+      <p>Classical <strong>shape from shading</strong> in the strict sense — recovering full 3D shape from a <em>single</em> image under a single known light direction, with no photometric-stereo luxury of multiple lightings — is a genuinely under-constrained, ill-posed problem: the irradiance equation gives one equation per pixel but two unknown normal-orientation degrees of freedom. Classical solutions add extra constraints to close that gap:</p>
+      <ul>
+        <li><strong>Smoothness constraints</strong> — penalize abrupt changes in surface orientation between neighboring pixels, since most real surfaces are piecewise smooth.</li>
+        <li><strong>Boundary conditions</strong> — known normals at the silhouette/occluding boundary (where the surface normal is perpendicular to the viewing direction) anchor the solution and propagate inward.</li>
+        <li><strong>Iterative / variational solutions</strong> — e.g. Horn's original shape-from-shading algorithm propagates normal estimates outward from known boundary points, iteratively refining a depth map that is consistent with both the observed brightness and the smoothness constraint.</li>
+      </ul>
+      <p>Because of its heavy reliance on these added assumptions, single-image shape from shading remains far less robust and accurate in practice than photometric stereo or stereo vision — which is exactly why multi-image approaches dominate real applications.</p>
+    </div>
+
+    <footer>Computer Vision Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

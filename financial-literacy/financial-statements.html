@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analysis of Financial Statements — Financial Literacy</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">📊 Analysis of Financial Statements <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Turning raw statements into a judgment about a business — ratios, trends, and comparisons.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why analyze at all?</h3>
+      <p>A balance sheet and P&L on their own are just numbers. <strong>Financial statement analysis</strong> is the set of techniques used to turn those numbers into meaning — is the business liquid enough to pay its bills? Is it profitable? Is it overloaded with debt? Is it improving or declining over time? Four techniques do almost all of this work: ratio analysis, common-size statements, trend analysis, and comparative statements.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Ratio analysis — the core toolkit</h3>
+      <p><strong>Ratio analysis</strong> expresses the relationship between two figures from the financial statements as a single number, so performance can be judged at a glance and compared across years or companies. Ratios fall into three main groups for this unit:</p>
+      <ul>
+        <li><strong>Liquidity ratios</strong> — can the business meet its short-term obligations? (Current Ratio, Quick/Acid-Test Ratio)</li>
+        <li><strong>Profitability ratios</strong> — how well does the business convert sales into profit? (Gross Profit Ratio, Net Profit Ratio, Return on Investment)</li>
+        <li><strong>Solvency ratios</strong> — how dependent is the business on borrowed money, and can it survive long-term? (Debt-Equity Ratio, Interest Coverage Ratio)</li>
+      </ul>
+      <table>
+        <tr><th>Ratio</th><th>Formula</th><th>What it tells you</th></tr>
+        <tr><td>Current Ratio</td><td>Current Assets ÷ Current Liabilities</td><td>Can short-term debts be paid from short-term assets? (≈2:1 is traditionally healthy)</td></tr>
+        <tr><td>Quick Ratio</td><td>(Current Assets − Inventory) ÷ Current Liabilities</td><td>Liquidity without relying on selling stock first (≈1:1 is healthy)</td></tr>
+        <tr><td>Gross Profit Ratio</td><td>Gross Profit ÷ Net Sales × 100</td><td>How much of each sales rupee is left after direct cost of goods sold</td></tr>
+        <tr><td>Net Profit Ratio</td><td>Net Profit ÷ Net Sales × 100</td><td>How much of each sales rupee is left after ALL expenses</td></tr>
+        <tr><td>Debt-Equity Ratio</td><td>Total Debt ÷ Shareholders' Equity</td><td>How much the business relies on borrowed funds vs. owner funds</td></tr>
+        <tr><td>Return on Investment (ROI)</td><td>Net Profit ÷ Capital Employed × 100</td><td>Overall return generated on the capital invested in the business</td></tr>
+      </table>
+      <div class="callout tip">💡 A single ratio means little on its own. It becomes useful only when compared — against the company's own past years, against a competitor, or against an industry benchmark.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Common-size statements — comparing by percentage, not rupees</h3>
+      <p>A <strong>common-size statement</strong> restates every line item as a percentage of a common base — total sales for the P&L, total assets for the balance sheet. This strips away the effect of company size, so a ₹10-crore business and a ₹1,000-crore business can be compared fairly on structure alone (what percentage of sales goes to cost of goods, what percentage of assets is inventory, and so on).</p>
+      <table>
+        <tr><th>Item</th><th>Amount (₹)</th><th>% of Sales</th></tr>
+        <tr><td>Net Sales</td><td>10,00,000</td><td>100%</td></tr>
+        <tr><td>Cost of Goods Sold</td><td>6,00,000</td><td>60%</td></tr>
+        <tr><td>Gross Profit</td><td>4,00,000</td><td>40%</td></tr>
+        <tr><td>Operating Expenses</td><td>2,50,000</td><td>25%</td></tr>
+        <tr><td>Net Profit</td><td>1,50,000</td><td>15%</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Trend analysis — following the direction over time</h3>
+      <p><strong>Trend analysis</strong> looks at the SAME line item across several years to see the direction it's moving, usually by converting each year's figure into an index relative to a chosen base year (base year = 100).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Year        Sales (₹)   Trend % (Base = Year 1)
+Year 1      5,00,000    100%
+Year 2      5,75,000    115%
+Year 3      6,50,000    130%
+Year 4      7,10,000    142%</pre>
+      <p>A steadily rising trend percentage signals consistent growth; a flattening or falling trend is an early warning sign worth investigating before it shows up as a problem elsewhere.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Comparative statements — side-by-side, year over year</h3>
+      <p>A <strong>comparative statement</strong> places two or more periods' figures side by side (usually this year vs. last year) and adds the absolute and percentage change between them. Unlike trend analysis, which indexes many years against one base, a comparative statement is typically a direct year-on-year comparison with explicit increase/decrease columns.</p>
+      <table>
+        <tr><th>Particulars</th><th>Year 1 (₹)</th><th>Year 2 (₹)</th><th>Absolute Change (₹)</th><th>% Change</th></tr>
+        <tr><td>Revenue</td><td>8,00,000</td><td>9,20,000</td><td>+1,20,000</td><td>+15.0%</td></tr>
+        <tr><td>Total Expenses</td><td>6,50,000</td><td>7,10,000</td><td>+60,000</td><td>+9.2%</td></tr>
+        <tr><td>Net Profit</td><td>1,50,000</td><td>2,10,000</td><td>+60,000</td><td>+40.0%</td></tr>
+      </table>
+      <p>Here, profit grew far faster (40%) than revenue (15%) — a sign that costs were brought under control relative to sales, which a reader would want to investigate and confirm as a genuine improvement rather than a one-off.</p>
+    </div>
+
+    <footer>Financial Literacy Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

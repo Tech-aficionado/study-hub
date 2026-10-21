@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Reference — Cloud Computing Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">📋 Quick Reference</h2>
+    <p class="page-sub">Key terms, service models, deployment models and hypervisors — at a glance.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Service models (one-liners)</h3>
+      <table>
+        <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td><strong>IaaS</strong></td><td>Rent raw infrastructure (VMs, storage, networking) — you manage the OS up</td></tr>
+          <tr><td><strong>PaaS</strong></td><td>Rent a ready-to-use platform (OS + runtime) — you deploy just your app code</td></tr>
+          <tr><td><strong>SaaS</strong></td><td>Rent a complete, ready-to-use application — you just bring your data</td></tr>
+          <tr><td><strong>DaaS</strong></td><td>Rent a virtual desktop, delivered and managed from the cloud</td></tr>
+          <tr><td><strong>FaaS / Serverless</strong></td><td>Run individual functions on demand — no server to manage at all</td></tr>
+          <tr><td><strong>MaaS</strong></td><td>Outsourced monitoring of infrastructure/app health and uptime</td></tr>
+          <tr><td><strong>CaaS (Communication)</strong></td><td>Outsourced voice/video/messaging infrastructure</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Deployment models</h3>
+      <table>
+        <thead><tr><th>Model</th><th>Who uses it</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Public</strong></td><td>Anyone — shared, provider-owned infrastructure</td></tr>
+          <tr><td><strong>Private</strong></td><td>One organization — dedicated infrastructure</td></tr>
+          <tr><td><strong>Community</strong></td><td>A group of orgs with shared compliance/mission needs</td></tr>
+          <tr><td><strong>Hybrid</strong></td><td>Mix of private + public, workloads move between them</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Virtual machine types</h3>
+      <table>
+        <thead><tr><th>Type</th><th>Virtualizes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>System VM</strong></td><td>An entire machine, with a full guest OS</td></tr>
+          <tr><td><strong>Process VM</strong></td><td>A single process/application's runtime (e.g. JVM)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Hypervisors at a glance</h3>
+      <table>
+        <thead><tr><th>Hypervisor</th><th>Type</th><th>Known for</th></tr></thead>
+        <tbody>
+          <tr><td>Xen</td><td>Type 1</td><td>Paravirtualization, early AWS EC2</td></tr>
+          <tr><td>KVM</td><td>Type 1</td><td>Built into Linux kernel; OpenStack backbone</td></tr>
+          <tr><td>VMware ESXi</td><td>Type 1</td><td>Enterprise standard, vSphere</td></tr>
+          <tr><td>VirtualBox</td><td>Type 2</td><td>Free, cross-platform desktop VMs</td></tr>
+          <tr><td>Hyper-V</td><td>Type 1</td><td>Built into Windows; Azure backbone</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Open-source cloud platforms</h3>
+      <table>
+        <thead><tr><th>Project</th><th>What it is</th></tr></thead>
+        <tbody>
+          <tr><td>Eucalyptus</td><td>Open-source, EC2-compatible private/hybrid cloud software</td></tr>
+          <tr><td>Nimbus</td><td>Open-source IaaS toolkit for scientific computing clusters</td></tr>
+          <tr><td>OpenNebula</td><td>Open-source cloud management platform (private/hybrid)</td></tr>
+          <tr><td>CloudSim</td><td>Java-based simulator for cloud data center research</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> NIST's 5 essential characteristics</h3>
+      <table>
+        <thead><tr><th>Characteristic</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>On-demand self-service</td><td>Provision resources without human interaction with the provider</td></tr>
+          <tr><td>Broad network access</td><td>Available over the network from standard client platforms</td></tr>
+          <tr><td>Resource pooling</td><td>Provider's resources serve multiple tenants from a shared pool</td></tr>
+          <tr><td>Rapid elasticity</td><td>Scale up or down quickly, often automatically</td></tr>
+          <tr><td>Measured service</td><td>Usage is metered, monitored and billed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>🔍 Search every term</h3>
+    <input type="text" class="cmd-ref-search" id="cmdSearch" placeholder="🔍 Search terms (e.g. 'hypervisor', 'PaaS', 'hybrid')...">
+    <div class="card">
+      <table>
+        <thead><tr><th>Term</th><th>Description</th></tr></thead>
+        <tbody id="cmdTableBody"></tbody>
+      </table>
+    </div>
+
+    <footer>Cloud Computing Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+<script src="js/cheatsheet.js"></script>
+</body>
+</html>

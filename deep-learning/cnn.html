@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convolutional Neural Networks — Deep Learning Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🖼️ Convolutional Neural Networks (CNNs) <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">The architecture that made deep learning dominant in computer vision.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why not just use a plain dense network on images?</h3>
+      <p>A 224×224 color image has 224 × 224 × 3 ≈ 150,000 pixel values. Feeding that into a fully-connected layer would need a weight for every pixel-to-neuron connection — tens of millions of parameters in the very first layer alone, with no notion that nearby pixels are related. CNNs fix this with two ideas: <strong>local connectivity</strong> (a neuron only looks at a small patch of the image, not the whole thing) and <strong>weight sharing</strong> (the same small set of weights — a "filter" — slides across the entire image, so the network does not need separate weights for every position).</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Convolutional layers</h3>
+      <p>A <strong>convolutional layer</strong> slides a small learnable filter (kernel), e.g. 3×3 or 5×5 pixels, across the input, computing a dot product at each position to produce a single output value. The result is a <strong>feature map</strong> — a 2D grid showing where in the image that filter's pattern fired strongly. A layer uses many filters in parallel, each learning to detect a different low-level pattern (edges, color blobs, textures in early layers; eyes, wheels, fur patterns in deeper layers).</p>
+      <ul>
+        <li><strong>Stride</strong> — how many pixels the filter moves between applications. A stride of 2 skips every other position, shrinking the output.</li>
+        <li><strong>Padding</strong> — adding a border of zeros around the input so the filter can be centered on edge pixels too, controlling whether the output shrinks ("valid") or stays the same size ("same").</li>
+        <li><strong>Receptive field</strong> — the region of the original input that ultimately influences one neuron's value; it grows larger in deeper layers as convolutions stack.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Pooling layers</h3>
+      <p><strong>Pooling</strong> downsamples a feature map, reducing its spatial size (and therefore computation) while keeping the most important signal. <strong>Max pooling</strong> (the most common choice) takes the largest value in each small window (e.g. 2×2), discarding the rest. This also gives the network a degree of <strong>translation invariance</strong> — a feature detected slightly off-position still survives pooling.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Fully connected layers</h3>
+      <p>After several convolution + pooling stages compress the image into a compact set of high-level feature maps, those maps are <strong>flattened</strong> into a single vector and fed into one or more <strong>fully connected (dense) layers</strong> — the same kind of layer used in a plain ANN — which combine the extracted features into a final classification decision, usually ending in a softmax layer over the target classes.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> A simple CNN pipeline</h3>
+      <div class="svgpanel">
+        <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cimg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58b9ff"/><stop offset="1" stop-color="#2f7fb8"/></linearGradient>
+            <linearGradient id="cconv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8603C"/><stop offset="1" stop-color="#b5452a"/></linearGradient>
+            <linearGradient id="cpool" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9470"/><stop offset="1" stop-color="#d9623f"/></linearGradient>
+            <linearGradient id="cfc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fdd94"/><stop offset="1" stop-color="#2d8a3b"/></linearGradient>
+            <marker id="carrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker>
+          </defs>
+          <!-- input image -->
+          <rect x="10" y="60" width="70" height="70" fill="url(#cimg)" stroke="#1b6fb0"/>
+          <text x="45" y="145" text-anchor="middle" fill="#8b949e" font-size="10.5">Input image</text>
+          <text x="45" y="158" text-anchor="middle" fill="#5b6472" font-size="9.5">224×224×3</text>
+          <line x1="84" y1="95" x2="108" y2="95" stroke="#8b949e" stroke-width="1.5" marker-end="url(#carrow)"/>
+
+          <!-- conv1 -->
+          <rect x="112" y="55" width="60" height="80" fill="url(#cconv)"/>
+          <text x="142" y="145" text-anchor="middle" fill="#8b949e" font-size="10.5">Conv</text>
+          <line x1="176" y1="95" x2="200" y2="95" stroke="#8b949e" stroke-width="1.5" marker-end="url(#carrow)"/>
+
+          <!-- pool1 -->
+          <rect x="204" y="65" width="46" height="60" fill="url(#cpool)"/>
+          <text x="227" y="145" text-anchor="middle" fill="#8b949e" font-size="10.5">Pool</text>
+          <line x1="254" y1="95" x2="278" y2="95" stroke="#8b949e" stroke-width="1.5" marker-end="url(#carrow)"/>
+
+          <!-- conv2 -->
+          <rect x="282" y="60" width="54" height="70" fill="url(#cconv)"/>
+          <text x="309" y="145" text-anchor="middle" fill="#8b949e" font-size="10.5">Conv</text>
+          <line x1="340" y1="95" x2="364" y2="95" stroke="#8b949e" stroke-width="1.5" marker-end="url(#carrow)"/>
+
+          <!-- pool2 -->
+          <rect x="368" y="70" width="40" height="50" fill="url(#cpool)"/>
+          <text x="388" y="145" text-anchor="middle" fill="#8b949e" font-size="10.5">Pool</text>
+          <line x1="412" y1="95" x2="436" y2="95" stroke="#8b949e" stroke-width="1.5" marker-end="url(#carrow)"/>
+
+          <!-- flatten + FC -->
+          <rect x="440" y="40" width="14" height="110" fill="#30363d"/>
+          <text x="447" y="160" text-anchor="middle" fill="#8b949e" font-size="9.5">Flatten</text>
+          <line x1="458" y1="95" x2="480" y2="95" stroke="#8b949e" stroke-width="1.5" marker-end="url(#carrow)"/>
+
+          <circle cx="500" cy="55" r="9" fill="url(#cfc)"/><circle cx="500" cy="80" r="9" fill="url(#cfc)"/>
+          <circle cx="500" cy="105" r="9" fill="url(#cfc)"/><circle cx="500" cy="130" r="9" fill="url(#cfc)"/>
+          <text x="500" y="160" text-anchor="middle" fill="#8b949e" font-size="10.5">FC layer</text>
+          <line x1="512" y1="92" x2="545" y2="80" stroke="#8b949e" stroke-width="1" marker-end="url(#carrow)"/>
+          <line x1="512" y1="92" x2="545" y2="110" stroke="#8b949e" stroke-width="1" marker-end="url(#carrow)"/>
+
+          <!-- output -->
+          <circle cx="560" cy="75" r="11" fill="#58b9ff"/><text x="600" y="79" fill="#8b949e" font-size="10.5">cat</text>
+          <circle cx="560" cy="110" r="11" fill="#58b9ff"/><text x="600" y="114" fill="#8b949e" font-size="10.5">dog</text>
+          <text x="580" y="160" text-anchor="middle" fill="#8b949e" font-size="10.5">Softmax output</text>
+        </svg>
+      </div>
+      <p>Each conv+pool stage shrinks the spatial size while growing the number of feature channels — trading pixel resolution for learned semantic depth — until the representation is compact enough for the fully connected classifier at the end.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Transfer learning and fine-tuning</h3>
+      <p>Training a large CNN from scratch needs millions of labeled images and serious compute. <strong>Transfer learning</strong> sidesteps this by reusing a network already trained on a huge dataset (e.g. ImageNet) for a new, related task:</p>
+      <ul>
+        <li><strong>Feature extraction</strong> — freeze the pre-trained convolutional base (it already knows general visual features like edges, textures, shapes) and train only a new, small classification head on top for your specific classes. Fast, needs little data.</li>
+        <li><strong>Fine-tuning</strong> — after feature extraction, unfreeze some of the later convolutional layers too and continue training at a low learning rate, letting the network slightly adapt its higher-level features to the new domain.</li>
+      </ul>
+      <div class="callout tip">💡 Earlier convolutional layers learn very general features (edges, colors) that transfer well across almost any visual task. Later layers learn task-specific features — that's why fine-tuning typically only unfreezes the later layers, not the earliest ones.</div>
+    </div>
+
+    <footer>Deep Learning Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

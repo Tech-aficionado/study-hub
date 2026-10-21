@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What is Cloud Computing? — Cloud Computing Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <div class="module-hero">
+      <div class="emoji">☁️</div>
+      <div>
+        <h1>Cloud Computing Study</h1>
+        <p>Part of your Study Hub — BTCS701, 3 credits. Architecture, service/deployment models, virtualization, collaboration and security, from zero to exam-ready.</p>
+      </div>
+    </div>
+    <h2 class="page-title">☁️ What is Cloud Computing? <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Definition, history, architecture, cloud types, business models and the open-source platforms that shaped the field.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Definition</h3>
+      <p>Cloud computing is a model for delivering <strong>on-demand computing resources</strong> — servers, storage, databases, networking, software — over the internet, with <strong>pay-as-you-go pricing</strong> instead of owning and maintaining physical hardware. NIST's widely-cited definition calls out five essential characteristics: <strong>on-demand self-service</strong>, <strong>broad network access</strong>, <strong>resource pooling</strong>, <strong>rapid elasticity</strong>, and <strong>measured service</strong>.</p>
+      <div class="callout tip">💡 Think of it like electricity: you don't own a power plant in your backyard — you plug in and pay only for what you use. Cloud computing does the same for compute and storage.</div>
+      <div class="videopanel">
+        <div class="vhead">
+          <span class="vtitle"><span class="ytdot">▶</span> Cloud Computing In 6 Minutes</span>
+          <span class="vcreator">Simplilearn · India</span>
+        </div>
+        <div class="video-frame-wrap">
+          <iframe src="https://www.youtube.com/embed/M988_fsOSWo" title="Cloud Computing In 6 Minutes" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Benefits</h3>
+      <ul>
+        <li><strong>Cost efficiency</strong> — no upfront capital expense on hardware; pay only for consumed resources (CapEx → OpEx).</li>
+        <li><strong>Elastic scalability</strong> — scale compute up during a traffic spike and back down afterward, automatically.</li>
+        <li><strong>Global reach</strong> — deploy close to users across regions in minutes, not months of procurement.</li>
+        <li><strong>Reliability</strong> — providers run geographically redundant data centers with built-in failover.</li>
+        <li><strong>Managed maintenance</strong> — the provider patches, upgrades and secures the underlying infrastructure.</li>
+        <li><strong>Faster time-to-market</strong> — spin up a database or a VM in minutes instead of weeks of hardware procurement.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> A short history</h3>
+      <ul>
+        <li><strong>1960s</strong> — John McCarthy proposes that computing could one day be organized as a public utility, like electricity.</li>
+        <li><strong>1999</strong> — Salesforce pioneers delivering enterprise applications over the web (early SaaS).</li>
+        <li><strong>2002</strong> — Amazon launches Amazon Web Services, initially exposing storage and compute as web services.</li>
+        <li><strong>2006</strong> — AWS launches EC2 and S3, widely seen as the start of modern commercial IaaS.</li>
+        <li><strong>2008–2010</strong> — Google App Engine and Microsoft Azure launch, open-sourcing frameworks like Eucalyptus appear.</li>
+        <li><strong>2010s onward</strong> — containers, Kubernetes, serverless and multi-cloud strategies mature the ecosystem.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Cloud architecture</h3>
+      <p>A cloud system is generally split into a <strong>front end</strong> (what the client/user interacts with — browser, app) and a <strong>back end</strong> (the provider's actual infrastructure: servers, storage, virtualization layer, and a management layer that handles scheduling, monitoring and billing), connected over the internet.</p>
+      <div class="svgpanel">
+        <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A90D9"/><stop offset="1" stop-color="#2f6aa8"/></linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb8ef"/><stop offset="1" stop-color="#4A90D9"/></linearGradient>
+            <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fdd94"/><stop offset="1" stop-color="#2d8a3b"/></linearGradient>
+            <marker id="arrowc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7fb8ef"/></marker>
+          </defs>
+          <text x="110" y="24" text-anchor="middle" fill="#8c93b0" font-size="12" font-weight="700">CLIENT (FRONT END)</text>
+          <rect x="40" y="40" width="140" height="44" rx="8" fill="url(#g2)"/><text x="110" y="66" text-anchor="middle" fill="#0a0e1a" font-size="12" font-weight="700">Browser / App</text>
+          <line x1="180" y1="62" x2="260" y2="62" stroke="#7fb8ef" stroke-width="2" marker-end="url(#arrowc)"/>
+          <text x="220" y="52" text-anchor="middle" fill="#8c93b0" font-size="10">Internet</text>
+          <text x="440" y="24" text-anchor="middle" fill="#8c93b0" font-size="12" font-weight="700">CLOUD (BACK END)</text>
+          <rect x="260" y="40" width="360" height="230" rx="10" fill="#0e1322" stroke="#262e48"/>
+          <rect x="280" y="58" width="150" height="40" rx="7" fill="url(#g1)"/><text x="355" y="83" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700">Management & Billing</text>
+          <rect x="450" y="58" width="150" height="40" rx="7" fill="url(#g1)"/><text x="525" y="83" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700">Load Balancer</text>
+          <rect x="280" y="112" width="320" height="56" rx="7" fill="url(#g3)"/><text x="440" y="136" text-anchor="middle" fill="#042410" font-size="12" font-weight="700">Hypervisor / Virtualization Layer</text>
+          <text x="440" y="154" text-anchor="middle" fill="#042410" font-size="10">Allocates VMs & resources on demand</text>
+          <rect x="280" y="180" width="95" height="44" rx="7" fill="#1c2129" stroke="#4A90D9"/><text x="327" y="206" text-anchor="middle" fill="#eef1f8" font-size="11">Compute</text>
+          <rect x="385" y="180" width="95" height="44" rx="7" fill="#1c2129" stroke="#4A90D9"/><text x="432" y="206" text-anchor="middle" fill="#eef1f8" font-size="11">Storage</text>
+          <rect x="490" y="180" width="90" height="44" rx="7" fill="#1c2129" stroke="#4A90D9"/><text x="535" y="206" text-anchor="middle" fill="#eef1f8" font-size="11">Network</text>
+          <rect x="280" y="236" width="320" height="26" rx="6" fill="#161c30" stroke="#262e48"/><text x="440" y="254" text-anchor="middle" fill="#8c93b0" font-size="10.5">Physical Data Center Infrastructure</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Types of clouds</h3>
+      <table>
+        <tr><th>Type</th><th>Who it's for</th><th>Example</th></tr>
+        <tr><td><strong>Public</strong></td><td>Any customer, shared infrastructure, provider-owned</td><td>AWS, Azure, Google Cloud</td></tr>
+        <tr><td><strong>Private</strong></td><td>One organization, dedicated infrastructure</td><td>On-prem OpenStack deployment</td></tr>
+        <tr><td><strong>Community</strong></td><td>A group of organizations with shared concerns (compliance, mission)</td><td>Government/research consortium cloud</td></tr>
+        <tr><td><strong>Hybrid</strong></td><td>Mix of private + public, workloads move between them</td><td>On-prem core + burst to public cloud</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Business models</h3>
+      <ul>
+        <li><strong>Pay-per-use</strong> — billed strictly by consumption (compute-hours, GB stored, requests served).</li>
+        <li><strong>Subscription</strong> — a flat recurring fee for a bundle of capacity or seats (common in SaaS).</li>
+        <li><strong>Freemium</strong> — a free tier to drive adoption, with paid tiers for scale or advanced features.</li>
+        <li><strong>Reserved/committed-use</strong> — customers commit to usage for a discount versus on-demand pricing.</li>
+        <li><strong>Brokerage</strong> — a cloud service broker aggregates and resells multiple providers' services.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">7</span> Major players</h3>
+      <table>
+        <tr><th>Provider</th><th>Known for</th></tr>
+        <tr><td>Amazon Web Services (AWS)</td><td>Market leader, broadest IaaS/PaaS catalog</td></tr>
+        <tr><td>Microsoft Azure</td><td>Strong enterprise/hybrid integration with Windows/Active Directory</td></tr>
+        <tr><td>Google Cloud Platform (GCP)</td><td>Data analytics, Kubernetes (originated internally), ML/AI</td></tr>
+        <tr><td>IBM Cloud</td><td>Enterprise hybrid cloud, regulated industries</td></tr>
+        <tr><td>Salesforce</td><td>Pioneer and leader in SaaS CRM</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">8</span> Open-source cloud platforms & simulators</h3>
+      <ul>
+        <li><strong>Eucalyptus</strong> — open-source software for building AWS-EC2-compatible private/hybrid clouds; one of the earliest open IaaS platforms.</li>
+        <li><strong>Nimbus</strong> — an open-source toolkit (grew out of scientific computing/Globus) for turning a cluster into an IaaS cloud, popular in academic/research settings.</li>
+        <li><strong>OpenNebula</strong> — an open-source cloud management platform for building private and hybrid clouds, with strong support for both KVM/Xen virtualization and bare-metal.</li>
+        <li><strong>CloudSim</strong> — not a cloud itself, but a widely used Java-based <em>simulation</em> toolkit for modeling cloud data centers, resource provisioning policies, and scheduling algorithms for research without real hardware cost.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">9</span> Risks</h3>
+      <ul>
+        <li><strong>Vendor lock-in</strong> — proprietary APIs/services make migrating to another provider costly.</li>
+        <li><strong>Data security & privacy</strong> — data sits on third-party infrastructure; breach/compliance exposure shifts but doesn't disappear.</li>
+        <li><strong>Downtime & outages</strong> — even major providers have regional outages that ripple to every dependent app.</li>
+        <li><strong>Compliance complexity</strong> — data residency and regulatory rules (GDPR, HIPAA) vary by region and industry.</li>
+        <li><strong>Unpredictable cost</strong> — pay-as-you-go can spiral without governance (runaway auto-scaling, forgotten resources).</li>
+        <li><strong>Limited control</strong> — customers depend on the provider's roadmap, SLAs and incident response.</li>
+      </ul>
+      <div class="callout warn">⚠️ Shared responsibility: the provider secures the cloud's infrastructure; the customer is still responsible for securing what they put in it (identity, data, configuration).</div>
+    </div>
+
+    <footer>Cloud Computing Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

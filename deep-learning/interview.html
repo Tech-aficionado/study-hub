@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Questions — Deep Learning Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🎯 Interview Questions <span class="badge intermediate">All levels</span></h2>
+    <p class="page-sub">20 deep learning interview questions across easy / medium / hard, covering backprop, CNNs, RNNs/LSTM, transformers, and general DL concepts — each with a full-paragraph answer and a source.</p>
+
+    <div class="card">
+      <h3><span class="num">i</span> How to use this section</h3>
+      <p>Click any question to reveal the answer. Use the search box and the <strong>Difficulty / Source / Topic</strong> filters to narrow the list, or hit <strong>🎲 Random question</strong> to drill yourself. Mark questions <strong>Practiced</strong> as you go — your progress is saved in this browser.</p>
+      <div class="callout tip">💡 Tip: start with the <strong>Easy</strong> concept questions to lock in the mental model (neurons, activations, the forward/backward pass), then move to the <strong>Hard/scenario</strong> questions on transformers and RL — those are what senior interviews actually probe.</div>
+    </div>
+
+    <div id="ivRoot"></div>
+
+    <footer>Deep Learning Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+<script src="js/interview-data.js"></script>
+<script src="../js/interview.js"></script>
+</body>
+</html>

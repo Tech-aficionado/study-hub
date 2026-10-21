@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stereo Vision — Computer Vision Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🎥 Stereo Vision <span class="badge intermediate">Unit 3</span></h2>
+    <p class="page-sub">Recovering depth from two (or more) views of the same scene.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Stereo camera geometry & epipolar constraints</h3>
+      <p>A <strong>stereo rig</strong> uses two cameras viewing the same scene from different positions, exactly like human binocular vision. Given the same 3D point seen in both images, its depth can be triangulated from the horizontal shift (<strong>disparity</strong>) between its two image locations — closer points shift more.</p>
+      <p>The <strong>epipolar constraint</strong> is the key geometric fact that makes stereo matching tractable: for a point in the left image, its corresponding point in the right image is <em>not</em> anywhere in the 2D image — it is constrained to lie along a single line, the <strong>epipolar line</strong>. This collapses a 2D search problem into a 1D search along that line.</p>
+      <div class="svgpanel">
+        <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ep1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C5CE0"/></marker></defs>
+          <!-- 3D point -->
+          <circle cx="320" cy="40" r="5" fill="#3fdd94"/>
+          <text x="320" y="24" text-anchor="middle" fill="#3fdd94" font-size="11" font-weight="700">3D Point P</text>
+          <!-- left camera -->
+          <rect x="60" y="180" width="70" height="44" rx="8" fill="#1c2129" stroke="#7C5CE0" stroke-width="2"/>
+          <text x="95" y="206" text-anchor="middle" fill="#eef1f8" font-size="11" font-weight="700">C_L</text>
+          <!-- right camera -->
+          <rect x="510" y="180" width="70" height="44" rx="8" fill="#1c2129" stroke="#7C5CE0" stroke-width="2"/>
+          <text x="545" y="206" text-anchor="middle" fill="#eef1f8" font-size="11" font-weight="700">C_R</text>
+          <!-- baseline -->
+          <line x1="130" y1="202" x2="510" y2="202" stroke="#454e5f" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <text x="320" y="218" text-anchor="middle" fill="#8c93b0" font-size="10.5">baseline</text>
+          <!-- rays to point -->
+          <line x1="95" y1="190" x2="320" y2="42" stroke="#58b9ff" stroke-width="1.5"/>
+          <line x1="545" y1="190" x2="320" y2="42" stroke="#ff6b6b" stroke-width="1.5"/>
+          <!-- image planes -->
+          <line x1="150" y1="90" x2="250" y2="130" stroke="#262e48" stroke-width="5"/>
+          <circle cx="188" cy="104" r="4" fill="#58b9ff"/>
+          <text x="188" y="95" text-anchor="middle" fill="#58b9ff" font-size="10">p_L</text>
+          <line x1="390" y1="130" x2="490" y2="90" stroke="#262e48" stroke-width="5"/>
+          <circle cx="452" cy="104" r="4" fill="#ff6b6b"/>
+          <text x="452" y="95" text-anchor="middle" fill="#ff6b6b" font-size="10">p_R</text>
+          <!-- epipolar lines (on each image plane, through the baseline-induced epipole direction) -->
+          <line x1="150" y1="90" x2="250" y2="130" stroke="#f0b429" stroke-width="2" stroke-dasharray="3 3"/>
+          <line x1="390" y1="130" x2="490" y2="90" stroke="#f0b429" stroke-width="2" stroke-dasharray="3 3"/>
+          <text x="320" y="248" text-anchor="middle" fill="#8c93b0" font-size="11.5">p_L and p_R both lie on their image's epipolar line (dashed) through the baseline</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Essential and fundamental matrices</h3>
+      <p>Two matrices encode the epipolar geometry between a stereo pair, differing in whether camera intrinsics are known:</p>
+      <ul>
+        <li><strong>Essential matrix (E)</strong> — relates corresponding points in <em>normalized</em> (calibrated) camera coordinates: <code class="inline">p'<sup>T</sup> E p = 0</code>. It encodes only the relative rotation and translation between the two cameras (5 degrees of freedom) and requires known intrinsics to compute.</li>
+        <li><strong>Fundamental matrix (F)</strong> — the uncalibrated counterpart, relating corresponding points directly in pixel coordinates: <code class="inline">p'<sup>T</sup> F p = 0</code>. It absorbs both cameras' intrinsics and the extrinsic relationship, and can be estimated from image correspondences alone (e.g. via the 8-point algorithm) with no calibration needed. They relate as <code class="inline">F = K'<sup>-T</sup> E K<sup>-1</sup></code>.</li>
+      </ul>
+      <p>Either matrix, once known, directly yields each point's epipolar line in the other image — the algebraic form of the epipolar constraint.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Image rectification</h3>
+      <p><strong>Rectification</strong> warps both stereo images (via projective transforms) so that corresponding epipolar lines become horizontal and aligned on the same image row in both views. After rectification, the 1D search along an arbitrary epipolar line becomes a trivial 1D search along the <em>same horizontal scanline</em> in both images — dramatically simplifying stereo matching implementations and making it fast and parallelizable.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Local methods for stereo matching</h3>
+      <p><strong>Local (correlation-based) methods</strong> estimate disparity at each pixel independently, by comparing a small window around it in the left image against candidate windows along the corresponding scanline in the right image, using a similarity measure (sum of absolute/squared differences, normalized cross-correlation). The disparity with the best match score wins.</p>
+      <ul>
+        <li><strong>Multi-scale (pyramid) matching</strong> — run correlation matching on a coarse (downsampled) image pyramid first to get an approximate disparity, then refine progressively at finer resolutions. This narrows the search range at each finer level, making matching both faster and more robust to large disparities and repetitive texture.</li>
+      </ul>
+      <p>Local methods are fast and easy to parallelize, but struggle in textureless regions (no distinctive window to match) and near depth discontinuities (the window straddles two different depths).</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Global methods for stereo matching</h3>
+      <p><strong>Global methods</strong> estimate disparity for the whole scanline or whole image jointly, by minimizing an energy function that balances a data term (how well a disparity matches image intensities) against a smoothness term (neighboring pixels should usually have similar disparity, since real surfaces are mostly smooth).</p>
+      <ul>
+        <li><strong>Ordering/order constraint</strong> — assumes that if point A is to the left of point B in one image, their stereo correspondences preserve that left-right order in the other image. This holds for most opaque scenes (it fails for thin foreground objects that can reverse the order) and lets matching be framed as finding an optimal monotonic path.</li>
+        <li><strong>Dynamic programming</strong> — exploits the order constraint to find the globally optimal disparity assignment <em>along one scanline</em> efficiently, treating it as a shortest-path problem through a cost grid (much like sequence alignment in bioinformatics). Fast, but scanline-independent DP can produce visible horizontal streaking since rows aren't coupled vertically.</li>
+        <li><strong>Smoothness / graph-based energy minimization</strong> — poses disparity estimation over the <em>entire 2D image</em> as a labeling problem on a graph, solved with algorithms like graph cuts or belief propagation. This couples neighboring pixels in both directions, giving much better results at depth discontinuities and in textureless regions than per-scanline DP, at higher computational cost.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Optical flow</h3>
+      <p><strong>Optical flow</strong> estimates the apparent 2D motion of brightness patterns between consecutive video frames (rather than between two fixed stereo cameras) — a dense field of per-pixel velocity vectors. It rests on the <strong>brightness constancy assumption</strong>: a point's intensity stays the same as it moves, giving the optical flow constraint equation <code class="inline">I<sub>x</sub>u + I<sub>y</sub>v + I<sub>t</sub> = 0</code>, which alone is under-constrained (one equation, two unknowns u, v — the <em>aperture problem</em>).</p>
+      <ul>
+        <li><strong>Lucas–Kanade</strong> (local) resolves this by assuming flow is constant within a small window, giving enough equations to solve for u, v via least squares — conceptually similar to the Harris corner approach of pooling local gradient information.</li>
+        <li><strong>Horn–Schunck</strong> (global) adds a smoothness regularization term over the whole image and solves a global energy minimization, producing a dense flow field even in textureless regions.</li>
+      </ul>
+      <p>Optical flow is closely related to stereo disparity — both are 2D correspondence problems — but flow allows motion in any direction (not constrained to a rectified horizontal scanline) since it isn't bound to the epipolar geometry of a fixed stereo rig.</p>
+    </div>
+
+    <footer>Computer Vision Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

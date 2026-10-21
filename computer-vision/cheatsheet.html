@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick-Reference Cheatsheet — Computer Vision Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">📋 Quick-Reference Cheatsheet</h2>
+    <p class="page-sub">Key terms, formulas and algorithm steps across all five units — one page, no fluff.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Camera models & calibration</h3>
+      <table>
+        <thead><tr><th>Term / Formula</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code class="inline">x = f·X/Z, y = f·Y/Z</code></td><td>Perspective projection — size shrinks with depth Z</td></tr>
+          <tr><td><code class="inline">x = X, y = Y</code></td><td>Orthographic projection — no foreshortening</td></tr>
+          <tr><td><code class="inline">x = f·X/Z̄, y = f·Y/Z̄</code></td><td>Weak perspective — perspective scaled by one average depth Z̄</td></tr>
+          <tr><td>Intrinsic matrix K</td><td>f<sub>x</sub>, f<sub>y</sub> (focal length), c<sub>x</sub>, c<sub>y</sub> (principal point), skew — internal camera geometry</td></tr>
+          <tr><td>Extrinsics [R | t]</td><td>Rotation + translation from world frame to camera frame</td></tr>
+          <tr><td><code class="inline">x = K[R|t]X_w</code></td><td>Full projection of a world point to a pixel</td></tr>
+          <tr><td>Linear calibration (DLT)</td><td>Closed-form solve via SVD; ignores lens distortion</td></tr>
+          <tr><td>Non-linear calibration</td><td>Iterative refinement (Levenberg–Marquardt) minimizing reprojection error; models distortion</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Feature detection & matching</h3>
+      <table>
+        <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Sobel / Canny</td><td>Gradient-based / multi-stage optimal edge detectors (see Unit 2 table for full comparison)</td></tr>
+          <tr><td>Harris corner response</td><td><code class="inline">R = det(M) − k·trace(M)²</code> — large positive R = corner</td></tr>
+          <tr><td>Ratio test</td><td>Discard a match if best-match distance isn't meaningfully better than 2nd-best</td></tr>
+          <tr><td>Hough Transform</td><td>Edge pixels vote in parameter space (ρ, θ); peaks = detected lines</td></tr>
+          <tr><td>RANSAC steps</td><td>1) sample minimal set 2) fit model 3) count inliers within threshold 4) repeat, keep best 5) refit on all inliers</td></tr>
+          <tr><td>SIFT pipeline</td><td>DoG scale-space extrema → keypoint localization → orientation assignment → 128-D descriptor</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Stereo vision</h3>
+      <table>
+        <thead><tr><th>Term / Formula</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Epipolar constraint</td><td>Corresponding point lies on a single epipolar line, not the whole image</td></tr>
+          <tr><td>Essential matrix E</td><td><code class="inline">p'<sup>T</sup>Ep = 0</code> — calibrated coords; encodes R, t (5 DOF)</td></tr>
+          <tr><td>Fundamental matrix F</td><td><code class="inline">p'<sup>T</sup>Fp = 0</code> — pixel coords; <code class="inline">F = K'<sup>-T</sup>EK<sup>-1</sup></code>; needs no calibration to estimate</td></tr>
+          <tr><td>Rectification</td><td>Warp both images so epipolar lines align to the same horizontal row</td></tr>
+          <tr><td>Local stereo matching</td><td>Per-pixel window correlation (SAD/SSD/NCC) along the scanline; fast, fails on textureless regions</td></tr>
+          <tr><td>Dynamic programming</td><td>Optimal per-scanline disparity path using the order constraint; can streak</td></tr>
+          <tr><td>Graph cuts / energy minimization</td><td>Global 2D smoothness + data term; best at discontinuities, costlier</td></tr>
+          <tr><td>Optical flow constraint</td><td><code class="inline">I<sub>x</sub>u + I<sub>y</sub>v + I<sub>t</sub> = 0</code> — brightness constancy, under-constrained (aperture problem)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Shape from shading</h3>
+      <table>
+        <thead><tr><th>Term / Formula</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Image irradiance equation</td><td><code class="inline">I(x,y) = R(N, L, V)</code> — brightness depends on normal, light, view</td></tr>
+          <tr><td>Lambertian model</td><td><code class="inline">I = ρ·(N·L)</code> — diffuse, view-independent</td></tr>
+          <tr><td>Specular model</td><td>Sharp highlight around the mirror-reflection direction; view-dependent</td></tr>
+          <tr><td>Photometric stereo</td><td>≥3 images, known different light directions, same viewpoint → solve linearly for N, ρ per pixel</td></tr>
+          <tr><td>Normal field integration</td><td>Recover depth map from normals by integrating gradients (Poisson solve for consistency)</td></tr>
+          <tr><td>Inter-reflection</td><td>Indirect bounced light biases concave regions toward too-shallow depth if ignored</td></tr>
+          <tr><td>Single-image SfS</td><td>Ill-posed; needs smoothness + boundary-normal constraints to close the gap</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Structure from motion</h3>
+      <table>
+        <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Self-calibration</td><td>Recover intrinsics from the image sequence itself, no calibration object needed</td></tr>
+          <tr><td>Projective ambiguity</td><td>Without intrinsics, reconstruction is correct only up to an arbitrary projective transform</td></tr>
+          <tr><td>Euclidean upgrade</td><td>Known/self-calibrated intrinsics + metric reference → true-scale, true-angle reconstruction</td></tr>
+          <tr><td>Bundle adjustment</td><td>Joint non-linear refinement of all camera poses + 3D points, minimizing total reprojection error</td></tr>
+          <tr><td>Visual SLAM</td><td>Real-time incremental SfM for robots/AR — build map + localize simultaneously</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>🔍 Common CV algorithms at a glance</h3>
+    <div class="card">
+      <table>
+        <thead><tr><th>Algorithm</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td>Canny</td><td>Edge detection</td></tr>
+          <tr><td>Harris</td><td>Corner / interest point detection</td></tr>
+          <tr><td>SIFT / SURF / ORB</td><td>Scale/rotation-invariant local features and descriptors</td></tr>
+          <tr><td>Hough Transform</td><td>Line / circle detection via parameter-space voting</td></tr>
+          <tr><td>RANSAC</td><td>Robust model fitting in the presence of outliers</td></tr>
+          <tr><td>8-point algorithm</td><td>Estimating the fundamental matrix from correspondences</td></tr>
+          <tr><td>Lucas–Kanade / Horn–Schunck</td><td>Local / global optical flow estimation</td></tr>
+          <tr><td>Graph cuts</td><td>Global stereo disparity via energy minimization</td></tr>
+          <tr><td>Bundle adjustment</td><td>Joint camera + structure refinement in SfM</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer>Computer Vision Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

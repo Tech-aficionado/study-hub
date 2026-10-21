@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget & Budgetary Control — Financial Literacy</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">📅 Budget & Budgetary Control <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Planning ahead in numbers, then checking reality against the plan.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What a budget actually is</h3>
+      <p>A <strong>budget</strong> is a formal, quantitative plan for a future period, expressed mainly in financial terms — expected sales, costs, cash flows, and profit — prepared in advance of the period it covers. It converts a business's goals into specific, measurable numbers that every department can plan around.</p>
+      <p><strong>Budgetary control</strong> is the broader management process built around that budget: continuously comparing actual results against the budgeted figures, analyzing the differences ("variances"), and taking corrective action where needed.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Objectives of budgeting</h3>
+      <ul>
+        <li><strong>Planning</strong> — forces management to think ahead systematically about revenue, costs, and resources, rather than reacting as events occur.</li>
+        <li><strong>Coordination</strong> — aligns the plans of different departments (sales, production, purchasing, finance) so they support one goal instead of working against each other.</li>
+        <li><strong>Control</strong> — gives a clear benchmark to measure actual performance against, making it easy to spot where things are going off-plan.</li>
+        <li><strong>Communication</strong> — translates top-level goals into concrete targets every department and employee can understand and work toward.</li>
+        <li><strong>Motivation</strong> — a well-set, achievable budget target can motivate teams to perform efficiently.</li>
+        <li><strong>Resource allocation</strong> — helps decide how limited funds should be distributed among competing needs.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Types of budgets</h3>
+      <table>
+        <tr><th>Type</th><th>What it means</th></tr>
+        <tr><td><strong>Fixed Budget</strong></td><td>Prepared for one single, specific level of activity/output and NOT adjusted even if actual activity differs. Simple, but less useful for comparison if volumes change.</td></tr>
+        <tr><td><strong>Flexible Budget</strong></td><td>Prepared for several levels of activity (e.g. 70%, 80%, 100% capacity), so it can be adjusted to match whatever the actual activity level turns out to be — giving a fairer basis for variance analysis.</td></tr>
+        <tr><td><strong>Zero-Based Budget (ZBB)</strong></td><td>Built from scratch ("zero") every period — every expense must be freshly justified, instead of simply adjusting last year's figures. Prevents unnecessary costs from being carried forward by habit.</td></tr>
+        <tr><td><strong>Master Budget</strong></td><td>The single, summarized budget that consolidates ALL of a business's individual functional budgets (sales, production, purchases, cash, etc.) into one overall plan — usually presented as a budgeted P&L and budgeted Balance Sheet.</td></tr>
+      </table>
+      <div class="callout tip">💡 A flexible budget is especially useful for performance evaluation: if actual output was 90% of planned capacity, you compare actuals against the budget RECAST for 90% — not against a plan drawn up for 100%.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> The budgetary control process</h3>
+      <div class="svgpanel">
+        <svg viewBox="0 0 640 170" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arrowbc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5fd999"/></marker></defs>
+          <rect x="8" y="60" width="118" height="50" rx="9" fill="#1c2129" stroke="#2FA86A" stroke-width="2"/>
+          <text x="67" y="90" text-anchor="middle" fill="#e6edf3" font-size="11.5" font-weight="700">Set Objectives</text>
+          <line x1="126" y1="85" x2="156" y2="85" stroke="#5fd999" stroke-width="2" marker-end="url(#arrowbc)"/>
+          <rect x="156" y="60" width="118" height="50" rx="9" fill="#1c2129" stroke="#58b9ff" stroke-width="2"/>
+          <text x="215" y="90" text-anchor="middle" fill="#e6edf3" font-size="11.5" font-weight="700">Prepare Budget</text>
+          <line x1="274" y1="85" x2="304" y2="85" stroke="#5fd999" stroke-width="2" marker-end="url(#arrowbc)"/>
+          <rect x="304" y="60" width="118" height="50" rx="9" fill="#1c2129" stroke="#bc8cff" stroke-width="2"/>
+          <text x="363" y="90" text-anchor="middle" fill="#e6edf3" font-size="11.5" font-weight="700">Record Actuals</text>
+          <line x1="422" y1="85" x2="452" y2="85" stroke="#5fd999" stroke-width="2" marker-end="url(#arrowbc)"/>
+          <rect x="452" y="60" width="118" height="50" rx="9" fill="#1c2129" stroke="#f0b429" stroke-width="2"/>
+          <text x="511" y="83" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="700">Compare &amp;</text>
+          <text x="511" y="98" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="700">Analyze Variance</text>
+          <path d="M511,110 C511,150 300,150 67,150 L67,110" fill="none" stroke="#ff6b6b" stroke-width="2" marker-end="url(#arrowbc)"/>
+          <text x="289" y="166" text-anchor="middle" fill="#8b949e" font-size="10.5">Corrective action feeds back into the next period's plan</text>
+        </svg>
+      </div>
+      <ol>
+        <li><strong>Set objectives</strong> for the budget period, aligned with overall business goals.</li>
+        <li><strong>Prepare the budget</strong> — each department drafts its functional budget, consolidated into the master budget.</li>
+        <li><strong>Record actual performance</strong> as the period unfolds.</li>
+        <li><strong>Compare actual vs. budgeted</strong> figures and calculate variances (favorable or adverse).</li>
+        <li><strong>Investigate significant variances</strong> and take corrective action, feeding lessons into the next budget cycle.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Advantages and limitations</h3>
+      <div class="grid-2">
+        <div>
+          <h4 style="margin:0 0 8px;">✅ Advantages</h4>
+          <ul>
+            <li>Forces forward planning instead of reactive management</li>
+            <li>Improves coordination across departments</li>
+            <li>Provides a clear yardstick to measure performance</li>
+            <li>Helps identify problem areas early through variance analysis</li>
+            <li>Supports better, more informed resource allocation</li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="margin:0 0 8px;">⚠️ Limitations</h4>
+          <ul>
+            <li>Based on estimates/forecasts — can go wrong if assumptions are poor</li>
+            <li>Can become rigid; a fixed budget resists changing conditions</li>
+            <li>Time-consuming and costly to prepare properly</li>
+            <li>May create unhealthy departmental competition over allocations</li>
+            <li>Risk of being treated as a target to "just meet," discouraging extra effort</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <footer>Financial Literacy Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

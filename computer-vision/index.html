@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Formation & Camera Calibration — Computer Vision Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <div class="module-hero">
+      <div class="emoji">👁️</div>
+      <div>
+        <h1>Computer Vision Study</h1>
+        <p>BTAI711A · 3 credits · DSE elective — image formation, feature detection, stereo vision, shape from shading and structure from motion.</p>
+      </div>
+    </div>
+    <h2 class="page-title">👁️ Image Formation & Camera Calibration <span class="badge beginner">Unit 1</span></h2>
+    <p class="page-sub">How a 3D world becomes a 2D image, and how we recover a camera's own geometry from it.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What is computer vision?</h3>
+      <p><strong>Computer vision</strong> is the field concerned with giving machines the ability to extract meaning from images and video — detecting objects, reconstructing 3D geometry, tracking motion, recognizing scenes — the inverse problem to computer graphics. Where graphics starts from a 3D scene description and renders a 2D image, vision starts from one or more 2D images and tries to recover the 3D scene, the camera's position, or semantic labels for what is in the picture.</p>
+      <p>Every vision pipeline begins with the same question: <em>how did this image come to exist?</em> Answering that — the process of <strong>image formation</strong> — is the foundation for everything downstream: without a model of how a 3D point projects onto a 2D sensor, you cannot undo that projection to recover depth, shape, or camera motion.</p>
+      <div class="videopanel">
+        <div class="vhead">
+          <span class="vtitle"><span class="ytdot">▶</span> Advanced Computer Vision with Python - Full Course</span>
+          <span class="vcreator">freeCodeCamp.org · USA</span>
+        </div>
+        <div class="video-frame-wrap">
+          <iframe src="https://www.youtube.com/embed/01sAkU_NvOY" title="Advanced Computer Vision with Python - Full Course" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Geometric camera models</h3>
+      <p>A <strong>geometric camera model</strong> describes the mathematical mapping from a 3D point in the world to a 2D point on the image plane. The simplest and most instructive model is the <strong>pinhole camera</strong>: light from a 3D point travels in a straight line through a single infinitesimal aperture (the pinhole) and lands on an image plane behind it, forming an inverted image.</p>
+      <div class="svgpanel">
+        <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="cvarrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b9a6f5"/></marker>
+          </defs>
+          <!-- object -->
+          <line x1="60" y1="60" x2="60" y2="150" stroke="#3fdd94" stroke-width="4"/>
+          <text x="60" y="48" text-anchor="middle" fill="#3fdd94" font-size="11" font-weight="700">Object (3D point P)</text>
+          <circle cx="60" cy="60" r="4" fill="#3fdd94"/>
+          <!-- pinhole plane -->
+          <line x1="330" y1="20" x2="330" y2="240" stroke="#30363d" stroke-width="6"/>
+          <circle cx="330" cy="130" r="4" fill="#f0b429"/>
+          <text x="330" y="14" text-anchor="middle" fill="#f0b429" font-size="11" font-weight="700">Pinhole (aperture)</text>
+          <!-- rays through pinhole to inverted image -->
+          <line x1="60" y1="60" x2="520" y2="200" stroke="#7C5CE0" stroke-width="1.5"/>
+          <line x1="60" y1="150" x2="520" y2="60" stroke="#7C5CE0" stroke-width="1.5"/>
+          <!-- image plane -->
+          <line x1="520" y1="20" x2="520" y2="240" stroke="#262e48" stroke-width="6"/>
+          <text x="520" y="14" text-anchor="middle" fill="#8c93b0" font-size="11" font-weight="700">Image plane</text>
+          <line x1="520" y1="60" x2="520" y2="200" stroke="#ff6b6b" stroke-width="4"/>
+          <text x="560" y="55" fill="#ff6b6b" font-size="11" font-weight="700">Inverted image P'</text>
+          <!-- optical axis -->
+          <line x1="60" y1="105" x2="610" y2="105" stroke="#454e5f" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#cvarrow)"/>
+          <text x="610" y="118" text-anchor="end" fill="#454e5f" font-size="10">optical axis</text>
+          <text x="330" y="255" text-anchor="middle" fill="#8c93b0" font-size="11.5">Focal length f = distance from pinhole to image plane</text>
+        </svg>
+      </div>
+      <p>Because a real pinhole lets through too little light, real cameras use a <strong>lens</strong> instead, focusing a wider cone of rays onto the same point — but the thin-lens model reduces to the same pinhole projection geometry for points near the optical axis, which is why the pinhole model remains the standard abstraction in vision.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Orthographic vs. perspective projection</h3>
+      <p>Two idealized projection models describe how 3D points map to 2D:</p>
+      <ul>
+        <li><strong>Perspective projection</strong> — rays converge at a single center of projection (the pinhole). A point's image coordinates are <code class="inline">x = f·X/Z</code>, <code class="inline">y = f·Y/Z</code>: objects farther away (larger Z) appear smaller. This is how real cameras and human eyes actually work, and it is why parallel lines appear to converge at a vanishing point.</li>
+        <li><strong>Orthographic projection</strong> — rays are parallel (the center of projection is at infinity); a point simply drops its depth coordinate: <code class="inline">x = X</code>, <code class="inline">y = Y</code>. There is no foreshortening with distance. This is a useful simplification for scenes where depth variation is small relative to the viewing distance (e.g. aerial/satellite imagery, or object recognition where scale is normalized).</li>
+      </ul>
+      <table>
+        <tr><th>Property</th><th>Perspective</th><th>Orthographic</th></tr>
+        <tr><td>Projection rays</td><td>Converge at a single center</td><td>Parallel</td></tr>
+        <tr><td>Size vs. depth</td><td>Shrinks with distance (1/Z)</td><td>Constant, independent of Z</td></tr>
+        <tr><td>Parallel lines</td><td>Converge to a vanishing point</td><td>Stay parallel in the image</td></tr>
+        <tr><td>Realism</td><td>Matches real cameras/eyes</td><td>Approximation, valid for small depth range</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Weak perspective projection</h3>
+      <p><strong>Weak perspective</strong> is a middle ground between the two: it assumes the scene's depth variation is small compared to the average distance from the camera, so every point is projected perspectively using one <em>average</em> depth <code class="inline">Z̄</code> rather than each point's own Z. The projection becomes <code class="inline">x = f·X/Z̄</code>, <code class="inline">y = f·Y/Z̄</code> — effectively an orthographic projection followed by a single uniform scale factor <code class="inline">f/Z̄</code>.</p>
+      <div class="callout tip">💡 Weak perspective is popular in structure-from-motion and object-pose algorithms because it keeps the math linear (like orthographic) while staying a reasonable approximation of real perspective when the object is far from the camera relative to its own depth extent.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Intrinsic and extrinsic camera parameters</h3>
+      <p>A full camera model splits cleanly into two parameter groups:</p>
+      <ul>
+        <li><strong>Intrinsic parameters</strong> — describe the camera's own internal geometry, independent of where it is placed in the world: focal length (<code class="inline">f<sub>x</sub></code>, <code class="inline">f<sub>y</sub></code>), principal point (<code class="inline">c<sub>x</sub></code>, <code class="inline">c<sub>y</sub></code> — where the optical axis meets the image plane), skew between the sensor axes, and lens distortion coefficients. These are packed into the <strong>intrinsic (calibration) matrix K</strong>:</li>
+      </ul>
+      <pre class="code-block">K = | fx   s   cx |
+    | 0   fy   cy |
+    | 0    0    1 |</pre>
+      <ul>
+        <li><strong>Extrinsic parameters</strong> — describe where the camera sits in the world: a 3×3 rotation matrix <code class="inline">R</code> and a 3×1 translation vector <code class="inline">t</code> that transform world coordinates into the camera's own coordinate frame.</li>
+      </ul>
+      <p>The full projection of a 3D world point <code class="inline">X<sub>w</sub></code> to a 2D pixel is: <code class="inline">x = K [R | t] X<sub>w</sub></code>. Intrinsics are fixed properties of the camera/lens (found once via calibration); extrinsics change every time the camera moves.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Camera calibration: linear and non-linear approaches</h3>
+      <p><strong>Camera calibration</strong> is the process of estimating K, R, t (and distortion coefficients) from observations of known 3D points and their corresponding 2D image projections — typically a checkerboard pattern photographed from several angles.</p>
+      <ul>
+        <li><strong>Linear (direct) methods</strong> — e.g. the Direct Linear Transform (DLT). Given enough 3D–2D point correspondences, the projection equation is rearranged into a homogeneous linear system and solved in closed form (via SVD) for the projection matrix. Fast and non-iterative, but it ignores lens distortion entirely and can be sensitive to noise, since it does not minimize a geometrically meaningful error.</li>
+        <li><strong>Non-linear (iterative) methods</strong> — take the linear solution as an initial estimate, then refine it by minimizing the actual <strong>reprojection error</strong> (the pixel distance between observed image points and points reprojected through the current parameter estimate) using an optimizer such as Levenberg–Marquardt. This step can also solve for non-linear lens distortion (radial and tangential), which the linear model cannot represent. Zhang's method (used in OpenCV's <code class="inline">calibrateCamera</code>) combines a linear initialization with this non-linear refinement.</li>
+      </ul>
+      <div class="callout">Linear methods give you a fast, good starting guess; non-linear refinement is what makes a calibration accurate enough for real 3D reconstruction, because it accounts for the lens distortion that real optics always introduce.</div>
+    </div>
+
+    <footer>Computer Vision Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

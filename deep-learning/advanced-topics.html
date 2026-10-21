@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Topics and Applications — Deep Learning Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🚀 Advanced Topics and Applications <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Attention, transformers, reinforcement learning, and where deep learning is headed.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Attention mechanisms</h3>
+      <p>RNNs process a sequence step by step, which is slow to parallelize and still struggles with very long-range dependencies even with LSTM/GRU gating. <strong>Attention</strong> solves this differently: instead of compressing an entire sequence into one fixed hidden state, attention lets a model look back at <em>every</em> position in the input and learn how much "weight" to give each one when producing a given output.</p>
+      <p>Concretely, attention computes a weighted sum over all input representations, where the weights (how relevant each input position is to the current output) are themselves learned via a compatibility score between <strong>queries</strong>, <strong>keys</strong>, and <strong>values</strong> — the now-famous Q/K/V formulation.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Transformer networks</h3>
+      <p>The 2017 paper <em>"Attention Is All You Need"</em> introduced the <strong>Transformer</strong>, which drops recurrence entirely and builds a network purely from <strong>self-attention</strong> layers (where a sequence attends to itself) plus feedforward layers, stacked repeatedly. Because there's no step-by-step recurrence, all positions in a sequence can be processed <strong>in parallel</strong> during training — a massive speed advantage on modern GPU/TPU hardware compared to RNNs.</p>
+      <ul>
+        <li><strong>Self-attention</strong> — lets every token in a sequence directly attend to every other token in a single step, regardless of distance, sidestepping the vanishing-gradient-over-many-steps problem RNNs face.</li>
+        <li><strong>Multi-head attention</strong> — runs several attention computations in parallel ("heads"), each free to learn a different kind of relationship (e.g. one head might track grammatical subject-verb agreement, another might track coreference).</li>
+        <li><strong>Positional encoding</strong> — since self-attention has no inherent sense of order, a positional signal is added to each token's representation so the model knows where in the sequence it sits.</li>
+      </ul>
+      <p>Transformers are the architecture behind essentially all modern large language models (GPT, BERT, and their successors), as well as state-of-the-art vision models (Vision Transformers) and multimodal systems.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Reinforcement learning (and deep RL)</h3>
+      <p><strong>Reinforcement learning (RL)</strong> is a different paradigm from the supervised learning covered so far: an <strong>agent</strong> interacts with an <strong>environment</strong>, taking <strong>actions</strong> and receiving <strong>rewards</strong>, with the goal of learning a <strong>policy</strong> — a strategy for choosing actions — that maximizes cumulative reward over time. There's no fixed labeled dataset; the agent learns from the consequences of its own actions, including delayed consequences.</p>
+      <p><strong>Deep RL</strong> uses a neural network to represent the policy and/or the value function (how good a given state/action is), making RL practical in environments too large to tabulate exhaustively — e.g. DeepMind's AlphaGo and AlphaZero (board games), and RL-based fine-tuning techniques like RLHF (Reinforcement Learning from Human Feedback) used to align large language models with human preferences.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Applications across domains</h3>
+      <ul>
+        <li><strong>Computer Vision (CV)</strong> — image classification, object detection, semantic segmentation, facial recognition, medical image analysis (e.g. tumor detection in radiology scans), autonomous vehicle perception.</li>
+        <li><strong>Natural Language Processing (NLP)</strong> — machine translation, text summarization, question answering, chatbots and conversational AI, sentiment analysis, code generation.</li>
+        <li><strong>Healthcare</strong> — diagnostic image analysis (X-rays, MRIs, pathology slides), drug discovery (predicting molecular properties), genomics (variant calling, protein structure prediction such as AlphaFold), personalized treatment risk prediction.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Current trends and future directions</h3>
+      <ul>
+        <li><strong>Foundation models and scale</strong> — very large models pre-trained on broad data, then adapted (fine-tuned or prompted) to many downstream tasks, rather than training a fresh model per task.</li>
+        <li><strong>Multimodal models</strong> — single models that jointly process text, images, audio and video rather than one modality at a time.</li>
+        <li><strong>Efficient/edge deep learning</strong> — model compression, quantization, and distillation techniques to run capable models on phones and embedded devices with limited compute and power.</li>
+        <li><strong>Explainability and interpretability</strong> — growing emphasis on understanding <em>why</em> a deep model made a given prediction, especially critical in healthcare, finance, and other high-stakes domains.</li>
+        <li><strong>Alignment and safety</strong> — techniques (like RLHF, red-teaming, constitutional methods) to make powerful models behave in line with human intent and values as capability scales up.</li>
+      </ul>
+      <div class="callout tip">💡 Exam framing to remember: attention/transformers solved the parallelization and long-range-dependency limits of RNNs; deep RL extended neural networks beyond supervised learning into sequential decision-making; and the current frontier is less about new core architectures and more about scale, efficiency, multimodality, and alignment.</div>
+    </div>
+
+    <footer>Deep Learning Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

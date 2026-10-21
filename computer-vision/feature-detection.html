@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature Detection & Matching — Computer Vision Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🧩 Feature Detection & Matching <span class="badge intermediate">Unit 2</span></h2>
+    <p class="page-sub">Finding distinctive, repeatable points in an image — and matching them across views.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Edge detection</h3>
+      <p>An <strong>edge</strong> is a location in an image where brightness changes sharply — typically marking an object boundary, a surface normal change, or a lighting discontinuity. Edge detectors work by estimating the image's intensity <strong>gradient</strong>: its rate of change in the x and y directions. A strong gradient magnitude signals an edge; the gradient direction gives the edge's orientation.</p>
+      <table>
+        <tr><th>Operator</th><th>Type</th><th>Idea</th><th>Notes</th></tr>
+        <tr><td><strong>Roberts Cross</strong></td><td>Gradient (1st derivative)</td><td>2×2 diagonal difference kernels</td><td>Simple, very sensitive to noise</td></tr>
+        <tr><td><strong>Prewitt</strong></td><td>Gradient (1st derivative)</td><td>3×3 kernels approximating Gx, Gy</td><td>Smoother than Roberts, no extra weighting</td></tr>
+        <tr><td><strong>Sobel</strong></td><td>Gradient (1st derivative)</td><td>3×3 kernels weighting the center row/column more heavily</td><td>Good noise suppression, most widely used simple detector</td></tr>
+        <tr><td><strong>Laplacian</strong></td><td>2nd derivative</td><td>Zero-crossings of the 2nd derivative mark edges</td><td>Very noise-sensitive; usually paired with a Gaussian blur (Laplacian of Gaussian)</td></tr>
+        <tr><td><strong>Canny</strong></td><td>Multi-stage, optimal</td><td>Gaussian smoothing → gradient (Sobel) → non-max suppression → hysteresis double-thresholding</td><td>The de facto standard; thin, well-localized, connected edges with few false positives</td></tr>
+      </table>
+      <div class="svgpanel">
+        <svg viewBox="0 0 640 170" xmlns="http://www.w3.org/2000/svg">
+          <text x="320" y="18" text-anchor="middle" fill="#8c93b0" font-size="12" font-weight="700">CANNY EDGE DETECTION PIPELINE</text>
+          <g font-size="11.5" fill="#eef1f8">
+            <rect x="10" y="40" width="110" height="46" rx="8" fill="#1c2129" stroke="#7C5CE0" stroke-width="2"/>
+            <text x="65" y="60" text-anchor="middle">Gaussian</text><text x="65" y="74" text-anchor="middle">smoothing</text>
+            <rect x="145" y="40" width="110" height="46" rx="8" fill="#1c2129" stroke="#7C5CE0" stroke-width="2"/>
+            <text x="200" y="60" text-anchor="middle">Gradient</text><text x="200" y="74" text-anchor="middle">(Sobel)</text>
+            <rect x="280" y="40" width="130" height="46" rx="8" fill="#1c2129" stroke="#7C5CE0" stroke-width="2"/>
+            <text x="345" y="60" text-anchor="middle">Non-max</text><text x="345" y="74" text-anchor="middle">suppression</text>
+            <rect x="435" y="40" width="130" height="46" rx="8" fill="#1c2129" stroke="#3fdd94" stroke-width="2"/>
+            <text x="500" y="60" text-anchor="middle">Hysteresis</text><text x="500" y="74" text-anchor="middle">thresholding</text>
+          </g>
+          <line x1="120" y1="63" x2="145" y2="63" stroke="#b9a6f5" stroke-width="2" marker-end="url(#a1)"/>
+          <line x1="255" y1="63" x2="280" y2="63" stroke="#b9a6f5" stroke-width="2" marker-end="url(#a1)"/>
+          <line x1="410" y1="63" x2="435" y2="63" stroke="#b9a6f5" stroke-width="2" marker-end="url(#a1)"/>
+          <defs><marker id="a1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b9a6f5"/></marker></defs>
+          <text x="320" y="115" text-anchor="middle" fill="#8c93b0" font-size="11">Two thresholds: pixels above the high threshold are "strong" edges;</text>
+          <text x="320" y="132" text-anchor="middle" fill="#8c93b0" font-size="11">pixels above the low threshold are kept only if connected to a strong edge.</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Interest points and corners</h3>
+      <p>Edges alone only localize motion along one direction (you can slide along an edge and the signal stays similar). An <strong>interest point</strong> — most often a <strong>corner</strong>, where two edges meet — is distinctive in every direction, making it far more useful for matching between images. The <strong>Harris corner detector</strong> formalizes this: it looks at how the local image patch's sum-of-squared-differences changes when shifted in any direction, captured by the second-moment (structure tensor) matrix built from image gradients. A corner is flagged where <em>both</em> eigenvalues of that matrix are large (the image changes a lot in every direction); an edge has one large and one small eigenvalue; a flat region has both small.</p>
+      <div class="callout">The Harris response function <code class="inline">R = det(M) − k·trace(M)²</code> avoids computing eigenvalues directly — large positive R marks a corner, large negative R marks an edge, small |R| marks a flat region.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Local image features & feature matching</h3>
+      <p>A <strong>local feature</strong> pairs a detected keypoint's location with a <strong>descriptor</strong> — a compact numerical summary of the image patch around it (e.g. a gradient-orientation histogram) designed to stay similar for the same physical point even if the viewpoint, scale, or lighting changes. <strong>Feature matching</strong> then compares descriptors across two images (typically with Euclidean or Hamming distance) to find corresponding points — the raw material for panorama stitching, 3D reconstruction, object recognition and tracking.</p>
+      <p>A common refinement is the <strong>ratio test</strong>: for each descriptor, compare the distance to its best match against the distance to its second-best match. If the best match isn't meaningfully better than the second-best, the match is ambiguous and discarded — this single trick removes most false matches in practice.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Hough Transform</h3>
+      <p>The <strong>Hough Transform</strong> detects parametric shapes (classically lines, also circles and ellipses) by having every edge pixel "vote" for every shape it could be part of, in a parameter space (an accumulator array) rather than image space. For a line in slope-intercept-free polar form <code class="inline">ρ = x·cosθ + y·sinθ</code>, each edge point traces a sinusoidal curve in (ρ, θ) space; points that lie on the same real line in the image cause their curves to intersect at one (ρ, θ) cell, which accumulates votes. Peaks in the accumulator correspond to detected lines. Its strength is robustness to gaps and noise — a line is still found even if parts of it are occluded, because the votes from the visible segments still pile up at the same peak.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Model fitting and RANSAC</h3>
+      <p>Real correspondence sets always contain <strong>outliers</strong> — wrong matches from repeated textures, noise, or occlusion. <strong>RANSAC</strong> (RANdom SAmple Consensus) fits a model (e.g. a homography or fundamental matrix) robustly in their presence:</p>
+      <ol>
+        <li>Randomly sample the minimum number of correspondences needed to define the model (e.g. 4 points for a homography).</li>
+        <li>Fit the model to that minimal sample.</li>
+        <li>Count how many of the <em>remaining</em> correspondences agree with this model within a distance threshold — these are the <strong>inliers</strong>, and the count is the model's <strong>consensus</strong>.</li>
+        <li>Repeat for many random samples; keep the model with the largest inlier set.</li>
+        <li>Optionally refit the final model using all inliers (e.g. via least squares) for a more accurate result.</li>
+      </ol>
+      <div class="callout tip">💡 RANSAC's key insight: a model fit from a sample of pure outliers will NOT be agreed with by other outliers (they're random), but a model fit from a sample of pure inliers WILL be agreed with by the other true inliers. Enough random trials, and the correct model simply accumulates the most votes.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Scale invariant feature matching (SIFT)</h3>
+      <p><strong>SIFT</strong> (Scale-Invariant Feature Transform) is the classic algorithm for detecting and describing keypoints that remain recognizable across scale, rotation, and moderate illumination/viewpoint change. Its pipeline:</p>
+      <ul>
+        <li><strong>Scale-space extrema detection</strong> — build a Difference-of-Gaussians (DoG) pyramid across multiple scales (octaves); candidate keypoints are local extrema across both space and scale, which makes them inherently scale-invariant.</li>
+        <li><strong>Keypoint localization</strong> — refine candidate locations and discard low-contrast or poorly-localized (edge-like) points using a Hessian-based test similar in spirit to Harris.</li>
+        <li><strong>Orientation assignment</strong> — compute the dominant gradient orientation in the keypoint's local neighborhood and rotate the description relative to it, giving rotation invariance.</li>
+        <li><strong>Descriptor generation</strong> — build a 128-dimensional vector from gradient-orientation histograms over a 4×4 grid of sub-regions around the keypoint, normalized for partial illumination invariance.</li>
+      </ul>
+      <p>SIFT descriptors from two images can then be matched (nearest-neighbor + ratio test) and fed into RANSAC to robustly estimate a geometric relationship (homography, fundamental matrix) between the views.</p>
+    </div>
+
+    <footer>Computer Vision Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

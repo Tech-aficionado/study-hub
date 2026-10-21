@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Reference — Deep Learning Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">📋 Quick Reference</h2>
+    <p class="page-sub">Activation formulas, loss functions, optimizer comparison, and CNN/RNN quick facts — all on one page.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Activation functions</h3>
+      <table>
+        <thead><tr><th>Function</th><th>Formula</th><th>Range</th></tr></thead>
+        <tbody>
+          <tr><td>Sigmoid</td><td><code class="inline">1 / (1 + e⁻ᶻ)</code></td><td>(0, 1)</td></tr>
+          <tr><td>Tanh</td><td><code class="inline">(eᶻ − e⁻ᶻ) / (eᶻ + e⁻ᶻ)</code></td><td>(−1, 1)</td></tr>
+          <tr><td>ReLU</td><td><code class="inline">max(0, z)</code></td><td>[0, ∞)</td></tr>
+          <tr><td>Leaky ReLU</td><td><code class="inline">z if z&gt;0 else αz</code></td><td>(−∞, ∞)</td></tr>
+          <tr><td>Softmax</td><td><code class="inline">eᶻⁱ / Σⱼ eᶻʲ</code></td><td>(0,1), sums to 1</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Common loss functions</h3>
+      <table>
+        <thead><tr><th>Loss</th><th>Formula (per example)</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td>Mean Squared Error (MSE)</td><td><code class="inline">(1/n)Σ(ŷ − y)²</code></td><td>Regression</td></tr>
+          <tr><td>Mean Absolute Error (MAE)</td><td><code class="inline">(1/n)Σ|ŷ − y|</code></td><td>Regression, robust to outliers</td></tr>
+          <tr><td>Binary Cross-Entropy</td><td><code class="inline">−[y·log(ŷ) + (1−y)·log(1−ŷ)]</code></td><td>Binary classification</td></tr>
+          <tr><td>Categorical Cross-Entropy</td><td><code class="inline">−Σ yᵢ·log(ŷᵢ)</code></td><td>Multi-class classification (with softmax)</td></tr>
+          <tr><td>Hinge Loss</td><td><code class="inline">max(0, 1 − y·ŷ)</code></td><td>Max-margin classifiers (SVM-style)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Optimizer comparison</h3>
+      <table>
+        <thead><tr><th>Optimizer</th><th>Core idea</th><th>Pros</th><th>Cons</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SGD</strong></td><td>Step opposite the gradient of a mini-batch, scaled by a fixed learning rate (optionally + momentum)</td><td>Simple, well understood, can generalize very well when tuned</td><td>Sensitive to learning rate choice; can be slow to converge</td></tr>
+          <tr><td><strong>RMSprop</strong></td><td>Divides the learning rate by a running average of recent squared gradients, per parameter</td><td>Adapts step size per parameter; handles noisy/non-stationary objectives well</td><td>Still needs a reasonable base learning rate; fewer theoretical guarantees</td></tr>
+          <tr><td><strong>Adam</strong></td><td>Combines momentum (running average of gradients) with RMSprop-style per-parameter scaling</td><td>Fast convergence, robust default, minimal tuning needed</td><td>Can generalize slightly worse than well-tuned SGD on some tasks; more memory (tracks 2 moments per parameter)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> CNN quick facts</h3>
+      <ul>
+        <li>Convolutional layers use <strong>weight sharing</strong> — one filter's weights are reused across the whole spatial input.</li>
+        <li><strong>Max pooling</strong> downsamples and adds translation invariance; it has no learnable parameters.</li>
+        <li><strong>Stride</strong> controls how far a filter moves per step; <strong>padding</strong> controls output size at the borders.</li>
+        <li>Feature maps grow in <em>semantic depth</em> but shrink in <em>spatial size</em> as you go deeper.</li>
+        <li><strong>Transfer learning</strong>: freeze early layers (general features), fine-tune later layers (task-specific features).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> RNN / LSTM / GRU quick facts</h3>
+      <ul>
+        <li>An RNN reuses the <strong>same weights</strong> at every time step, driven by a running <strong>hidden state</strong>.</li>
+        <li><strong>Backpropagation through time (BPTT)</strong> = unroll the RNN across time steps, then backprop normally.</li>
+        <li>Plain RNNs suffer <strong>vanishing gradients</strong> over long sequences.</li>
+        <li><strong>LSTM</strong>: 3 gates (forget, input, output) + a separate cell state → strong long-range memory.</li>
+        <li><strong>GRU</strong>: 2 gates (update, reset), no separate cell state → fewer params, faster, comparable accuracy.</li>
+        <li><strong>Transformers</strong> replace recurrence with <strong>self-attention</strong>, enabling full parallelization across the sequence.</li>
+      </ul>
+    </div>
+
+    <footer>Deep Learning Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

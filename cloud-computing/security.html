@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security, Standards and Applications — Cloud Computing Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🔒 Security, Standards and Applications <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Security challenges, SaaS-specific risk, governing bodies, interoperability standards, and mobile/end-user access.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Cloud security challenges</h3>
+      <ul class="checklist" id="securityChecklist">
+        <li><input type="checkbox" id="sc1"><label for="sc1">Understand the shared-responsibility boundary for each service model (IaaS/PaaS/SaaS)</label></li>
+        <li><input type="checkbox" id="sc2"><label for="sc2">Enforce strong identity and access management (MFA, least privilege, SSO)</label></li>
+        <li><input type="checkbox" id="sc3"><label for="sc3">Encrypt data at rest and in transit by default</label></li>
+        <li><input type="checkbox" id="sc4"><label for="sc4">Audit multi-tenancy isolation — a misconfigured boundary can leak across tenants</label></li>
+        <li><input type="checkbox" id="sc5"><label for="sc5">Track data residency and sovereignty requirements per region</label></li>
+        <li><input type="checkbox" id="sc6"><label for="sc6">Monitor for misconfigured storage/network exposure continuously</label></li>
+        <li><input type="checkbox" id="sc7"><label for="sc7">Plan incident response for provider-side outages and breaches</label></li>
+        <li><input type="checkbox" id="sc8"><label for="sc8">Vet third-party API and integration access regularly</label></li>
+      </ul>
+      <p>Core challenges: data breaches from misconfiguration, insufficient identity controls, insecure APIs, shared-tenancy isolation failures, lack of visibility into the provider's internal operations, and compliance across jurisdictions with different data-protection laws.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> SaaS security</h3>
+      <p>SaaS concentrates the most responsibility on the provider — but also the most <em>trust</em>: the customer has essentially no visibility into the underlying infrastructure, so SaaS security hinges on strong <strong>tenant isolation</strong> (one customer's data must never be reachable by another), <strong>vendor due diligence</strong> (certifications like SOC 2, ISO 27001), and <strong>data portability</strong> guarantees so a customer isn't trapped if the vendor's security posture degrades.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Open Cloud Consortium (OCC)</h3>
+      <p>The <strong>Open Cloud Consortium</strong> is a nonprofit that supports the development of standards for cloud computing, manages testbeds for cloud and distributed-data research (e.g. for large scientific datasets), and promotes benchmarks for evaluating cloud performance.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Distributed Management Task Force (DMTF)</h3>
+      <p>The <strong>DMTF</strong> develops and promotes vendor-neutral management standards across IT, including cloud-specific standards for interoperable cloud resource management — notably the <strong>Cloud Infrastructure Management Interface (CIMI)</strong>, aimed at letting management tools work across different cloud providers rather than being locked to one vendor's API.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Standards for app developers, messaging and security</h3>
+      <table>
+        <tr><th>Area</th><th>Standard / body</th><th>Purpose</th></tr>
+        <tr><td>App developers</td><td>OCCI (Open Cloud Computing Interface)</td><td>Standardized API for managing cloud infrastructure across providers</td></tr>
+        <tr><td>Messaging</td><td>AMQP (Advanced Message Queuing Protocol)</td><td>Vendor-neutral, interoperable message queuing between cloud applications</td></tr>
+        <tr><td>Security</td><td>SAML / OAuth / OpenID Connect</td><td>Federated identity, single sign-on and authorization across cloud services</td></tr>
+        <tr><td>Security (data)</td><td>TLS, KMIP (Key Management Interoperability Protocol)</td><td>Transport encryption and standardized key-management interoperability</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> End-user access, mobile devices and the cloud</h3>
+      <p>Mobile devices are now a primary access point to cloud services: apps sync data through cloud backends, push notifications are delivered via cloud messaging services, and offline-first design patterns cache data locally then reconcile with the cloud when connectivity returns. This raises specific end-user concerns:</p>
+      <ul>
+        <li><strong>Device loss/theft</strong> — cloud-synced data on a lost phone is a bigger exposure than data on a single desktop.</li>
+        <li><strong>Untrusted networks</strong> — mobile clients often connect over public Wi-Fi, making transport encryption (TLS) non-negotiable.</li>
+        <li><strong>App-level permissions</strong> — OAuth-based consent screens let a mobile app access only a scoped slice of a user's cloud account.</li>
+        <li><strong>MDM (Mobile Device Management)</strong> — enterprises use cloud-based MDM to remotely wipe, patch and enforce policy on employee devices.</li>
+      </ul>
+      <div class="callout danger">🚨 A compromised mobile device with cached cloud credentials or an active session token can be as dangerous as a compromised server — endpoint security is part of cloud security, not separate from it.</div>
+    </div>
+
+    <footer>Cloud Computing Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>
