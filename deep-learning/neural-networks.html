@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Networks & Backpropagation — Deep Learning Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🧩 Neural Networks and Backpropagation <span class="badge beginner">Beginner → Intermediate</span></h2>
+    <p class="page-sub">How a feedforward network computes a prediction, and how it learns from its mistakes.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Structure and function of an ANN</h3>
+      <p>An artificial neural network is organized into <strong>layers</strong> of neurons: an <strong>input layer</strong> (one unit per input feature), one or more <strong>hidden layers</strong>, and an <strong>output layer</strong> (one unit per predicted value or class). Every neuron in one layer is typically connected to every neuron in the next (a "fully connected" or "dense" layer).</p>
+      <p>Each neuron computes two things in sequence:</p>
+      <ol>
+        <li>A <strong>weighted sum</strong>: <code class="inline">z = w1·x1 + w2·x2 + ... + wn·xn + b</code>, where each <code class="inline">w</code> is a learnable weight and <code class="inline">b</code> is a learnable bias.</li>
+        <li>An <strong>activation function</strong> <code class="inline">a = f(z)</code> applied to that sum, introducing the non-linearity that lets the network model complex, non-linear relationships. Without it, stacking layers would collapse into one big linear function no matter how many layers you add.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> The feedforward pass</h3>
+      <p>A <strong>feedforward network</strong> passes information in one direction only — input → hidden layer(s) → output — with no loops or feedback connections (that's what distinguishes it from a recurrent network, covered later). Each layer's output becomes the next layer's input.</p>
+      <div class="callout tip">💡 "Feedforward" just means the data flows forward only. It says nothing about depth — a feedforward network can still have many hidden layers (that's what makes it "deep").</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> The backpropagation algorithm</h3>
+      <p>Training a network means finding the weights that minimize the loss function. <strong>Backpropagation</strong> is the algorithm that computes, for every single weight in the network, exactly how much a tiny change in that weight would change the final loss — its <strong>gradient</strong>.</p>
+      <p>It works backwards from the output using the calculus <strong>chain rule</strong>:</p>
+      <ol>
+        <li><strong>Forward pass</strong> — compute the prediction and the loss, caching every intermediate value along the way.</li>
+        <li><strong>Backward pass</strong> — starting at the loss, propagate the error signal backwards layer by layer. At each layer, the chain rule lets you express "how much did this weight contribute to the final error" in terms of the error already computed one layer downstream, so the computation is reused rather than redone from scratch for every weight.</li>
+        <li><strong>Weight update</strong> — each weight is nudged a small step opposite to its gradient: <code class="inline">w ← w − η · ∂Loss/∂w</code>, where <code class="inline">η</code> (eta) is the <strong>learning rate</strong>.</li>
+      </ol>
+      <p>This triple (forward pass, backward pass, update) is one training step, repeated over many batches and epochs until the loss stops meaningfully decreasing. Without backpropagation's reuse of intermediate results, computing gradients for millions of weights individually would be computationally infeasible — it's the single algorithm that made training deep networks practical.</p>
+      <div class="callout">Gradient descent is the optimizer that <em>uses</em> the gradients; backpropagation is the method that <em>computes</em> them efficiently. They are often spoken of together but are not the same thing.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Activation functions compared</h3>
+      <table>
+        <thead><tr><th>Function</th><th>Formula</th><th>Output range</th><th>Typical use case</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sigmoid</strong></td><td><code class="inline">σ(z) = 1 / (1 + e⁻ᶻ)</code></td><td>(0, 1)</td><td>Binary classification output layer; probability-like outputs. Rarely used in hidden layers — suffers from vanishing gradients at saturation.</td></tr>
+          <tr><td><strong>Tanh</strong></td><td><code class="inline">tanh(z) = (eᶻ − e⁻ᶻ)/(eᶻ + e⁻ᶻ)</code></td><td>(−1, 1)</td><td>Hidden layers where zero-centered output helps optimization (common in older RNNs/LSTMs). Still saturates at extremes.</td></tr>
+          <tr><td><strong>ReLU</strong></td><td><code class="inline">f(z) = max(0, z)</code></td><td>[0, ∞)</td><td>Default choice for hidden layers in most modern networks (CNNs especially) — cheap to compute, no saturation for positive inputs, faster convergence.</td></tr>
+          <tr><td><strong>Leaky ReLU</strong></td><td><code class="inline">f(z) = z if z&gt;0, else αz</code> (small α, e.g. 0.01)</td><td>(−∞, ∞)</td><td>Fixes ReLU's "dying neuron" problem by letting a small gradient flow when z is negative, instead of zero.</td></tr>
+          <tr><td><strong>Softmax</strong></td><td><code class="inline">softmax(zᵢ) = eᶻⁱ / Σⱼ eᶻʲ</code></td><td>(0, 1), sums to 1</td><td>Multi-class classification output layer — converts a vector of raw scores ("logits") into a probability distribution over classes.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn">⚠️ The "dying ReLU" problem: if a ReLU neuron's weighted input is consistently negative, its gradient is permanently zero and it stops learning entirely. Leaky ReLU, and careful weight initialization, both help avoid this.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Weight initialization</h3>
+      <p>Weights can't start at zero (every neuron in a layer would compute the identical gradient and the network could never break symmetry) or be drawn too large/small (gradients would explode or vanish as they propagate through many layers). Two widely used schemes size the initial random weights based on the number of inputs/outputs of a layer:</p>
+      <ul>
+        <li><strong>Xavier/Glorot initialization</strong> — scales weights based on the number of input <em>and</em> output units; designed for sigmoid/tanh activations to keep the variance of activations roughly stable across layers.</li>
+        <li><strong>He initialization</strong> — scales weights based on the number of input units only, with a larger variance tuned specifically for ReLU-family activations (since ReLU zeroes out roughly half its inputs).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Regularization techniques</h3>
+      <p>A network with enough capacity can simply memorize the training set (<strong>overfitting</strong>) instead of learning generalizable patterns. Common fixes:</p>
+      <ul>
+        <li><strong>L1/L2 weight regularization</strong> — adds a penalty term to the loss proportional to the size of the weights, discouraging any single weight from growing too large. L1 tends to push weights to exactly zero (sparsity); L2 ("weight decay") shrinks them smoothly.</li>
+        <li><strong>Dropout</strong> — during training, randomly "switches off" a fraction of neurons on each forward pass, forcing the network to not rely on any single neuron and effectively training an ensemble of sub-networks.</li>
+        <li><strong>Early stopping</strong> — monitor validation loss during training and stop once it starts increasing, even if training loss keeps falling.</li>
+        <li><strong>Batch normalization</strong> — normalizes the inputs to each layer to have stable mean/variance during training, which also has a mild regularizing side effect and speeds up convergence.</li>
+        <li><strong>Data augmentation</strong> — artificially expands the training set (crops, flips, noise) so the network sees more variation and memorizes less.</li>
+      </ul>
+    </div>
+
+    <footer>Deep Learning Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marginal Costing & Managerial Decisions — Financial Literacy</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">📈 Marginal Costing & Managerial Decisions <span class="badge advanced">Advanced</span></h2>
+    <p class="page-sub">Separating fixed from variable cost to find the break-even point — and to make real pricing and capacity decisions.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> What marginal costing means</h3>
+      <p><strong>Marginal costing</strong> is a costing technique that separates total cost into two categories by behavior:</p>
+      <ul>
+        <li><strong>Fixed costs</strong> — stay the same in total regardless of how many units are produced (rent, salaried staff, depreciation).</li>
+        <li><strong>Variable costs</strong> — change in direct proportion to the number of units produced (raw materials, direct labor, per-unit shipping).</li>
+      </ul>
+      <p>Only variable cost is treated as the cost of a unit under this technique; fixed cost is treated as a cost of the <em>period</em> as a whole, charged fully against that period's profit rather than spread across units. This split is what makes marginal costing so useful for short-term decisions.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Contribution — the key building block</h3>
+      <p><strong>Contribution</strong> (or Contribution Margin) is the amount left from sales revenue after covering variable costs — the amount that "contributes" first toward covering fixed costs, and once fixed costs are covered, toward profit.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Contribution = Sales − Variable Cost
+Contribution per unit = Selling Price per unit − Variable Cost per unit
+Profit = Total Contribution − Fixed Cost</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Break-even analysis</h3>
+      <p>The <strong>Break-Even Point (BEP)</strong> is the level of sales (in units or in rupees) at which total revenue exactly equals total cost — the business makes neither a profit nor a loss. Below it, the business loses money; above it, every additional unit sold adds pure contribution to profit (since fixed costs are already covered).</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>BEP (in units) = Fixed Cost ÷ Contribution per unit
+
+BEP (in ₹ sales value) = Fixed Cost ÷ P/V Ratio
+   where P/V Ratio (Profit-Volume Ratio) = Contribution ÷ Sales × 100</pre>
+      <div class="callout tip">💡 Worked example: A company sells a product at ₹500 per unit. Variable cost is ₹300 per unit. Fixed costs for the period are ₹8,00,000.</div>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Contribution per unit = ₹500 − ₹300 = ₹200
+BEP (units) = ₹8,00,000 ÷ ₹200 = 4,000 units
+
+P/V Ratio = (₹200 ÷ ₹500) × 100 = 40%
+BEP (sales value) = ₹8,00,000 ÷ 40% = ₹20,00,000</pre>
+      <p>So the company must sell <strong>4,000 units</strong> (worth ₹20,00,000) just to cover its costs. If it sells 5,000 units, the extra 1,000 units each contribute ₹200 straight to profit: 1,000 × ₹200 = <strong>₹2,00,000 profit</strong>.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> The break-even chart</h3>
+      <div class="svgpanel">
+        <svg viewBox="0 0 640 320" xmlns="http://www.w3.org/2000/svg">
+          <line x1="60" y1="20" x2="60" y2="280" stroke="#454e5f" stroke-width="1.5"/>
+          <line x1="60" y1="280" x2="600" y2="280" stroke="#454e5f" stroke-width="1.5"/>
+          <text x="30" y="150" text-anchor="middle" fill="#8b949e" font-size="11" transform="rotate(-90 30 150)">Cost / Revenue (₹)</text>
+          <text x="330" y="305" text-anchor="middle" fill="#8b949e" font-size="11">Units Sold</text>
+          <line x1="60" y1="230" x2="600" y2="230" stroke="#f0b429" stroke-width="2.5"/>
+          <text x="565" y="222" fill="#f0b429" font-size="11" font-weight="700">Fixed Cost</text>
+          <line x1="60" y1="230" x2="600" y2="60" stroke="#58b9ff" stroke-width="2.5"/>
+          <text x="500" y="85" fill="#58b9ff" font-size="11" font-weight="700">Total Cost</text>
+          <line x1="60" y1="280" x2="600" y2="40" stroke="#5fd999" stroke-width="2.5"/>
+          <text x="500" y="48" fill="#5fd999" font-size="11" font-weight="700">Total Revenue (Sales)</text>
+          <circle cx="330" cy="150" r="5.5" fill="#ff6b6b"/>
+          <line x1="330" y1="150" x2="330" y2="280" stroke="#ff6b6b" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <line x1="60" y1="150" x2="330" y2="150" stroke="#ff6b6b" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="335" y="143" fill="#ff6b6b" font-size="11.5" font-weight="700">Break-Even Point</text>
+          <text x="245" y="250" fill="#ff6b6b" font-size="10.5" font-style="italic">Loss area</text>
+          <text x="470" y="110" fill="#5fd999" font-size="10.5" font-style="italic">Profit area</text>
+        </svg>
+      </div>
+      <p>The Fixed Cost line is flat because fixed costs don't change with volume. The Total Cost line starts at the fixed-cost level and rises with variable cost per unit. The Total Revenue line starts at zero and rises with the selling price per unit. Where Total Revenue crosses Total Cost is the <strong>break-even point</strong> — to its left, cost exceeds revenue (a loss); to its right, revenue exceeds cost (a profit).</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Cost-Volume-Profit (CVP) analysis</h3>
+      <p><strong>CVP analysis</strong> is the broader study of how changes in costs, selling price, and sales volume affect a business's profit. It uses the same building blocks as break-even analysis — contribution, fixed cost, P/V ratio — but extends them to answer "what if" questions: What profit results from a given sales volume? What volume is needed for a target profit?</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Sales (units) for a Target Profit = (Fixed Cost + Target Profit) ÷ Contribution per unit
+
+Example: Target profit = ₹4,00,000 (same data as above)
+Required units = (₹8,00,000 + ₹4,00,000) ÷ ₹200 = 6,000 units</pre>
+      <p><strong>Margin of Safety</strong> is another key CVP measure — the gap between actual (or budgeted) sales and the break-even sales, showing how much sales can fall before the business starts losing money.</p>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Margin of Safety = Actual Sales − Break-even Sales</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Managerial decisions using marginal costing</h3>
+      <p>Because marginal costing isolates each unit's variable cost and contribution, it becomes the standard tool for several classic short-term decisions:</p>
+      <ul>
+        <li><strong>Make-or-buy decisions</strong> — compare the variable cost of making a component in-house against the price of buying it from an outside supplier. As long as fixed costs are unaffected either way, the cheaper variable cost generally wins.</li>
+        <li><strong>Accept or reject a special/bulk order</strong> — even an order priced below normal selling price can be worth accepting if it still covers its variable cost and contributes something toward fixed cost, <em>provided</em> spare capacity exists and it doesn't disturb regular sales.</li>
+        <li><strong>Key/limiting factor decisions</strong> — when a scarce resource (machine hours, raw material, labor hours) restricts production, products should be ranked and prioritized by <em>contribution per unit of the limiting factor</em>, not by contribution per unit alone.</li>
+        <li><strong>Discontinuing a product line</strong> — a product showing an "accounting loss" after allocating fixed overheads may still be worth keeping if it earns positive contribution, since dropping it would only remove that contribution while fixed costs mostly remain.</li>
+        <li><strong>Pricing decisions</strong> — in the short run, any price above variable cost adds some contribution; marginal costing helps managers see the floor below which a price should not normally be set.</li>
+      </ul>
+      <div class="callout warn">⚠️ Marginal costing is a short-term decision tool. It assumes fixed costs genuinely stay fixed and that cost behavior is linear — assumptions that break down over longer time horizons or outside the "relevant range" of activity.</div>
+    </div>
+
+    <footer>Financial Literacy Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

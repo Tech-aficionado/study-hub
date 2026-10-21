@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introduction to Deep Learning — Deep Learning Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <div class="module-hero">
+      <div class="emoji">🧠</div>
+      <div>
+        <h1>Principles of Deep Learning</h1>
+        <p>BTAI713B · 3 Credits · DSE Elective — from the biological inspiration behind neural networks to transformers and reinforcement learning.</p>
+      </div>
+    </div>
+    <h2 class="page-title">🧠 Introduction to Deep Learning <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">What deep learning is, where it came from, and how it differs from classical machine learning.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Definition: what makes it "deep"</h3>
+      <p><strong>Deep learning</strong> is a subfield of machine learning built on <strong>artificial neural networks (ANNs)</strong> with many stacked layers — the "depth" refers to the number of layers of processing a signal passes through between input and output. Each layer learns to transform its input into a slightly more useful representation, so that early layers might detect simple patterns (edges in an image, word co-occurrences in text) while deeper layers combine those into increasingly abstract concepts (faces, sentiment, objects).</p>
+      <p>The defining property is <strong>representation learning</strong>: instead of a human engineer hand-crafting the features a model should look at, the network learns which features matter directly from raw data, driven entirely by the signal in a loss function and an optimization procedure.</p>
+      <div class="callout tip">💡 Rule of thumb: if you're hand-designing the features (edge detectors, TF-IDF vectors, manually chosen ratios) and feeding them to a simpler model, that's classical ML. If the model itself learns the features from raw pixels/text/audio through many layers, that's deep learning.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> A brief history</h3>
+      <p>Deep learning's ideas are older than the hype suggests — what changed recently was data and compute, not the core math:</p>
+      <ul>
+        <li><strong>1943 — McCulloch & Pitts</strong> proposed the first mathematical model of a neuron, showing that simple binary threshold units could in principle compute logical functions.</li>
+        <li><strong>1958 — The Perceptron (Rosenblatt)</strong> was the first trainable neural network, able to learn linearly separable patterns. It caused real excitement — and real disappointment when Minsky & Papert's 1969 book showed its sharp limits (it couldn't learn XOR).</li>
+        <li><strong>1986 — Backpropagation popularized (Rumelhart, Hinton, Williams)</strong> gave a practical way to train <em>multi-layer</em> networks, directly solving the single-layer perceptron's limitation and reviving the field.</li>
+        <li><strong>1990s — "AI winter" for neural nets.</strong> Networks were hard to train deep, and other methods (SVMs, decision trees) were simpler and often competitive with far less data.</li>
+        <li><strong>2006–2012 — Deep learning re-emerges.</strong> Better initialization, GPUs for parallel training, and much larger labeled datasets (ImageNet) made deep networks practical again.</li>
+        <li><strong>2012 — AlexNet</strong> wins the ImageNet competition by a huge margin using a deep convolutional network trained on GPUs — widely seen as the moment deep learning went mainstream in computer vision.</li>
+        <li><strong>2017 — "Attention Is All You Need"</strong> introduces the <strong>Transformer</strong>, replacing recurrence with self-attention and enabling the large language models and modern generative AI systems of today.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Key concepts and terminology</h3>
+      <ul>
+        <li><strong>Artificial Neural Network (ANN)</strong> — a model made of layers of simple computing units ("neurons"), each combining weighted inputs and passing the result through a non-linear activation function.</li>
+        <li><strong>Weights and biases</strong> — the learnable numbers of the network. A weight scales an input's contribution; a bias shifts the result. Training means adjusting these so the network's output gets closer to the correct answer.</li>
+        <li><strong>Forward pass</strong> — pushing an input through every layer, left to right, to produce a prediction.</li>
+        <li><strong>Loss function</strong> — a single number measuring how wrong a prediction was (e.g. mean squared error for regression, cross-entropy for classification).</li>
+        <li><strong>Gradient descent</strong> — the optimization algorithm that nudges every weight a small step in the direction that reduces the loss, repeated over many iterations.</li>
+        <li><strong>Backpropagation</strong> — the efficient algorithm (an application of the calculus chain rule) that computes how much each individual weight in the network contributed to the loss, layer by layer backwards from the output. It's what makes gradient descent tractable for networks with millions of weights.</li>
+        <li><strong>Epoch / batch</strong> — one epoch is one full pass over the training dataset; a batch is a chunk of examples processed before one weight update.</li>
+      </ul>
+      <div class="svgpanel">
+        <svg viewBox="0 0 640 320" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="nin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8603C"/><stop offset="1" stop-color="#b5452a"/></linearGradient>
+            <linearGradient id="nhid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9470"/><stop offset="1" stop-color="#d9623f"/></linearGradient>
+            <linearGradient id="nout" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fdd94"/><stop offset="1" stop-color="#2d8a3b"/></linearGradient>
+          </defs>
+          <text x="105" y="22" text-anchor="middle" fill="#8b949e" font-size="12" font-weight="700">INPUT LAYER</text>
+          <text x="340" y="22" text-anchor="middle" fill="#8b949e" font-size="12" font-weight="700">HIDDEN LAYERS</text>
+          <text x="560" y="22" text-anchor="middle" fill="#8b949e" font-size="12" font-weight="700">OUTPUT</text>
+
+          <!-- connecting lines: input(3) -> hidden1(4) -->
+          <g stroke="#33405e" stroke-width="1">
+            <line x1="120" y1="60" x2="280" y2="45"/><line x1="120" y1="60" x2="280" y2="105"/><line x1="120" y1="60" x2="280" y2="165"/><line x1="120" y1="60" x2="280" y2="225"/>
+            <line x1="120" y1="160" x2="280" y2="45"/><line x1="120" y1="160" x2="280" y2="105"/><line x1="120" y1="160" x2="280" y2="165"/><line x1="120" y1="160" x2="280" y2="225"/>
+            <line x1="120" y1="260" x2="280" y2="45"/><line x1="120" y1="260" x2="280" y2="105"/><line x1="120" y1="260" x2="280" y2="165"/><line x1="120" y1="260" x2="280" y2="225"/>
+          </g>
+          <!-- hidden1(4) -> hidden2(4) -->
+          <g stroke="#33405e" stroke-width="1">
+            <line x1="300" y1="45" x2="400" y2="45"/><line x1="300" y1="45" x2="400" y2="105"/><line x1="300" y1="45" x2="400" y2="165"/><line x1="300" y1="45" x2="400" y2="225"/>
+            <line x1="300" y1="105" x2="400" y2="45"/><line x1="300" y1="105" x2="400" y2="105"/><line x1="300" y1="105" x2="400" y2="165"/><line x1="300" y1="105" x2="400" y2="225"/>
+            <line x1="300" y1="165" x2="400" y2="45"/><line x1="300" y1="165" x2="400" y2="105"/><line x1="300" y1="165" x2="400" y2="165"/><line x1="300" y1="165" x2="400" y2="225"/>
+            <line x1="300" y1="225" x2="400" y2="45"/><line x1="300" y1="225" x2="400" y2="105"/><line x1="300" y1="225" x2="400" y2="165"/><line x1="300" y1="225" x2="400" y2="225"/>
+          </g>
+          <!-- hidden2(4) -> output(2) -->
+          <g stroke="#33405e" stroke-width="1">
+            <line x1="420" y1="45" x2="560" y2="90"/><line x1="420" y1="45" x2="560" y2="200"/>
+            <line x1="420" y1="105" x2="560" y2="90"/><line x1="420" y1="105" x2="560" y2="200"/>
+            <line x1="420" y1="165" x2="560" y2="90"/><line x1="420" y1="165" x2="560" y2="200"/>
+            <line x1="420" y1="225" x2="560" y2="90"/><line x1="420" y1="225" x2="560" y2="200"/>
+          </g>
+
+          <!-- input neurons -->
+          <circle cx="110" cy="60" r="16" fill="url(#nin)"/><circle cx="110" cy="160" r="16" fill="url(#nin)"/><circle cx="110" cy="260" r="16" fill="url(#nin)"/>
+          <text x="110" y="300" text-anchor="middle" fill="#8b949e" font-size="10.5">x1, x2, x3</text>
+
+          <!-- hidden layer 1 -->
+          <circle cx="290" cy="45" r="14" fill="url(#nhid)"/><circle cx="290" cy="105" r="14" fill="url(#nhid)"/>
+          <circle cx="290" cy="165" r="14" fill="url(#nhid)"/><circle cx="290" cy="225" r="14" fill="url(#nhid)"/>
+
+          <!-- hidden layer 2 -->
+          <circle cx="410" cy="45" r="14" fill="url(#nhid)"/><circle cx="410" cy="105" r="14" fill="url(#nhid)"/>
+          <circle cx="410" cy="165" r="14" fill="url(#nhid)"/><circle cx="410" cy="225" r="14" fill="url(#nhid)"/>
+          <text x="350" y="300" text-anchor="middle" fill="#8b949e" font-size="10.5">weighted sums + activation (ReLU/sigmoid)</text>
+
+          <!-- output -->
+          <circle cx="560" cy="90" r="16" fill="url(#nout)"/><circle cx="560" cy="200" r="16" fill="url(#nout)"/>
+          <text x="560" y="300" text-anchor="middle" fill="#8b949e" font-size="10.5">ŷ (prediction)</text>
+        </svg>
+      </div>
+      <p>Every arrow in the diagram above carries a learnable weight. A forward pass multiplies each input by its connection weight, sums the results at each neuron, adds a bias, and applies a non-linear activation — repeated layer by layer until the output neurons produce the network's prediction.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Deep learning vs. traditional machine learning</h3>
+      <table>
+        <tr><th>Aspect</th><th>Traditional ML</th><th>Deep Learning</th></tr>
+        <tr><td>Feature engineering</td><td>Manual — a human designs features (e.g. edge histograms, n-grams)</td><td>Learned automatically from raw data across many layers</td></tr>
+        <tr><td>Data requirements</td><td>Works well with smaller datasets</td><td>Typically needs large labeled datasets to shine</td></tr>
+        <tr><td>Compute requirements</td><td>Low — runs fine on a CPU</td><td>High — usually needs GPUs/TPUs for practical training time</td></tr>
+        <tr><td>Interpretability</td><td>Often more interpretable (e.g. decision trees, linear models)</td><td>Largely a "black box"; needs separate explainability tools</td></tr>
+        <tr><td>Typical algorithms</td><td>Linear/logistic regression, SVMs, decision trees, random forests, k-NN</td><td>CNNs, RNNs/LSTMs, Transformers, autoencoders, GANs</td></tr>
+        <tr><td>Best suited for</td><td>Structured/tabular data, smaller problems</td><td>Images, audio, text, and other high-dimensional unstructured data</td></tr>
+      </table>
+      <div class="callout">Deep learning is not a strict upgrade — on small, structured, tabular datasets a well-tuned gradient-boosted tree often still beats a neural network, trains faster, and is easier to explain. The two approaches are tools for different jobs.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Watch: the single best starting point</h3>
+      <div class="videopanel">
+        <div class="vhead">
+          <span class="vtitle"><span class="ytdot">▶</span> But what is a neural network? | Deep learning chapter 1</span>
+          <span class="vcreator">3Blue1Brown · USA</span>
+        </div>
+        <div class="video-frame-wrap">
+          <iframe src="https://www.youtube.com/embed/aircAruvnKk" title="But what is a neural network? | Deep learning chapter 1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+      <p>This is widely regarded as the clearest visual explanation of how a neural network actually computes a prediction — build the mental model here before moving to the math-heavy pages that follow.</p>
+    </div>
+
+    <footer>Deep Learning Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

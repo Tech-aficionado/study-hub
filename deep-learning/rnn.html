@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recurrent Neural Networks — Deep Learning Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🔁 Recurrent Neural Networks (RNNs) <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">The architecture family built for sequences — text, audio, and time series.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why CNNs and plain ANNs aren't enough for sequences</h3>
+      <p>Feedforward networks (plain ANNs and CNNs) assume every input is independent and fixed-size. But language, audio and sensor readings are <strong>sequential</strong> — the meaning of a word depends on the words before it, and a sensor reading depends on the trend leading up to it. A network needs some form of <strong>memory</strong> to use that context.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Structure and function of an RNN</h3>
+      <p>A <strong>Recurrent Neural Network</strong> processes a sequence one element at a time, maintaining a <strong>hidden state</strong> vector that acts as a running summary of everything seen so far. At each time step <code class="inline">t</code>, the same set of weights is reused to combine the current input <code class="inline">xₜ</code> with the previous hidden state <code class="inline">hₜ₋₁</code>:</p>
+      <pre class="code-block"><code>h_t = f(W_xh · x_t + W_hh · h_(t-1) + b)
+y_t = g(W_hy · h_t + b_y)</code></pre>
+      <p>Because the same weights (<code class="inline">W_xh</code>, <code class="inline">W_hh</code>, <code class="inline">W_hy</code>) are reused at every time step, an RNN can handle sequences of any length with a fixed number of parameters — unlike a feedforward network, which would need a different set of weights for every possible sequence length.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Unrolled through time</h3>
+      <div class="svgpanel">
+        <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="rin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58b9ff"/><stop offset="1" stop-color="#2f7fb8"/></linearGradient>
+            <linearGradient id="rhid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8603C"/><stop offset="1" stop-color="#b5452a"/></linearGradient>
+            <linearGradient id="rout" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fdd94"/><stop offset="1" stop-color="#2d8a3b"/></linearGradient>
+            <marker id="rarrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker>
+          </defs>
+          <!-- repeated cells t-1, t, t+1 -->
+          <g>
+            <!-- t-1 -->
+            <rect x="60" y="70" width="70" height="50" rx="8" fill="url(#rhid)"/><text x="95" y="100" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">h(t-1)</text>
+            <circle cx="95" cy="170" r="16" fill="url(#rin)"/><text x="95" y="174" text-anchor="middle" fill="#fff" font-size="10">x(t-1)</text>
+            <circle cx="95" cy="30" r="16" fill="url(#rout)"/><text x="95" y="34" text-anchor="middle" fill="#fff" font-size="10">y(t-1)</text>
+            <line x1="95" y1="154" x2="95" y2="122" stroke="#8b949e" stroke-width="1.5" marker-end="url(#rarrow)"/>
+            <line x1="95" y1="70" x2="95" y2="47" stroke="#8b949e" stroke-width="1.5" marker-end="url(#rarrow)"/>
+
+            <!-- t -->
+            <rect x="290" y="70" width="70" height="50" rx="8" fill="url(#rhid)"/><text x="325" y="100" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">h(t)</text>
+            <circle cx="325" cy="170" r="16" fill="url(#rin)"/><text x="325" y="174" text-anchor="middle" fill="#fff" font-size="12">x(t)</text>
+            <circle cx="325" cy="30" r="16" fill="url(#rout)"/><text x="325" y="34" text-anchor="middle" fill="#fff" font-size="12">y(t)</text>
+            <line x1="325" y1="154" x2="325" y2="122" stroke="#8b949e" stroke-width="1.5" marker-end="url(#rarrow)"/>
+            <line x1="325" y1="70" x2="325" y2="47" stroke="#8b949e" stroke-width="1.5" marker-end="url(#rarrow)"/>
+
+            <!-- t+1 -->
+            <rect x="520" y="70" width="70" height="50" rx="8" fill="url(#rhid)"/><text x="555" y="100" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">h(t+1)</text>
+            <circle cx="555" cy="170" r="16" fill="url(#rin)"/><text x="555" y="174" text-anchor="middle" fill="#fff" font-size="10">x(t+1)</text>
+            <circle cx="555" cy="30" r="16" fill="url(#rout)"/><text x="555" y="34" text-anchor="middle" fill="#fff" font-size="10">y(t+1)</text>
+            <line x1="555" y1="154" x2="555" y2="122" stroke="#8b949e" stroke-width="1.5" marker-end="url(#rarrow)"/>
+            <line x1="555" y1="70" x2="555" y2="47" stroke="#8b949e" stroke-width="1.5" marker-end="url(#rarrow)"/>
+
+            <!-- hidden state passed forward -->
+            <line x1="130" y1="95" x2="286" y2="95" stroke="#ff9470" stroke-width="2" marker-end="url(#rarrow)"/>
+            <line x1="360" y1="95" x2="516" y2="95" stroke="#ff9470" stroke-width="2" marker-end="url(#rarrow)"/>
+            <text x="208" y="86" text-anchor="middle" fill="#ff9470" font-size="10">hidden state</text>
+            <text x="438" y="86" text-anchor="middle" fill="#ff9470" font-size="10">hidden state</text>
+          </g>
+          <text x="340" y="205" text-anchor="middle" fill="#8b949e" font-size="11">Same weights (W_xh, W_hh, W_hy) reused at every time step</text>
+        </svg>
+      </div>
+      <p>"Unrolling" is a way of visualizing one RNN cell applied repeatedly — it is literally the same set of weights drawn once per time step, with the hidden state flowing from each step into the next. This is also how an RNN is trained: <strong>backpropagation through time (BPTT)</strong> unrolls the network for the length of the sequence and runs ordinary backpropagation across that unrolled graph.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> The vanishing gradient problem, and why LSTM/GRU exist</h3>
+      <p>A plain ("vanilla") RNN struggles with <strong>long-range dependencies</strong>: during BPTT, gradients are repeatedly multiplied by the same weight matrix at every time step going backwards. If that multiplication tends to shrink the gradient, it can vanish to near zero after enough steps — the network effectively "forgets" anything that happened many steps earlier.</p>
+      <ul>
+        <li><strong>LSTM (Long Short-Term Memory)</strong> — adds a separate <strong>cell state</strong> alongside the hidden state, plus three learned <strong>gates</strong>: a <em>forget gate</em> (what to discard from the cell state), an <em>input gate</em> (what new information to add), and an <em>output gate</em> (what to expose as the hidden state). These gates let gradients flow through the cell state largely unchanged across many time steps, directly addressing vanishing gradients.</li>
+        <li><strong>GRU (Gated Recurrent Unit)</strong> — a simplified alternative with only two gates (<em>update</em> and <em>reset</em>) and no separate cell state. It merges some of LSTM's mechanics, trains faster and uses fewer parameters, and performs comparably on many tasks.</li>
+      </ul>
+      <table>
+        <tr><th>Aspect</th><th>Vanilla RNN</th><th>LSTM</th><th>GRU</th></tr>
+        <tr><td>Gates</td><td>None</td><td>3 (forget, input, output)</td><td>2 (update, reset)</td></tr>
+        <tr><td>Separate cell state</td><td>No</td><td>Yes</td><td>No</td></tr>
+        <tr><td>Long-range memory</td><td>Poor</td><td>Strong</td><td>Strong</td></tr>
+        <tr><td>Parameters / speed</td><td>Fewest / fastest</td><td>Most / slowest</td><td>Fewer than LSTM / faster</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Applications</h3>
+      <ul>
+        <li><strong>Natural Language Processing</strong> — language modeling, machine translation, sentiment analysis, text generation (largely superseded by Transformers today, but foundational to the field).</li>
+        <li><strong>Speech recognition</strong> — converting an audio waveform (a sequence of samples) into a sequence of phonemes/words.</li>
+        <li><strong>Time-series analysis</strong> — stock price forecasting, sensor/IoT anomaly detection, weather prediction — anywhere the order and recency of past values carries predictive information.</li>
+      </ul>
+    </div>
+
+    <footer>Deep Learning Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud Services — Cloud Computing Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🧩 Cloud Services <span class="badge beginner">Beginner</span></h2>
+    <p class="page-sub">Service models (SaaS, PaaS, IaaS, DaaS and more), providers, deployment models, advantages and risks.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The core service models</h3>
+      <table>
+        <tr><th>Model</th><th>What the provider manages</th><th>What you manage</th><th>Example</th></tr>
+        <tr><td><strong>IaaS</strong> — Infrastructure as a Service</td><td>Physical hardware, virtualization, networking, storage</td><td>OS, runtime, apps, data</td><td>AWS EC2, Azure VMs, Google Compute Engine</td></tr>
+        <tr><td><strong>PaaS</strong> — Platform as a Service</td><td>Infrastructure + OS + runtime</td><td>Your application code and data</td><td>Google App Engine, Azure App Service, Heroku</td></tr>
+        <tr><td><strong>SaaS</strong> — Software as a Service</td><td>Everything — infrastructure through the application itself</td><td>Just your data and configuration</td><td>Salesforce, Gmail, Microsoft 365</td></tr>
+        <tr><td><strong>DaaS</strong> — Desktop as a Service</td><td>Virtual desktop infrastructure, patching, backups</td><td>User profile/apps on the virtual desktop</td><td>Amazon WorkSpaces, Windows 365</td></tr>
+      </table>
+      <div class="callout tip">💡 Pizza analogy: IaaS is buying raw ingredients and using your own oven (you cook). PaaS is ordering a pizza kit delivered to your door. SaaS is ordering a pizza to be delivered, ready to eat.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Supporting "as a Service" categories</h3>
+      <ul>
+        <li><strong>MaaS — Monitoring as a Service</strong>: outsourced monitoring of infrastructure, application performance, uptime and security events, usually with dashboards and alerting (e.g. Datadog, New Relic).</li>
+        <li><strong>CaaS — Communication as a Service</strong>: outsourced enterprise communication — VoIP, messaging, video conferencing, unified communications — delivered over the cloud instead of on-prem PBX hardware (e.g. Zoom, RingCentral, Twilio).</li>
+        <li><strong>CaaS — Containers as a Service</strong> (not to be confused with the above): managed container orchestration, e.g. Amazon ECS/EKS, Azure Kubernetes Service.</li>
+        <li><strong>FaaS — Functions/Serverless</strong>: run individual functions on demand with no server management at all, billed per invocation (AWS Lambda, Azure Functions).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Major providers</h3>
+      <table>
+        <tr><th>Provider</th><th>Primary strength</th></tr>
+        <tr><td>Google</td><td>Google Cloud Platform — data analytics (BigQuery), Kubernetes, AI/ML; Workspace for SaaS productivity</td></tr>
+        <tr><td>AWS (Amazon)</td><td>Broadest and most mature IaaS/PaaS catalog; market share leader</td></tr>
+        <tr><td>Azure (Microsoft)</td><td>Deep enterprise/hybrid integration, Active Directory, Office 365 ecosystem</td></tr>
+        <tr><td>IBM</td><td>Enterprise hybrid cloud, regulated industries, IBM Cloud Paks</td></tr>
+        <tr><td>Salesforce</td><td>The original and leading SaaS CRM platform (Force.com as PaaS)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Deployment models</h3>
+      <table>
+        <tr><th>Model</th><th>Description</th></tr>
+        <tr><td><strong>Public</strong></td><td>Shared infrastructure, owned/operated by a third-party provider, available to anyone</td></tr>
+        <tr><td><strong>Private</strong></td><td>Dedicated infrastructure for a single organization, on-prem or hosted</td></tr>
+        <tr><td><strong>Community</strong></td><td>Shared by several organizations with common requirements (compliance, mission, industry)</td></tr>
+        <tr><td><strong>Hybrid</strong></td><td>Combination of two or more models, with workloads able to move between them</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Advantages</h3>
+      <ul>
+        <li>No capital expense on hardware — convert CapEx into predictable OpEx.</li>
+        <li>Elastic, on-demand scaling that matches real-time demand.</li>
+        <li>Provider-managed patching, redundancy and disaster recovery.</li>
+        <li>Global deployment in minutes instead of months of data-center buildout.</li>
+        <li>Access to specialized managed services (ML, analytics, IoT) without building them yourself.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Challenges and risks</h3>
+      <ul>
+        <li><strong>Vendor lock-in</strong> — proprietary APIs and data formats make switching providers expensive.</li>
+        <li><strong>Security & compliance</strong> — shared responsibility means you still own data classification, access control and regulatory compliance.</li>
+        <li><strong>Downtime</strong> — outages at the provider level affect every dependent customer simultaneously.</li>
+        <li><strong>Cost unpredictability</strong> — pay-as-you-go billing can spike without strong governance and budgeting alerts.</li>
+        <li><strong>Latency & data residency</strong> — physical distance to data centers and legal residency requirements can constrain architecture choices.</li>
+      </ul>
+    </div>
+
+    <footer>Cloud Computing Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formula Cheatsheet — Financial Literacy</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">📋 Formula Cheatsheet</h2>
+    <p class="page-sub">Every key formula and table from this course, on one page for quick revision.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> The Accounting Equation</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Assets = Liabilities + Owner's Equity</pre>
+      <p>Must hold true after every single recorded transaction. The entire flow: <strong>Journal → Ledger → Trial Balance → Financial Statements</strong>.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Liquidity Ratios</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Current Ratio   = Current Assets ÷ Current Liabilities        (ideal ≈ 2:1)
+Quick Ratio     = (Current Assets − Inventory) ÷ Current Liabilities   (ideal ≈ 1:1)</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Profitability Ratios</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Gross Profit Ratio = Gross Profit ÷ Net Sales × 100
+Net Profit Ratio   = Net Profit ÷ Net Sales × 100
+Return on Investment (ROI) = Net Profit ÷ Capital Employed × 100</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> Solvency Ratio</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Debt-Equity Ratio = Total Debt ÷ Shareholders' Equity</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Marginal Costing & Break-Even</h3>
+      <pre class="code-block"><button class="copy-btn">Copy</button>Contribution per unit = Selling Price per unit − Variable Cost per unit
+Profit = Total Contribution − Fixed Cost
+
+Break-Even Point (units)  = Fixed Cost ÷ Contribution per unit
+P/V Ratio                 = Contribution ÷ Sales × 100
+Break-Even Point (₹ sales) = Fixed Cost ÷ P/V Ratio
+
+Sales for Target Profit (units) = (Fixed Cost + Target Profit) ÷ Contribution per unit
+Margin of Safety                = Actual Sales − Break-even Sales</pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Budget Types, at a glance</h3>
+      <table>
+        <tr><th>Type</th><th>One-line meaning</th></tr>
+        <tr><td>Fixed Budget</td><td>Prepared for one activity level; not adjusted later</td></tr>
+        <tr><td>Flexible Budget</td><td>Prepared for multiple activity levels; adjusts to actual output</td></tr>
+        <tr><td>Zero-Based Budget</td><td>Built from scratch each period; every cost re-justified</td></tr>
+        <tr><td>Master Budget</td><td>Consolidation of all functional budgets into one overall plan</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">7</span> Financial vs Cost vs Management Accounting — one-liners</h3>
+      <table>
+        <tr><th>Branch</th><th>One-line focus</th></tr>
+        <tr><td>Financial Accounting</td><td>Reports the WHOLE business's past performance to OUTSIDERS</td></tr>
+        <tr><td>Cost Accounting</td><td>Measures and controls the COST of a product/process</td></tr>
+        <tr><td>Management Accounting</td><td>Helps managers PLAN and DECIDE, using any relevant data</td></tr>
+      </table>
+    </div>
+
+    <h3>🔍 Search every command</h3>
+    <input type="text" class="cmd-ref-search" id="cmdSearch" placeholder="🔍 Search formulas (e.g. 'ratio', 'break-even', 'budget')...">
+    <div class="card">
+      <table>
+        <thead><tr><th>Term / Formula</th><th>Description</th></tr></thead>
+        <tbody id="cmdTableBody"></tbody>
+      </table>
+    </div>
+
+    <footer>Financial Literacy Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+<script src="js/cheatsheet.js"></script>
+</body>
+</html>

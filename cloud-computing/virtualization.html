@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virtualization for Cloud — Cloud Computing Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🖥️ Virtualization for Cloud <span class="badge intermediate">Intermediate</span></h2>
+    <p class="page-sub">Why the cloud needs virtualization, the VM taxonomy, and the hypervisors that run production clouds.</p>
+
+    <div class="card">
+      <h3><span class="num">1</span> Why cloud computing needs virtualization</h3>
+      <p>A single physical server has fixed CPU, RAM and disk. Without virtualization, one customer's workload would occupy the <em>whole</em> machine, wasting most of its capacity most of the time. <strong>Virtualization</strong> inserts a software layer that lets one physical machine pretend to be many independent machines (virtual machines), each isolated from the others, so a provider can safely run many customers' workloads on the same hardware — this multi-tenancy is exactly what makes cloud economics work.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">2</span> Pros and cons</h3>
+      <div class="grid-2">
+        <div>
+          <h4>Pros</h4>
+          <ul>
+            <li>High hardware utilization via multi-tenancy</li>
+            <li>Strong isolation between workloads</li>
+            <li>Fast provisioning — a new VM in seconds/minutes, not a hardware order</li>
+            <li>Live migration — move a running VM between hosts with near-zero downtime</li>
+            <li>Snapshotting/rollback for easy recovery</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Cons</h4>
+          <ul>
+            <li>Performance overhead versus bare metal (hypervisor tax)</li>
+            <li>Added management complexity (another layer to patch and secure)</li>
+            <li>"Noisy neighbor" risk if resource limits aren't enforced well</li>
+            <li>Licensing costs for some commercial hypervisors</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">3</span> Types of virtual machines</h3>
+      <table>
+        <tr><th>Type</th><th>Description</th><th>Example</th></tr>
+        <tr><td><strong>System VM</strong></td><td>Virtualizes an entire physical machine, including a full guest OS and kernel; supports multiple concurrent OS instances on one host</td><td>VMware ESXi guest, KVM guest</td></tr>
+        <tr><td><strong>Process VM</strong></td><td>Virtualizes a single process/application's runtime environment, not a whole OS; provides platform independence for that one program</td><td>JVM (Java Virtual Machine), CLR (.NET)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">4</span> The Virtual Machine Monitor (VMM) / Hypervisor</h3>
+      <p>The <strong>Virtual Machine Monitor</strong> (VMM), also called a <strong>hypervisor</strong>, is the software layer that creates and manages VMs, multiplexing physical CPU, memory, storage and I/O among them. Key properties a VMM must provide:</p>
+      <ul>
+        <li><strong>Equivalence/fidelity</strong> — software inside the VM runs essentially identically to running on real hardware.</li>
+        <li><strong>Resource control</strong> — the VMM has complete control over physical resources; a guest cannot access resources not explicitly allocated to it.</li>
+        <li><strong>Efficiency</strong> — most instructions run directly on the hardware with no VMM intervention, so performance overhead stays low.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">5</span> Interpretation vs binary translation vs HLL VMs</h3>
+      <ul>
+        <li><strong>Interpretation</strong> — each guest instruction is fetched, decoded and emulated one at a time by software. Simple to build, portable, but slow (every instruction pays interpretation overhead).</li>
+        <li><strong>Binary translation</strong> — guest instructions are translated (often just-in-time, and cached) into equivalent host instructions ahead of execution, trading some upfront translation cost for much faster repeated execution.</li>
+        <li><strong>High-Level-Language VM (HLL VM)</strong> — doesn't virtualize an ISA at all; instead it defines its own abstract bytecode and instruction set above any specific hardware (e.g. JVM bytecode, .NET CIL), giving "write once, run anywhere" portability as a Process VM.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">6</span> Hypervisor types and comparison</h3>
+      <p>Hypervisors split into <strong>Type 1</strong> (bare-metal — runs directly on hardware) and <strong>Type 2</strong> (hosted — runs as an application on top of a host OS).</p>
+      <table>
+        <tr><th>Hypervisor</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><strong>Xen</strong></td><td>Type 1 (bare-metal, open-source)</td><td>Uses paravirtualization for speed; powered early AWS EC2</td></tr>
+        <tr><td><strong>KVM</strong></td><td>Type 1 (built into the Linux kernel)</td><td>Turns Linux itself into a hypervisor; backbone of OpenStack/most cloud providers</td></tr>
+        <tr><td><strong>VMware (ESXi/Workstation)</strong></td><td>ESXi: Type 1 · Workstation: Type 2</td><td>Mature commercial enterprise virtualization, vSphere ecosystem</td></tr>
+        <tr><td><strong>VirtualBox</strong></td><td>Type 2 (hosted)</td><td>Free, cross-platform, popular for desktop/dev/test VMs</td></tr>
+        <tr><td><strong>Hyper-V</strong></td><td>Type 1 (bare-metal, built into Windows)</td><td>Microsoft's native hypervisor; backbone of Azure</td></tr>
+      </table>
+    </div>
+
+    <footer>Cloud Computing Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Questions — Computer Vision Study</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="../css/shared.css">
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+
+    <h2 class="page-title">🎯 Interview Questions <span class="badge intermediate">All levels</span></h2>
+    <p class="page-sub">20 computer vision interview questions across easy / medium / hard, covering camera models, feature detection, stereo vision, shape from shading and structure from motion — each with a full answer.</p>
+
+    <div class="card">
+      <h3><span class="num">i</span> How to use this section</h3>
+      <p>Click any question to reveal the answer. Use the search box and the <strong>Difficulty / Source / Topic</strong> filters to narrow the list, or hit <strong>🎲 Random question</strong> to drill yourself. Mark questions <strong>Practiced</strong> as you go — your progress is saved in this browser.</p>
+      <p>Every answer here is written from scratch and grounded in standard computer vision references — OpenCV's documentation and Szeliski's <em>Computer Vision: Algorithms and Applications</em> — cited generically under <em>Source</em> below each answer.</p>
+      <div class="callout tip">💡 Tip: start with the <strong>Easy</strong> concept questions to lock in the mental model (pinhole projection, intrinsics vs. extrinsics, corners vs. edges), then move to the <strong>Hard</strong> scenario questions on bundle adjustment and inter-reflection — those are what deeper interviews actually probe.</div>
+    </div>
+
+    <div id="ivRoot"></div>
+
+    <footer>Computer Vision Study Dashboard · multi-page static site · served locally</footer>
+  </main>
+</div>
+<script src="js/nav.js"></script>
+<script src="js/common.js"></script>
+<script src="../js/bookmarks.js"></script>
+<script src="../js/mobile.js"></script>
+<script src="js/interview-data.js"></script>
+<script src="../js/interview.js"></script>
+</body>
+</html>
