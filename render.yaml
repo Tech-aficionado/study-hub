@@ -1,14 +1,21 @@
 services:
   - type: web
     name: study-hub
-    runtime: static
-    staticPublishPath: .
-    buildCommand: ""
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
     rootDir: .
-    routes:
-      - type: rewrite
-        source: /docker
-        destination: /docker/index.html
+    envVars:
+      - key: ACCESS_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: RP_ID
+        sync: false
+      - key: RP_ORIGIN
+        sync: false
+      - key: NODE_ENV
+        value: production
     headers:
       - path: /*
         name: X-Frame-Options
